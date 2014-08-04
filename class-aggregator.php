@@ -115,7 +115,7 @@ class Aggregator extends Aggregator_Plugin {
 	public function save_post( $orig_post_id, $orig_post ) {
 		
 		// Are we syncing anything from this site? If not, stop.
-		if ( ! $this->get_sync_sites_by_id( get_current_blog_id() ) )
+		if ( ! $this->get_push_sites( get_current_blog_id() ) )
 			return;
 		
 		// @todo Check if this post type should be synced. Or do that in the push function?
@@ -232,7 +232,7 @@ class Aggregator extends Aggregator_Plugin {
 		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		// Get the array of sites to sync to
-		$sync_destinations = $this->get_sync_sites_by_id( get_current_blog_id() );
+		$sync_destinations = $this->get_push_sites( get_current_blog_id() );
 
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
@@ -391,7 +391,7 @@ class Aggregator extends Aggregator_Plugin {
 		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
 
-	protected function get_sync_sites_by_id( $site_id = 1 ) {
+	protected function get_push_sites( $site_id = 1 ) {
 
 		// @todo Get this stuff from our site_option
 		$sync = array(

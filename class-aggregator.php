@@ -114,20 +114,14 @@ class Aggregator extends Aggregator_Plugin {
 	 **/
 	public function save_post( $orig_post_id, $orig_post ) {
 		
-		if ( is_main_site() )
+		// Are we syncing anything from this site? If not, stop.
+		if ( ! $this->get_sync_sites_by_id( get_current_blog_id() ) )
 			return;
 		
-		if ( 'post' != $orig_post->post_type )
-			return;
+		// @todo Check if this post type should be synced. Or do that in the push function?
 
-		/**
-		 * @todo Replace $promoted with something to indicate whether this site should be syncing
-		 *       to anywhere based on our site_option of sync jobs
-		 */
-		$promoted = true;
-		$promoted = apply_filters( 'aggregator_promote', $promoted, $orig_post_id );
-		if ( 'publish' == $orig_post->post_status && $promoted )
-			$this->push_post_data_to_root( $orig_post_id, $orig_post );
+		if ( 'publish' == $orig_post->post_status )
+			$this->push_post_data_to_sites( $orig_post_id, $orig_post );
 		else
 			$this->delete_post_from_root( $orig_post_id, $orig_post );
 		
@@ -191,7 +185,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * @param $orig_post_id
 	 * @param $orig_post
 	 */
-	function push_post_data_to_root( $orig_post_id, $orig_post ) {
+	function push_post_data_to_sites( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
 
 		if ( $this->recursing )
@@ -236,54 +230,72 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
-		
-		switch_to_blog( $current_site->blog_id );
-		
-		// Acquire ID and update post (or insert post and acquire ID)
-		if ( $target_post_id = $this->get_root_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
-			$orig_post_data[ 'ID' ] = $target_post_id;
-			wp_update_post( $orig_post_data );
-		} else {
-			$target_post_id = wp_insert_post( $orig_post_data );
-		}
 
-		// Delete all metadata
-		$target_meta_data = get_post_meta( $target_post_id );
-		foreach ( $target_meta_data as $meta_key => $meta_rows )
-			delete_post_meta( $target_post_id, $meta_key );
+		// Get the array of sites to sync to
+		$sync_destinations = $this->get_sync_sites_by_id( get_current_blog_id() );
 
-		// Re-add metadata
-		foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
-			$unique = ( count( $meta_rows ) == 1 );
-			foreach ( $meta_rows as $meta_row )
-				add_post_meta( $target_post_id, $meta_key, $meta_row, $unique );
-		}
-		
-		// Migrate the featured image
-		if ( isset( $orig_thumbnail ) ) {
-			// Get the image from the original site and download to new
-			$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
-			
-			// Strip the src out of the IMG tag
-			$array = array();
-			preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
-			
-			// Get the ID of the attachment, and generate thumbnail
-			$target_thumbnail = $this->get_image_id( $array[1] );
-			$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
-			
-			
-			// Add the featured image to the post
-			update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
-		}
+		// Loop through all destinations to perform the sync
+		foreach ( $sync_destinations as $sync_destination ) {
 
-		// Set terms in the meta data, then schedule a Cron to come along and import them
-		// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,
-		// meaning we have the wrong taxonomies in the Global scope.
-		update_post_meta( $target_post_id, '_orig_terms', $orig_terms );
-		wp_schedule_single_event( time(), 'aggregator_import_terms', array( $target_post_id ) );
-		
-		restore_current_blog();
+			// Just double-check it's an int so we get no nasty errors
+			if ( ! intval( $sync_destination ) )
+				continue;
+
+			// It should never be, but just check the sync site isn't the current site.
+			// That'd be horrific (probably).
+			if ( $sync_destination == get_current_blog_id() )
+				continue;
+
+			// Okay, fine, switch sites and do the synchronisation dance.
+			switch_to_blog( $sync_destination );
+
+			// Acquire ID and update post (or insert post and acquire ID)
+			if ( $target_post_id = $this->get_root_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
+				$orig_post_data[ 'ID' ] = $target_post_id;
+				wp_update_post( $orig_post_data );
+			} else {
+				$target_post_id = wp_insert_post( $orig_post_data );
+			}
+
+			// Delete all metadata
+			$target_meta_data = get_post_meta( $target_post_id );
+			foreach ( $target_meta_data as $meta_key => $meta_rows )
+				delete_post_meta( $target_post_id, $meta_key );
+
+			// Re-add metadata
+			foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
+				$unique = ( count( $meta_rows ) == 1 );
+				foreach ( $meta_rows as $meta_row )
+					add_post_meta( $target_post_id, $meta_key, $meta_row, $unique );
+			}
+
+			// Migrate the featured image
+			if ( isset( $orig_thumbnail ) ) {
+				// Get the image from the original site and download to new
+				$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
+
+				// Strip the src out of the IMG tag
+				$array = array();
+				preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
+
+				// Get the ID of the attachment, and generate thumbnail
+				$target_thumbnail = $this->get_image_id( $array[1] );
+				$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
+
+
+				// Add the featured image to the post
+				update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
+			}
+
+			// Set terms in the meta data, then schedule a Cron to come along and import them
+			// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,
+			// meaning we have the wrong taxonomies in the Global scope.
+			update_post_meta( $target_post_id, '_orig_terms', $orig_terms );
+			wp_schedule_single_event( time(), 'aggregator_import_terms', array( $target_post_id ) );
+
+			restore_current_blog();
+
+		}
 		
 		$this->recursing = false;
 	}
@@ -378,8 +390,25 @@ class Aggregator extends Aggregator_Plugin {
 		
 		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
-	
-} // END UniversalTaxonomy class 
 
-$feature_posts_on_root_blog = new Aggregator();
+	protected function get_sync_sites_by_id( $site_id = 1 ) {
+
+		// @todo Get this stuff from our site_option
+		$sync = array(
+			1, // main site
+			22, // YBW
+		);
+
+		/**
+		 * @todo Inline documentation
+		 */
+		$sync = apply_filters( 'aggregator_sync_sites', $sync, $site_id );
+
+		return $sync;
+
+	}
+	
+} // END Aggregator class
+
+$aggregator = new Aggregator();
 

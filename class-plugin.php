@@ -57,7 +57,7 @@
  * @package Feature Posts on Root Blog
  * @author Code for the People Ltd
  **/
-class FPORB_Plugin {
+class Aggregator_Plugin {
 
 	/**
 	 * The name of this plugin
@@ -683,5 +683,5 @@ class FPORB_Plugin {
 	}
 	
 
-} // END FPORB_Plugin class 
+} // END Aggregator_Plugin class
 

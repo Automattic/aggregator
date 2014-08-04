@@ -26,7 +26,7 @@ require_once( 'class-plugin.php' );
  * @package Feature Posts on Root Blog
  * @author Code for the People Ltd
  **/
-class FeaturePostsOnRootBlog extends FPORB_Plugin {
+class Aggregator extends Aggregator_Plugin {
 
 	/**
 	 * A flag to say whether we're currently recursing, or not.
@@ -48,60 +48,34 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 	 * @return void
 	 **/
 	public function __construct() {
-		$this->setup( 'fpotrb' );
+		$this->setup( 'aggregator' );
 		if ( is_admin() ) {
 //			$this->add_action( 'admin_init' );
 			$this->add_action( 'save_post', null, null, 2 );
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 		}
-		$this->add_action( 'fporb_import_terms', 'process_import_terms' );
+		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
 		$this->add_action( 'template_redirect' );
 		$this->add_action( 'post_submitbox_misc_actions' );
 		$this->add_filter( 'post_link', null, null, 2 );
-		$this->add_filter( 'fporb_sync_meta_key', 'sync_meta_key', null, 2 );
+		$this->add_filter( 'aggregator_sync_meta_key', 'sync_meta_key', null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
-//		add_filter( 'fporb_promote', '__return_true' );
+//		add_filter( 'aggregator_promote', '__return_true' );
 		
 		$this->recursing = false;
 		$this->version = 1;
 	}
 	
-	// HOOKS AND ALL THAT
-	// ==================
-
-//	function admin_init() {
-//		if ( is_main_site() ) 
-//			return;
-//				
-//		if ( ! isset( $_GET[ 'SW_DO_PROMOTION' ] ) )
-//			return;
-//
-//		$query = new WP_Query( array( 
-//			'post_type' => 'post',
-//			'post_status' => 'publish',
-//			'fields' => 'ids',
-//			'posts_per_page' => -1,
-//		) );
-//		$i = 0;
-//		foreach ( $query->posts as & $post_id ) {
-//			$i++;
-//			update_post_meta( $post_id, '_fporb_promoted', true );
-//			$post = get_post( $post_id );
-//			$this->push_post_data_to_root( $post_id, & $post );
-//			error_log( "Update $i of $post_id" );
-//		}
-//	}
-	
 	function load_post_edit() {
 		if ( ! is_main_site() ) {
-			wp_enqueue_script( 'fporb-admin', $this->url( '/js/admin.js' ), array( 'jquery' ), $this->version );
+			wp_enqueue_script( 'aggregator-admin', $this->url( '/js/admin.js' ), array( 'jquery' ), $this->version );
 			$data = array(
-				'this_site_only' => __( 'This site only', 'fporb' ), 
-				'this_site_plus' => __( 'This site and the main site', 'fporb' ), 
+				'this_site_only' => __( 'This site only', 'aggregator' ),
+				'this_site_plus' => __( 'This site and the main site', 'aggregator' ),
 			);
-			wp_localize_script( 'fporb-admin', 'fporb', $data );
-			wp_enqueue_style( 'fporb-admin', $this->url( '/css/admin.css' ), array(), $this->version );
+			wp_localize_script( 'aggregator-admin', 'aggregator', $data );
+			wp_enqueue_style( 'aggregator-admin', $this->url( '/css/admin.css' ), array(), $this->version );
 			return;
 		}
 		
@@ -110,12 +84,12 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 		
 		$this->process_import_terms( $post_id );
 		
-		if ( $orig_blog_id = get_post_meta( $post_id, '_fporb_orig_blog_id', true ) ) {
-			$orig_post_id = get_post_meta( $post_id, '_fporb_orig_post_id', true );
+		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
+			$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
 			$blog_details = get_blog_details( array( 'blog_id' => $orig_blog_id ) );
 			$edit_url = get_home_url( $orig_blog_id ) . '/wp-admin/post.php?action=edit&post=' . absint( $orig_post_id );
-			$edit_link = '<a href="' . esc_url( $edit_url ) . '">' . __( 'edit post', 'fpotrb' ) . '</a>';
-			$message = sprintf( __( 'Sorry, you must edit this post from the %1$s site: %2$s', 'fpotrb' ), $blog_details->blogname, $edit_link );
+			$edit_link = '<a href="' . esc_url( $edit_url ) . '">' . __( 'edit post', 'aggregator' ) . '</a>';
+			$message = sprintf( __( 'Sorry, you must edit this post from the %1$s site: %2$s', 'aggregator' ), $blog_details->blogname, $edit_link );
 			wp_die( $message );
 		}
 	}
@@ -123,7 +97,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 	function post_row_actions( $actions, $post ) {
 		if ( ! is_main_site() )
 			return $actions;
-		if ( $orig_blog_id = get_post_meta( $post->ID, '_fporb_orig_blog_id', true ) ) {
+		if ( $orig_blog_id = get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
 			foreach ( $actions as $action_name => & $action ) {
 				if ( 'view' != $action_name )
 					unset( $actions[ $action_name ] );
@@ -143,7 +117,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 			return;
 
 		$vars = array();
-		$vars[ 'promoted' ] = get_post_meta( get_the_ID(), '_fporb_promoted', true );
+		$vars[ 'promoted' ] = get_post_meta( get_the_ID(), '_aggregator_promoted', true );
 		$this->render_admin( 'promote-meta-box-control.php', $vars );
 	}
 	
@@ -164,19 +138,19 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 			return;
 
 		$promoted = false;
-		if ( isset( $_POST[ '_fporb_status_nonce' ] ) ) {
+		if ( isset( $_POST[ '_aggregator_status_nonce' ] ) ) {
 
-			check_admin_referer( 'fporb_status_setting', '_fporb_status_nonce' );
+			check_admin_referer( 'aggregator_status_setting', '_aggregator_status_nonce' );
 
-			if ( isset( $_POST[ 'fporb-promotion' ] ) && $_POST[ 'fporb-promotion' ] ) {
+			if ( isset( $_POST[ 'aggregator-promotion' ] ) && $_POST[ 'aggregator-promotion' ] ) {
 				$promoted = true;
-				update_post_meta( $orig_post_id, '_fporb_promoted', true );
+				update_post_meta( $orig_post_id, '_aggregator_promoted', true );
 			} else {
-				delete_post_meta( $orig_post_id, '_fporb_promoted' );
+				delete_post_meta( $orig_post_id, '_aggregator_promoted' );
 			}
 
 		}
-		$promoted = apply_filters( 'fporb_promote', $promoted, $orig_post_id );
+		$promoted = apply_filters( 'aggregator_promote', $promoted, $orig_post_id );
 		if ( 'publish' == $orig_post->post_status && $promoted )
 			$this->push_post_data_to_root( $orig_post_id, $orig_post );
 		else
@@ -199,14 +173,14 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 		if ( ! is_main_site() )
 			return $permalink;
 
-		if ( $original_permalink = get_post_meta( $post->ID, '_fporb_permalink', true ) )
+		if ( $original_permalink = get_post_meta( $post->ID, '_aggregator_permalink', true ) )
 			return $original_permalink;
 		
 		return $permalink;
 	}
 
 	/**
-	 * Hooks the fporb_sync_meta_key filter from this class which checks 
+	 * Hooks the aggregator_sync_meta_key filter from this class which checks
 	 * if a meta_key should be synced. If we return false, it won't be.
 	 *
 	 * @param array $meta_keys The meta_keys which should be unsynced
@@ -226,7 +200,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 	}
 
 	function template_redirect() {
-		$original_permalink = get_post_meta( get_the_ID(), '_fporb_permalink', true );
+		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
 		if ( is_single() && is_main_site() && $original_permalink ) {
 			wp_redirect( $original_permalink, 301 );
 			exit;
@@ -247,7 +221,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
 		unset( $orig_post_data[ 'ID' ] );
 
-		$orig_post_data = apply_filters( 'fporb_orig_post_data', $orig_post_data, $orig_post_id );
+		$orig_post_data = apply_filters( 'aggregator_orig_post_data', $orig_post_data, $orig_post_id );
 		
 		// Get metadata
 		$orig_meta_data = get_post_meta( $orig_post_id );
@@ -264,11 +238,11 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 		}
 		// Note the following have to be one item arrays, to fit in with the
 		// output of get_post_meta.
-		$orig_meta_data[ '_fporb_permalink' ] = array( get_permalink( $orig_post_id ) );
-		$orig_meta_data[ '_fporb_orig_post_id' ] = array( $orig_post_id );
-		$orig_meta_data[ '_fporb_orig_blog_id' ] = array( $current_blog->blog_id );
+		$orig_meta_data[ '_aggregator_permalink' ] = array( get_permalink( $orig_post_id ) );
+		$orig_meta_data[ '_aggregator_orig_post_id' ] = array( $orig_post_id );
+		$orig_meta_data[ '_aggregator_orig_blog_id' ] = array( $current_blog->blog_id );
 		
-		$orig_meta_data = apply_filters( 'fporb_orig_meta_data', $orig_meta_data, $orig_post_id );
+		$orig_meta_data = apply_filters( 'aggregator_orig_meta_data', $orig_meta_data, $orig_post_id );
 
 		// Get terms
 		$taxonomies = get_object_taxonomies( $orig_post );
@@ -280,7 +254,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
 		}
 
-		$orig_terms = apply_filters( 'fporb_orig_terms', $orig_terms, $orig_post_id );
+		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 		
 		switch_to_blog( $current_site->blog_id );
 		
@@ -326,7 +300,7 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 		// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,
 		// meaning we have the wrong taxonomies in the Global scope.
 		update_post_meta( $target_post_id, '_orig_terms', $orig_terms );
-		wp_schedule_single_event( time(), 'fporb_import_terms', array( $target_post_id ) );
+		wp_schedule_single_event( time(), 'aggregator_import_terms', array( $target_post_id ) );
 		
 		restore_current_blog();
 		
@@ -388,12 +362,12 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
-					'key' => '_fporb_orig_post_id',
+					'key' => '_aggregator_orig_post_id',
 					'value' => $orig_post_id,
 					'type' => 'numeric'
 				),
 				array(
-					'key' => '_fporb_orig_blog_id',
+					'key' => '_aggregator_orig_blog_id',
 					'value' => $orig_blog_id,
 					'type' => 'numeric',
 				)
@@ -421,10 +395,10 @@ class FeaturePostsOnRootBlog extends FPORB_Plugin {
 			
 		}
 		
-		return apply_filters( 'fporb_sync_meta_key', $allow, $meta_key );
+		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
 	
 } // END UniversalTaxonomy class 
 
-$feature_posts_on_root_blog = new FeaturePostsOnRootBlog();
+$feature_posts_on_root_blog = new Aggregator();
 

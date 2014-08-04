@@ -57,12 +57,10 @@ class Aggregator extends Aggregator_Plugin {
 		}
 		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
 		$this->add_action( 'template_redirect' );
-		$this->add_action( 'post_submitbox_misc_actions' );
 		$this->add_filter( 'post_link', null, null, 2 );
 		$this->add_filter( 'aggregator_sync_meta_key', 'sync_meta_key', null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
-//		add_filter( 'aggregator_promote', '__return_true' );
-		
+
 		$this->recursing = false;
 		$this->version = 1;
 	}
@@ -106,21 +104,6 @@ class Aggregator extends Aggregator_Plugin {
 		return $actions;
 	}
 
-	function post_submitbox_misc_actions() {
-		if ( is_main_site() )
-			return;
-
-		global $post;
-		
-		// only want this behaviour on posts post type (filterable in future?)
-		if ( $post->post_type != 'post' )
-			return;
-
-		$vars = array();
-		$vars[ 'promoted' ] = get_post_meta( get_the_ID(), '_aggregator_promoted', true );
-		$this->render_admin( 'promote-meta-box-control.php', $vars );
-	}
-	
 	/**
 	 * Hooks the WP save_post action, fired after a post has been inserted/updated in the
 	 * database, to duplicate the posts in the index site.
@@ -137,19 +120,11 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'post' != $orig_post->post_type )
 			return;
 
-		$promoted = false;
-		if ( isset( $_POST[ '_aggregator_status_nonce' ] ) ) {
-
-			check_admin_referer( 'aggregator_status_setting', '_aggregator_status_nonce' );
-
-			if ( isset( $_POST[ 'aggregator-promotion' ] ) && $_POST[ 'aggregator-promotion' ] ) {
-				$promoted = true;
-				update_post_meta( $orig_post_id, '_aggregator_promoted', true );
-			} else {
-				delete_post_meta( $orig_post_id, '_aggregator_promoted' );
-			}
-
-		}
+		/**
+		 * @todo Replace $promoted with something to indicate whether this site should be syncing
+		 *       to anywhere based on our site_option of sync jobs
+		 */
+		$promoted = true;
 		$promoted = apply_filters( 'aggregator_promote', $promoted, $orig_post_id );
 		if ( 'publish' == $orig_post->post_status && $promoted )
 			$this->push_post_data_to_root( $orig_post_id, $orig_post );
@@ -210,6 +185,12 @@ class Aggregator extends Aggregator_Plugin {
 	// UTILITIES
 	// =========
 
+	/**
+	 * @todo Rename function, flesh out inline docs
+	 *
+	 * @param $orig_post_id
+	 * @param $orig_post
+	 */
 	function push_post_data_to_root( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
 

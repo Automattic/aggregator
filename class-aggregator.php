@@ -409,11 +409,14 @@ class Aggregator extends Aggregator_Plugin {
 
 	protected function get_push_sites( $site_id = 1 ) {
 
-		// @todo Get this stuff from our site_option
-		$sync = array(
-			1, // main site
-			22 => array( 17, 18, 19, 20, 21, 23, 24, ), // YBW
-		);
+		// Grab the current push sites from our site option
+		$sync = get_site_option( 'aggregator_sync_sites' );
+		if ( ! $sync )
+			$sync = array();
+
+		// Get the specified portal's sync sites
+		if ( isset( $sync[ $site_id ] ) )
+			$sync = $sync[ $site_id ];
 
 		/**
 		 * @todo Inline documentation

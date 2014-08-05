@@ -20,6 +20,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 require_once( 'class-plugin.php' );
 
+// Load our List Table Class for use in our settings page
+if ( ! class_exists( 'WP_List_Table' ) ) {
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
+}
+require_once( 'class-aggregator_list_table.php' );
+
 /**
  * 
  * 
@@ -49,12 +55,15 @@ class Aggregator extends Aggregator_Plugin {
 	 **/
 	public function __construct() {
 		$this->setup( 'aggregator' );
+
+		$this->add_action( 'network_admin_menu' );
+
 		if ( is_admin() ) {
-//			$this->add_action( 'admin_init' );
 			$this->add_action( 'save_post', null, null, 2 );
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 		}
+
 		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
 		$this->add_action( 'template_redirect' );
 		$this->add_filter( 'post_link', null, null, 2 );
@@ -407,8 +416,31 @@ class Aggregator extends Aggregator_Plugin {
 		return $sync;
 
 	}
+
+	/**
+	 * @todo inline documentation
+	 */
+	public function network_admin_menu() {
+		$page = add_submenu_page(
+			'settings.php',
+			__('Aggregator Setup'),
+			__('Aggregator'),
+			'manage_sites',
+			'aggregator',
+			array( $this, 'network_admin_menu_callback' )
+		);
+	}
+
+	/**
+	 * @todo Inline documentation
+	 */
+	public function network_admin_menu_callback() {
+		echo '<h2>' . get_admin_page_title() . '</h2>';
+		$sync_sites = new Aggregator_List_Table();
+		$sync_sites->prepare_items();
+		$sync_sites->display();
+	}
 	
 } // END Aggregator class
 
 $aggregator = new Aggregator();
-

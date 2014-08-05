@@ -22,7 +22,6 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 */
 		public function get_columns() {
 			return array (
-				'col_site_id' => __('ID'),
 				'col_site_domain' => __('Domain'),
 				'col_sync_sites' => __('Syncing From'),
 			);
@@ -52,23 +51,42 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Get the columns registered in the get_columns and get_sortable_columns methods
 			list( $columns, $hidden ) = $this->get_column_info();
 
-			foreach ( $sites as $site_id => $sync_sites ) {
+			foreach ( $sites as $portal => $sync_sites ) {
+
+				// Get the site info
+				$portal = get_blog_details( $portal );
 
 				// Open the line
-				echo '<tr id="record_'.$site_id.'">';
+				echo '<tr id="record_'.$portal->blog_id.'">';
 				foreach ( $columns as $column_name => $column_display_name ) {
 
-					//Style attributes for each col
+					// Style attributes for each col
 					$class = "class='$column_name column-$column_name'";
 					$style = "";
 					if ( in_array( $column_name, $hidden ) ) $style = ' style="display:none;"';
 					$attributes = $class . $style;
 
-					//Display the cell
+					// Display the cell
 					switch ( $column_name ) {
-						case "col_site_id":  echo '<td '.$attributes.'>'.stripslashes($site_id).'</td>';   break;
-						case "col_site_domain": echo '<td '.$attributes.'>n/a</td>'; break;
-						case "col_sync_sites": echo '<td '.$attributes.'>' . var_export( $sync_sites, true ) . '</td>'; break;
+
+						case 'col_site_domain':
+							echo "<td $attributes>" . $portal->domain . '</td>';
+							break;
+
+						case 'col_sync_sites':
+							echo "<td $attributes>";
+
+							// Loop through each sync site getting relevant details for output
+							foreach ( $sync_sites as $sync_site ) {
+
+								$sync_site = get_blog_details( $sync_site );
+
+								echo $sync_site->domain . '<br/>';
+
+							}
+
+							echo '</td>';
+							break;
 					}
 				}
 

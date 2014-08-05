@@ -33,20 +33,21 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		public function prepare_items() {
 
 			// Get all the sites
-			$sites = get_site_option( 'aggregator_sites' );
+			$sites = get_site_option( 'aggregator_sync_sites' );
 
 			if ( ! empty( $sites ) )
 				$this->items = $sites;
 			else
-				$this->items = array(
-					22 => array( 17, 18, 19, 20, 21, 23, 24, ),
-				);
+				$this->items = array();
 
 		}
 
 		public function display_rows() {
 
+			// Get the sync sites to display
 			$sites = $this->items;
+			if ( empty( $sites ) )
+				$this->no_items();
 
 			// Get the columns registered in the get_columns and get_sortable_columns methods
 			list( $columns, $hidden ) = $this->get_column_info();

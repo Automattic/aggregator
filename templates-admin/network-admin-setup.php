@@ -94,22 +94,47 @@ switch ( $action ) {
 			sprintf( __('Sync sites for %s successfully updated.'), $details->domain ),
 		);
 
-		// Cool, print out the table and our message
-		echo '<h2>' . get_admin_page_title() . '</h2>';
+		break;
 
-		if ( ! empty( $messages ) ) {
-			foreach ( $messages as $msg )
-				echo '<div id="message" class="updated"><p>' . $msg . '</p></div>';
-		}
+	case "delete":
 
-		$this->list_table->prepare_items();
-		$this->list_table->display();
+		if ( ! $id )
+			wp_die( __('Invalid site ID.') );
+
+		$details = get_blog_details( $id );
+		if ( ! can_edit_network( $details->site_id ) )
+			wp_die( __( 'You do not have permission to access this page.' ) );
+
+		// Get existing sync_sites settings
+		$sync_sites = get_site_option( 'aggregator_sync_sites', array() );
+
+		// Remove this portal from the sync sites
+		unset( $sync_sites[ $id ] );
+
+		// Update the DB
+		$update = update_site_option( 'aggregator_sync_sites', $sync_sites );
+		if ( ! $update )
+			wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
+
+		// Set a success message, because we're winners
+		$messages = array(
+			sprintf( __('Sync sites for %s successfully deleted.'), $details->domain ),
+		);
 
 		break;
 
-	default:
-		echo '<h2>' . get_admin_page_title() . '</h2>';
-		$this->list_table->prepare_items();
-		$this->list_table->display();
+}
+
+if ( ! isset( $action ) || 'edit' != $action ) {
+
+	echo '<h2>' . get_admin_page_title() . '</h2>';
+
+	if ( ! empty( $messages ) ) {
+		foreach ( $messages as $msg )
+			echo '<div id="message" class="updated"><p>' . $msg . '</p></div>';
+	}
+
+	$this->list_table->prepare_items();
+	$this->list_table->display();
 
 }

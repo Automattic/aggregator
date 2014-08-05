@@ -48,6 +48,8 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public $version;
 
+	protected $list_table;
+
 	/**
 	 * Initiate!
 	 *
@@ -57,6 +59,7 @@ class Aggregator extends Aggregator_Plugin {
 		$this->setup( 'aggregator' );
 
 		$this->add_action( 'network_admin_menu' );
+		$this->add_action( 'admin_init' );
 
 		if ( is_admin() ) {
 			$this->add_action( 'save_post', null, null, 2 );
@@ -72,6 +75,10 @@ class Aggregator extends Aggregator_Plugin {
 
 		$this->recursing = false;
 		$this->version = 1;
+	}
+
+	function admin_init() {
+		$this->list_table = new Aggregator_List_Table();
 	}
 	
 	function load_post_edit() {
@@ -436,9 +443,8 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function network_admin_menu_callback() {
 		echo '<h2>' . get_admin_page_title() . '</h2>';
-		$sync_sites = new Aggregator_List_Table();
-		$sync_sites->prepare_items();
-		$sync_sites->display();
+		$this->list_table->prepare_items();
+		$this->list_table->display();
 	}
 	
 } // END Aggregator class

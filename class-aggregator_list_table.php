@@ -21,14 +21,11 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 * @return array $columns, the array of columns to use with the table
 		 */
 		public function get_columns() {
-			pj_error_log( 'manage_{$this->screen->id}_columns during filter', $column_headers );
-			$column_headers = array (
+			return array (
 				'col_site_id' => __('ID'),
 				'col_site_domain' => __('Domain'),
 				'col_sync_sites' => __('Syncing From'),
 			);
-			pj_error_log( 'manage_{$this->screen->id}_columns during filter, modified', $column_headers );
-			return $column_headers;
 		}
 
 		/**
@@ -55,8 +52,6 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Get the columns registered in the get_columns and get_sortable_columns methods
 			list( $columns, $hidden ) = $this->get_column_info();
 
-			pj_error_log('columns', $columns );
-
 			foreach ( $sites as $site_id => $sync_sites ) {
 
 				// Open the line
@@ -71,7 +66,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 					//Display the cell
 					switch ( $column_name ) {
-						case "col_site_id":  echo '<td '.$attributes.'>'.stripslashes($site_id).'< /td>';   break;
+						case "col_site_id":  echo '<td '.$attributes.'>'.stripslashes($site_id).'</td>';   break;
 						case "col_site_domain": echo '<td '.$attributes.'>n/a</td>'; break;
 						case "col_sync_sites": echo '<td '.$attributes.'>' . var_export( $sync_sites, true ) . '</td>'; break;
 					}

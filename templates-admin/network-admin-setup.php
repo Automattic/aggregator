@@ -8,6 +8,33 @@ $action = ( isset( $_REQUEST['action'] ) ) ? esc_attr( $_REQUEST['action'] ) : '
 
 switch ( $action ) {
 
+	case "add":
+
+		// Just print a dropdown which we can redirect to the edit page.
+		// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly
+		$sites = wp_get_sites( array( 'public' => 1 ) );
+		?>
+		<div class="wrap">
+			<h2><?php _e('Add New Sync Site'); ?></h2>
+			<form action="<?php echo esc_url( network_admin_url( 'settings.php?page=aggregator&action=edit' ) ); ?>" method="get">
+				<input name="page" value="aggregator" type="hidden" />
+				<input name="action" value="edit" type="hidden" />
+				<label for="id"><?php _e('Choose the site that will act as the "portal" site:'); ?> </label>
+				<select name="id" id="id">
+					<?php
+					foreach ( $sites as $site ) {
+						?>
+						<option value="<?php echo $site['blog_id']; ?>"><?php echo $site['domain']; ?></option><?php
+					}
+					?>
+				</select>
+				<?php submit_button( __('Continue') ); ?>
+			</form>
+		</div>
+		<?php
+
+		break;
+
 	case "edit":
 
 		if ( ! $id )
@@ -24,33 +51,35 @@ switch ( $action ) {
 		echo '<h2>' . sprintf( __('Edit Site Sync for %s'), $portal->domain ) . '</h2>';
 
 		?>
-		<form action="settings.php?page=aggregator&action=update" method="post">
-			<?php wp_nonce_field( 'edit-sync-site' ); ?>
-			<input type="hidden" name="id" value="<?php echo esc_attr( $id ) ?>" />
-			<table class="form-table">
-				<tbody>
-				<tr>
-					<th scope="row"><?php _e( 'Sites to pull from' ); ?></th>
-					<td>
-						<?php echo sprintf( __('Any posts submitted on the sites below will be pushed to %s. Only public sites will be available.'), $portal->domain ); ?><br/>
-						<?php
+		<div class="wrap">
+			<form action="settings.php?page=aggregator&action=update" method="post">
+				<?php wp_nonce_field( 'edit-sync-site' ); ?>
+				<input type="hidden" name="id" value="<?php echo esc_attr( $id ) ?>" />
+				<table class="form-table">
+					<tbody>
+					<tr>
+						<th scope="row"><?php _e( 'Sites to pull from' ); ?></th>
+						<td>
+							<?php echo sprintf( __('Any posts submitted on the sites below will be pushed to %s. Only public sites will be available.'), $portal->domain ); ?><br/>
+							<?php
 							// List each site with a checkbox
 							// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly
 							$sites = wp_get_sites( array( 'public' => 1 ) );
 							foreach ( $sites as $site ) {
 								$current = in_array( $site['blog_id'], $sync_sites ) ? $site['blog_id'] : false;
 								?>
-						<label><input name="sync_sites[]" type="checkbox" id="sync_site_<?php echo $site['blog_id']; ?>" value="<?php echo $site['blog_id']; ?>" <?php checked( $site['blog_id'], $current ) ?>> <?php echo $site['domain']; ?></label><br/><?php
+								<label><input name="sync_sites[]" type="checkbox" id="sync_site_<?php echo $site['blog_id']; ?>" value="<?php echo $site['blog_id']; ?>" <?php checked( $site['blog_id'], $current ) ?>> <?php echo $site['domain']; ?></label><br/><?php
 								unset($current);
 							}
-						?>
-					</td>
-				</tr>
-				</tbody>
-			</table>
-			<?php submit_button(); ?>
+							?>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+				<?php submit_button(); ?>
 
-		</form>
+			</form>
+		</div>
 		<?php
 		break;
 
@@ -125,9 +154,17 @@ switch ( $action ) {
 
 }
 
-if ( ! isset( $action ) || 'edit' != $action ) {
+if ( ! isset( $action ) || ( 'edit' != $action && 'add' != $action ) ) {
 
-	echo '<h2>' . get_admin_page_title() . '</h2>';
+	echo '<div class="wrap">';
+
+	echo '<h2>' . get_admin_page_title();
+
+	if ( current_user_can( 'manage_sites') ) : ?>
+		<a href="<?php echo network_admin_url( 'settings.php?page=aggregator&action=add' ); ?>" class="add-new-h2"><?php echo esc_html__( 'Add New' ); ?></a>
+	<?php endif;
+
+	echo '</h2>';
 
 	if ( ! empty( $messages ) ) {
 		foreach ( $messages as $msg )
@@ -136,5 +173,7 @@ if ( ! isset( $action ) || 'edit' != $action ) {
 
 	$this->list_table->prepare_items();
 	$this->list_table->display();
+
+	echo '</div>';
 
 }

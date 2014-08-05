@@ -412,7 +412,7 @@ class Aggregator extends Aggregator_Plugin {
 		// @todo Get this stuff from our site_option
 		$sync = array(
 			1, // main site
-			22, // YBW
+			22 => array( 17, 18, 19, 20, 21, 23, 24, ), // YBW
 		);
 
 		/**
@@ -442,7 +442,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * @todo Inline documentation
 	 */
 	public function network_admin_menu_callback() {
-		$this->render_admin( 'network-admin-setup.php' );
+		$this->render_admin( 'network-admin-setup.php', $this );
 	}
 	
 } // END Aggregator class

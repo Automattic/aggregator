@@ -442,9 +442,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * @todo Inline documentation
 	 */
 	public function network_admin_menu_callback() {
-		echo '<h2>' . get_admin_page_title() . '</h2>';
-		$this->list_table->prepare_items();
-		$this->list_table->display();
+		$this->render_admin( 'network-admin-setup.php' );
 	}
 	
 } // END Aggregator class

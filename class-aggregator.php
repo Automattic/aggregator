@@ -133,9 +133,12 @@ class Aggregator extends Aggregator_Plugin {
 		// Are we syncing anything from this site? If not, stop.
 		if ( ! $this->get_push_blogs() )
 			return;
-		
-		// @todo Check if this post type should be synced. Or do that in the push function?
 
+		// Check if we should be pushing this post, don't if not
+		if ( ! $this->push_post_type( $orig_post ) )
+			return;
+
+		// Only push published posts
 		if ( 'publish' == $orig_post->post_status )
 			$this->push_post_data_to_sites( $orig_post_id, $orig_post );
 		else
@@ -207,10 +210,6 @@ class Aggregator extends Aggregator_Plugin {
 		if ( $this->recursing )
 			return;
 		$this->recursing = true;
-
-		// Check if we should be pushing this post, don't if not
-		if ( ! $this->push_post_type() )
-			return;
 
 		// Get post data
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );

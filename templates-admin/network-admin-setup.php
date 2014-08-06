@@ -125,15 +125,15 @@ switch ( $action ) {
 			// There is an option, so add to it
 			if ( $push_blogs ) {
 				// Only add this blog if it isn't there already
-				if ( ! in_array( $sync_blog, $push_blogs ) ) {
-					$push_blogs[] = $sync_blog; // Added
+				if ( ! in_array( $id, $push_blogs ) ) {
+					$push_blogs[] = $id; // Added
 					update_option( 'aggregator_push_blogs', $push_blogs );
 				}
 			}
 
 			// We need to create the option
 			else {
-				add_option( 'aggregator_push_blogs', array( $sync_blog ) );
+				add_option( 'aggregator_push_blogs', array( $id ) );
 			}
 
 			unset( $push_blogs );

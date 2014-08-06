@@ -129,9 +129,9 @@ class Aggregator extends Aggregator_Plugin {
 	 * @return void
 	 **/
 	public function save_post( $orig_post_id, $orig_post ) {
-		
+
 		// Are we syncing anything from this site? If not, stop.
-		if ( ! $this->get_push_blogs( get_current_blog_id() ) )
+		if ( ! $this->get_push_blogs() )
 			return;
 		
 		// @todo Check if this post type should be synced. Or do that in the push function?
@@ -196,7 +196,7 @@ class Aggregator extends Aggregator_Plugin {
 	// =========
 
 	/**
-	 * @todo Rename function, flesh out inline docs
+	 * @todo Rename function?, flesh out inline docs
 	 *
 	 * @param $orig_post_id
 	 * @param $orig_post
@@ -245,10 +245,11 @@ class Aggregator extends Aggregator_Plugin {
 				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
 		}
 
+		// @todo inline documentation
 		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		// Get the array of sites to sync to
-		$sync_destinations = $this->get_push_blogs( get_current_blog_id() );
+		$sync_destinations = $this->get_push_blogs();
 
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
@@ -407,12 +408,14 @@ class Aggregator extends Aggregator_Plugin {
 		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
 
-	protected function get_push_blogs( $portal_id = 1 ) {
+	protected function get_push_blogs( $portal_id = NULL ) {
 
 		// Grab the current push sites from our site option
-		$sync = get_site_option( "aggregator_portal_{$portal_id}_blogs" );
-		if ( ! $sync )
-			$sync = array();
+		if ( is_null( $portal_id ) ) {
+			$sync = get_option( 'aggregator_push_blogs', array() );
+		} else {
+			$sync = get_site_option( "aggregator_portal_{$portal_id}_blogs", array() );
+		}
 
 		/**
 		 * @todo Inline documentation

@@ -32,11 +32,29 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 */
 		public function prepare_items() {
 
-			// Get all the sites
-			$sites = get_site_option( 'aggregator_sync_sites' );
+			// Make sure we have an array for $this->items
+			if ( ! is_array( $this->items ) )
+				$this->items = array();
 
-			if ( ! empty( $sites ) )
-				$this->items = $sites;
+			// Get all the blogs
+			$blogs = wp_get_sites( array( 'public' => 1 ) );
+
+			// Our array of portals
+			$portals = array();
+
+			// Check if we have sync jobs for those sites
+			foreach ( $blogs as $blog ) {
+
+				if ( $sync_blogs = get_site_option("aggregator_portal_{$blog['blog_id']}_blogs") ) {
+					$portals[ $blog['blog_id'] ] = $sync_blogs;
+				}
+
+				unset( $sync_blogs );
+
+			}
+
+			if ( ! empty( $portals ) )
+				$this->items = $portals;
 			else
 				$this->items = array();
 
@@ -45,14 +63,14 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		public function display_rows() {
 
 			// Get the sync sites to display
-			$sites = $this->items;
-			if ( empty( $sites ) )
+			$portals = $this->items;
+			if ( empty( $portals ) )
 				$this->no_items();
 
 			// Get the columns registered in the get_columns and get_sortable_columns methods
 			list( $columns, $hidden ) = $this->get_column_info();
 
-			foreach ( $sites as $portal => $sync_sites ) {
+			foreach ( $portals as $portal => $sync_blogs ) {
 
 				// Get the site info
 				$portal = get_blog_details( $portal );
@@ -83,7 +101,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							// Create the links
 							$actions['edit'] = '<span class="edit"><a href="' . esc_url( network_admin_url( 'settings.php?page=aggregator&action=edit&id=' . $portal->blog_id ) ) . '">' . __( 'Edit' ) . '</a></span>';
-							$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( network_admin_url( 'settings.php?page=aggregator&action=delete&id=' . $portal->blog_id . '&amp;msg=' . urlencode( sprintf( __( 'You are about to delete the sync settings for %s.' ), $portal->domain ) ) ), 'confirm') ) . '">' . __( 'Delete' ) . '</a></span>';
+							$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( network_admin_url( 'settings.php?page=aggregator&action=delete&id=' . $portal->blog_id . '&amp;msg=' . urlencode( sprintf( __( 'You are about to delete the sync job for %s.' ), $portal->domain ) ) ), 'confirm') ) . '">' . __( 'Delete' ) . '</a></span>';
 
 							echo "<td $attributes>" . $portal->domain . $this->row_actions( $actions ) . '</td>';
 							break;
@@ -92,11 +110,11 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							echo "<td $attributes>";
 
 							// Loop through each sync site getting relevant details for output
-							foreach ( $sync_sites as $sync_site ) {
+							foreach ( $sync_blogs as $sync_blog ) {
 
-								$sync_site = get_blog_details( $sync_site );
+								$sync_blog = get_blog_details( $sync_blog );
 
-								echo $sync_site->domain . '<br/>';
+								echo $sync_blog->domain . '<br/>';
 
 							}
 

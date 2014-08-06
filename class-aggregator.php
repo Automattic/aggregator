@@ -140,7 +140,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Only push published posts
 		if ( 'publish' == $orig_post->post_status )
-			$this->push_post_data_to_sites( $orig_post_id, $orig_post );
+			$this->push_post_data_to_blogs( $orig_post_id, $orig_post );
 		else
 			$this->delete_post_from_root( $orig_post_id, $orig_post );
 		
@@ -199,12 +199,17 @@ class Aggregator extends Aggregator_Plugin {
 	// =========
 
 	/**
-	 * @todo Rename function?, flesh out inline docs
+	 * Pushes the saved post to the relevant portal blogs
 	 *
-	 * @param $orig_post_id
-	 * @param $orig_post
+	 * Assembles the post data required for submitting a new post in the portal sites, grabs a list
+	 * of portal sites to push to and then runs through each, submitting the post data as a new post.
+	 *
+	 * @param int $orig_post_id ID of the saved post
+	 * @param object $orig_post WP_Post object for the saved post
+	 *
+	 * @return void
 	 */
-	function push_post_data_to_sites( $orig_post_id, $orig_post ) {
+	function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
 
 		if ( $this->recursing )
@@ -248,7 +253,15 @@ class Aggregator extends Aggregator_Plugin {
 				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
 		}
 
-		// @todo inline documentation
+		/**
+		 * Alter the taxonomy terms to be synced.
+		 *
+		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
+		 * up to the 'portal' site.
+		 *
+		 * @param array $orig_terms The list of taxonomy terms
+		 * @param int $orig_post_id ID of the originating post
+		 */
 		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		// Get the array of sites to sync to
@@ -416,12 +429,18 @@ class Aggregator extends Aggregator_Plugin {
 		// Grab the current push sites from our site option
 		if ( is_null( $portal_id ) ) {
 			$sync = get_option( 'aggregator_push_blogs', array() );
-		} else {
+		} else { // @todo CHECK THIS - is it right? Do these two options do the same thing?
 			$sync = get_site_option( "aggregator_portal_{$portal_id}_blogs", array() );
 		}
 
 		/**
-		 * @todo Inline documentation
+		 * Filters the list of blogs to push to.
+		 *
+		 * Called when a post is saved, this filter can be used to change the sites
+		 * that the post is pushed to, overriding the settings.
+		 *
+		 * @param array $sync Array of site IDs to sync to
+		 * @param int $portal_id Blog ID of the portal site
 		 */
 		$sync = apply_filters( 'aggregator_sync_blogs', $sync, $portal_id );
 
@@ -430,8 +449,13 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * @todo inline docs
-	 * @return bool|mixed|void|WP_Error
+	 * Retrieve the push settings for the current blog.
+	 *
+	 * Returns an array containing the post types and taxonomies that should be synced
+	 * when a post on the current site is saved.
+	 *
+	 * @return bool|array|WP_Error Errors when used in network admin, false if there are no settings for this
+	 *                             blog and an array of settings on success.
 	 */
 	protected function get_push_settings() {
 
@@ -456,11 +480,16 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * @todo inline docs
+	 * Check if the given post type should be pushed.
 	 *
-	 * @param $post
+	 * Queries the push settings to decide whether or not the given post
+	 * should be pushed.
 	 *
-	 * @return bool
+	 * @param WP_Post $post A WP_Post object for the post to check against settings
+	 *
+	 * @uses $this->get_push_settings()
+	 *
+	 * @return bool Whether (true) or not (false) a post of this type should be pushed
 	 */
 	protected function push_post_type( $post ) {
 
@@ -476,7 +505,9 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * @todo inline documentation
+	 * Sets up our network admin settings page
+	 *
+	 * @return void
 	 */
 	public function network_admin_menu() {
 		$page = add_submenu_page(
@@ -490,7 +521,11 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * @todo Inline documentation
+	 * Renders our network admin settings page
+	 *
+	 * @uses $this->render_admin()
+	 *
+	 * @return void
 	 */
 	public function network_admin_menu_callback() {
 		$this->render_admin( 'network-admin-setup.php', $this );

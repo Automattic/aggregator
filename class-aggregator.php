@@ -208,6 +208,10 @@ class Aggregator extends Aggregator_Plugin {
 			return;
 		$this->recursing = true;
 
+		// Check if we should be pushing this post, don't if not
+		if ( ! $this->push_post_type() )
+			return;
+
 		// Get post data
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
 		unset( $orig_post_data[ 'ID' ] );
@@ -423,6 +427,52 @@ class Aggregator extends Aggregator_Plugin {
 		$sync = apply_filters( 'aggregator_sync_blogs', $sync, $portal_id );
 
 		return $sync;
+
+	}
+
+	/**
+	 * @todo inline docs
+	 * @return bool|mixed|void|WP_Error
+	 */
+	protected function get_push_settings() {
+
+		// This function is useless in network admin
+		if ( is_network_admin() )
+			return new WP_Error( 'not_in_network_admin', __("You can't use this function in network admin.") );
+
+		// Set default push settings here
+		$defaults = array(
+			'post_types' => array( 'post' ),
+			'taxonomies' => array( 'category', 'post_tag' ),
+		);
+
+		// Get the option
+		$push_settings = get_option( 'aggregator_push_settings', $defaults );
+		if ( ! $push_settings )
+			return $push_settings;
+
+		// Just in case
+		return false;
+
+	}
+
+	/**
+	 * @todo inline docs
+	 *
+	 * @param $post
+	 *
+	 * @return bool
+	 */
+	protected function push_post_type( $post ) {
+
+		// Get the push settings
+		$push_settings = $this->get_push_settings();
+
+		// Check if this post's type is in the list of types to sync
+		if ( in_array( $post->post_type, $push_settings['post_types'] ) )
+			return true; // Yep, we should sync this post type
+
+		return false; // Nope
 
 	}
 

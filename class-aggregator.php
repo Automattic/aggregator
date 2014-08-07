@@ -80,19 +80,9 @@ class Aggregator extends Aggregator_Plugin {
 	function admin_init() {
 		$this->list_table = new Aggregator_List_Table();
 	}
-	
-	function load_post_edit() {
-		if ( ! is_main_site() ) {
-			wp_enqueue_script( 'aggregator-admin', $this->url( '/js/admin.js' ), array( 'jquery' ), $this->version );
-			$data = array(
-				'this_site_only' => __( 'This site only', 'aggregator' ),
-				'this_site_plus' => __( 'This site and the main site', 'aggregator' ),
-			);
-			wp_localize_script( 'aggregator-admin', 'aggregator', $data );
-			wp_enqueue_style( 'aggregator-admin', $this->url( '/css/admin.css' ), array(), $this->version );
-			return;
-		}
-		
+
+	public function load_post_edit() {
+
 		$screen = get_current_screen();
 		$post_id = isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : false;
 		
@@ -106,6 +96,7 @@ class Aggregator extends Aggregator_Plugin {
 			$message = sprintf( __( 'Sorry, you must edit this post from the %1$s site: %2$s', 'aggregator' ), $blog_details->blogname, $edit_link );
 			wp_die( $message );
 		}
+
 	}
 
 	/**

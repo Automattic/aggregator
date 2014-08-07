@@ -107,17 +107,29 @@ class Aggregator extends Aggregator_Plugin {
 			wp_die( $message );
 		}
 	}
-	
-	function post_row_actions( $actions, $post ) {
-		if ( ! is_main_site() )
-			return $actions;
+
+	/**
+	 * Remove all but the "view" action link on synced posts.
+	 *
+	 * We don't want folks to edit synced posts on a portal site, so we want to remove the
+	 * relevant action links from the posts table.
+	 *
+	 * @param array $actions Action links array for filtering
+	 * @param object $post WP_Post object representing the post being displayed
+	 *
+	 * @return array Filtered array of actions
+	 */
+	public function post_row_actions( $actions, $post ) {
+
 		if ( $orig_blog_id = get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
 			foreach ( $actions as $action_name => & $action ) {
 				if ( 'view' != $action_name )
 					unset( $actions[ $action_name ] );
 			}
 		}
+
 		return $actions;
+
 	}
 
 	/**

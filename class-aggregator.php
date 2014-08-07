@@ -81,6 +81,14 @@ class Aggregator extends Aggregator_Plugin {
 		$this->list_table = new Aggregator_List_Table();
 	}
 
+	/**
+	 * Stop pushed posts from being edited on a portal site.
+	 *
+	 * When an attempt is made to edit a post on a portal site that has been pushed from elsewhere,
+	 * the user is told to take a running jump and given a link to go do so.
+	 *
+	 * @return void
+	 */
 	public function load_post_edit() {
 
 		$screen = get_current_screen();
@@ -89,12 +97,14 @@ class Aggregator extends Aggregator_Plugin {
 		$this->process_import_terms( $post_id );
 		
 		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
+
 			$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
 			$blog_details = get_blog_details( array( 'blog_id' => $orig_blog_id ) );
 			$edit_url = get_home_url( $orig_blog_id ) . '/wp-admin/post.php?action=edit&post=' . absint( $orig_post_id );
 			$edit_link = '<a href="' . esc_url( $edit_url ) . '">' . __( 'edit post', 'aggregator' ) . '</a>';
 			$message = sprintf( __( 'Sorry, you must edit this post from the %1$s site: %2$s', 'aggregator' ), $blog_details->blogname, $edit_link );
 			wp_die( $message );
+
 		}
 
 	}

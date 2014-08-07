@@ -208,10 +208,21 @@ switch ( $action ) {
 			if ( $key !== false )
 				unset( $push_blogs[ $key ] );
 
-			// Now update the option
-			$update = update_option( 'aggregator_push_blogs', $push_blogs );
-			if ( ! $update )
-				wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
+			// If the array is now empty, we may as well delete the option entirely
+			if ( empty( $push_blogs ) ) {
+
+				$delete = delete_option( 'aggregator_push_blogs' );
+				if ( ! $delete )
+					wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
+
+			} else {
+
+				// Update the existing option
+				$update = update_option( 'aggregator_push_blogs', $push_blogs );
+				if ( ! $update )
+					wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
+
+			}
 
 			// Clear above vars for sanity
 			unset( $push_blogs, $key, $update );

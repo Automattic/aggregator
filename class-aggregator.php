@@ -165,15 +165,13 @@ class Aggregator extends Aggregator_Plugin {
 	 * is requested from the index blog.
 	 *
 	 * @param string $permalink The permalink
-	 * @param object $post A WP Post object 
+	 * @param object $post A WP Post object
+	 *
 	 * @return string A permalink
 	 **/
 	public function post_link( $permalink, $post ) {
 		global $blog_id;
 		
-		if ( ! is_main_site() )
-			return $permalink;
-
 		if ( $original_permalink = get_post_meta( $post->ID, '_aggregator_permalink', true ) )
 			return $original_permalink;
 		

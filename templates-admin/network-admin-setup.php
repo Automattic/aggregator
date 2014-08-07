@@ -123,11 +123,11 @@ switch ( $action ) {
 			$push_blogs = get_option( 'aggregator_push_blogs' );
 
 			// There is an option, so add to it
-			if ( $push_blogs ) {
+			if ( false !== $push_blogs ) {
 				// Only add this blog if it isn't there already
 				if ( ! in_array( $id, $push_blogs ) ) {
 					$push_blogs[] = $id; // Added
-					update_option( 'aggregator_push_blogs', $push_blogs );
+					$updated = update_option( 'aggregator_push_blogs', $push_blogs );
 				}
 			}
 
@@ -200,14 +200,14 @@ switch ( $action ) {
 
 			// Get the existing option
 			$push_blogs = get_option( 'aggregator_push_blogs' );
-pj_error_log( 'push_blogs', $push_blogs );
+
 			// Get the key containing this portal site
 			$key = array_search( $id, $push_blogs );
-pj_error_log( 'key', $key );
+
 			// Remove the key
 			if ( $key !== false )
 				unset( $push_blogs[ $key ] );
-pj_error_log( 'push_blogs mod', $push_blogs );
+
 			// Now update the option
 			$update = update_option( 'aggregator_push_blogs', $push_blogs );
 			if ( ! $update )

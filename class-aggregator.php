@@ -142,7 +142,7 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'publish' == $orig_post->post_status )
 			$this->push_post_data_to_blogs( $orig_post_id, $orig_post );
 		else
-			$this->delete_post_from_root( $orig_post_id, $orig_post );
+			$this->delete_pushed_posts( $orig_post_id, $orig_post );
 		
 	}
 
@@ -283,7 +283,7 @@ class Aggregator extends Aggregator_Plugin {
 			switch_to_blog( $sync_destination );
 
 			// Acquire ID and update post (or insert post and acquire ID)
-			if ( $target_post_id = $this->get_root_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
+			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
 				$orig_post_data[ 'ID' ] = $target_post_id;
 				wp_update_post( $orig_post_data );
 			} else {
@@ -363,25 +363,33 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	
-	function delete_post_from_root( $orig_post_id, $orig_post ) {
+	function delete_pushed_posts( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
 
 		if ( $this->recursing )
 			return;
 		$this->recursing = true;
 
-		switch_to_blog( $current_site->blog_id );
-		
-		// Acquire ID and update post (or insert post and acquire ID)
-		if ( $target_post_id = $this->get_root_blog_post_id( $orig_post_id, $current_blog->blog_id ) )
-			wp_delete_post ( $target_post_id, true );
-		
-		restore_current_blog();
+		// Get the portal blogs we've pushed this post to
+		$portals = $this->get_push_blogs();
+
+		// Loop through each portal and delete this post
+		foreach ( $portals as $portal ) {
+
+			switch_to_blog( $portal );
+
+			// Acquire ID and update post (or insert post and acquire ID)
+			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) )
+				wp_delete_post ( $target_post_id, true );
+
+			restore_current_blog();
+
+		}
 		
 		$this->recursing = false;
 	}
 	
-	function get_root_blog_post_id( $orig_post_id, $orig_blog_id ) {
+	function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',
@@ -458,6 +466,7 @@ class Aggregator extends Aggregator_Plugin {
 	 *                             blog and an array of settings on success.
 	 */
 	protected function get_push_settings() {
+		global $current_blog;
 
 		// This function is useless in network admin
 		if ( is_network_admin() )
@@ -471,7 +480,12 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Get the option
 		$push_settings = get_option( 'aggregator_push_settings', $defaults );
-		if ( ! $push_settings )
+
+		// Allow for dynamic filtering of the push settings
+		$push_settings = apply_filters( 'aggregator_push_settings', $push_settings, $current_blog );
+
+		// Just check we have something to return
+		if ( $push_settings )
 			return $push_settings;
 
 		// Just in case

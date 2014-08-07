@@ -190,15 +190,40 @@ switch ( $action ) {
 		if ( ! can_edit_network( $details->site_id ) )
 			wp_die( __( 'You do not have permission to access this page.' ) );
 
-		// Get existing sync_sites settings
-		$sync_blogs = get_site_option( 'aggregator_sync_blogs', array() );
+		// Get the list of sync blogs for the portal sync we're deleting
+		$sync_blogs = get_site_option( "aggregator_portal_{$id}_blogs", array() );
 
-		// Remove this portal from the sync sites
-		unset( $sync_blogs[ $id ] );
+		// Loop through, removing this portal from the blog option
+		foreach ( $sync_blogs as $sync_blog ) {
 
-		// Update the DB
-		$update = update_site_option( 'aggregator_sync_blogs', $sync_blogs );
-		if ( ! $update )
+			switch_to_blog( $sync_blog );
+
+			// Get the existing option
+			$push_blogs = get_option( 'aggregator_push_blogs' );
+pj_error_log( 'push_blogs', $push_blogs );
+			// Get the key containing this portal site
+			$key = array_search( $id, $push_blogs );
+pj_error_log( 'key', $key );
+			// Remove the key
+			if ( $key !== false )
+				unset( $push_blogs[ $key ] );
+pj_error_log( 'push_blogs mod', $push_blogs );
+			// Now update the option
+			$update = update_option( 'aggregator_push_blogs', $push_blogs );
+			if ( ! $update )
+				wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
+
+			// Clear above vars for sanity
+			unset( $push_blogs, $key, $update );
+
+			// Switch back to the network admin
+			restore_current_blog();
+
+		}
+
+		// Remove the option for the portal now too
+		$delete = delete_site_option( "aggregator_portal_{$id}_blogs" );
+		if ( ! $delete )
 			wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
 
 		// Set a success message, because we're winners

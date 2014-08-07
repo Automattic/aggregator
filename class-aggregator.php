@@ -481,7 +481,16 @@ class Aggregator extends Aggregator_Plugin {
 		// Get the option
 		$push_settings = get_option( 'aggregator_push_settings', $defaults );
 
-		// Allow for dynamic filtering of the push settings
+		/**
+		 * Filters the settings that determine what gets pushed.
+		 *
+		 * Allows for on-the-fly changes to be made to the settings governing which post types and
+		 * taxonomies are synced to a portal. The $current_blog parameter can be used to do this on
+		 * a blog-by-blog basis.
+		 *
+		 * @param array $push_settings Array of settings - see $defaults
+		 * @param int $current_blog ID of the blog we're pushing from
+		 */
 		$push_settings = apply_filters( 'aggregator_push_settings', $push_settings, $current_blog );
 
 		// Just check we have something to return

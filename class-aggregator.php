@@ -231,6 +231,18 @@ class Aggregator extends Aggregator_Plugin {
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
 		unset( $orig_post_data[ 'ID' ] );
 
+		// Remove post_tag and category as they're covered later on with other taxonomies
+		unset( $orig_post_data['tags_input'] );
+		unset( $orig_post_data['post_category'] );
+
+		/**
+		 * Alter the post data before syncing.
+		 *
+		 * Allows plugins or themes to modify the main post data due to be pushed to the portal site.
+		 *
+		 * @param array $orig_post_data Array of post data, such as title and content
+		 * @param int $orig_post_id The ID of the original post
+		 */
 		$orig_post_data = apply_filters( 'aggregator_orig_post_data', $orig_post_data, $orig_post_id );
 		
 		// Get metadata
@@ -258,6 +270,12 @@ class Aggregator extends Aggregator_Plugin {
 		$taxonomies = get_object_taxonomies( $orig_post );
 		$orig_terms = array();
 		foreach ( $taxonomies as $taxonomy ) {
+			/**
+			 * @todo Ignore any taxonomies that aren't explicitly included in settings. Use a function similar to
+			 *       $this->push_post_type() that returns true|false when given a taxonomy name. WARNING the
+			 *       $orig_terms array here contains 'taxonomies' like 'post_format' and 'author' which might be
+			 *       important, so we'll need to consider a whitelist if they're important.
+			 */
 			$orig_terms[ $taxonomy ] = array();
 			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
 			foreach ( $terms as & $term )

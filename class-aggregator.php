@@ -72,6 +72,7 @@ class Aggregator extends Aggregator_Plugin {
 		$this->add_filter( 'post_link', null, null, 2 );
 		$this->add_filter( 'aggregator_sync_meta_key', 'sync_meta_key', null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
+		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
 
 		$this->recursing = false;
 		$this->version = 1;
@@ -170,8 +171,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * @return string A permalink
 	 **/
 	public function post_link( $permalink, $post ) {
-		global $blog_id;
-		
+
 		if ( $original_permalink = get_post_meta( $post->ID, '_aggregator_permalink', true ) )
 			return $original_permalink;
 		
@@ -563,7 +563,7 @@ class Aggregator extends Aggregator_Plugin {
 	 *
 	 * Uses the push settings to determine whether or not the given taxonomy should be synced along
 	 * with the post being saved.
-	 * 
+	 *
 	 * @param $taxonomy The name of the taxonomy to check
 	 *
 	 * @return bool Whether or not to sync the taxonomy
@@ -576,7 +576,7 @@ class Aggregator extends Aggregator_Plugin {
 		// We need to whitelist a few taxonomies that WP includes
 		$terms_whitelist = array( 'post_format', 'post-collection', 'author' );
 		$push_settings['taxonomies'] = array_merge( $push_settings['taxonomies'], $terms_whitelist );
-pj_error_log( 'push_settings', $push_settings['taxonomies'] );
+
 		// Check if this taxonomy is in the list of taxonomies to sync
 		if ( in_array( $taxonomy, $push_settings['taxonomies'] ) )
 			return true; // Yep, we should sync this taxonomy

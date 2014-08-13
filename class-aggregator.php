@@ -79,7 +79,11 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	function admin_init() {
+
 		$this->list_table = new Aggregator_List_Table();
+
+		$this->set_cpt_cache();
+
 	}
 
 	/**
@@ -308,6 +312,11 @@ class Aggregator extends Aggregator_Plugin {
 			// It should never be, but just check the sync site isn't the current site.
 			// That'd be horrific (probably).
 			if ( $sync_destination == get_current_blog_id() )
+				continue;
+
+			// Check if the target post type exists on the destination blog
+			$cpts = $this->get_cpt_cache( $sync_destination );
+			if ( ! in_array( $orig_post_data->post_type, $cpts ) )
 				continue;
 
 			// Okay, fine, switch sites and do the synchronisation dance.
@@ -610,6 +619,44 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function network_admin_menu_callback() {
 		$this->render_admin( 'network-admin-setup.php', $this );
+	}
+
+	/**
+	 * Set a cached list of CPTs for this blog.
+	 *
+	 * @return void
+	 */
+	protected function set_cpt_cache() {
+		global $wp_post_types;
+
+		// We only want the CPT names
+		$cpts = array_keys( $wp_post_types );
+
+		// Get/set the cache
+		$cpt_cache_name = 'cpt_cache_' . get_current_blog_id();
+		$cpt_cache = get_site_transient( $cpt_cache_name );
+		if ( ! $cpt_cache )
+			set_site_transient( $cpt_cache_name, $cpts );
+
+	}
+
+	/**
+	 * Get a cached list of CPTs for the specified blog.
+	 *
+	 * @return array|bool Cached version of $wp_post_types, false on failure.
+	 */
+	protected function get_cpt_cache( $blog_id = null ) {
+
+		if ( is_null( $blog_id ) )
+			return false;
+
+		$cpt_cache_name = 'cpt_cache_' . $blog_id;
+		$cpt_cache = get_site_transient( $cpt_cache_name );
+		if ( ! $cpt_cache )
+			return false;
+
+		return $cpt_cache;
+
 	}
 	
 } // END Aggregator class

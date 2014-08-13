@@ -269,17 +269,19 @@ class Aggregator extends Aggregator_Plugin {
 		// Get terms
 		$taxonomies = get_object_taxonomies( $orig_post );
 		$orig_terms = array();
+
+		// Loop the taxonomies, syncing if we should
 		foreach ( $taxonomies as $taxonomy ) {
-			/**
-			 * @todo Ignore any taxonomies that aren't explicitly included in settings. Use a function similar to
-			 *       $this->push_post_type() that returns true|false when given a taxonomy name. WARNING the
-			 *       $orig_terms array here contains 'taxonomies' like 'post_format' and 'author' which might be
-			 *       important, so we'll need to consider a whitelist if they're important.
-			 */
+
+			// Don't sync taxonomies that aren't explicitly whitelisted in push settings
+			if ( ! $this->push_taxonomy( $taxonomy ) )
+				continue; // Skip this taxonomy, we don't want to sync it
+
 			$orig_terms[ $taxonomy ] = array();
 			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
 			foreach ( $terms as & $term )
 				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
+
 		}
 
 		/**
@@ -551,6 +553,33 @@ class Aggregator extends Aggregator_Plugin {
 		// Check if this post's type is in the list of types to sync
 		if ( in_array( $post->post_type, $push_settings['post_types'] ) )
 			return true; // Yep, we should sync this post type
+
+		return false; // Nope
+
+	}
+
+	/**
+	 * Check whether this taxonomy should be synced.
+	 *
+	 * Uses the push settings to determine whether or not the given taxonomy should be synced along
+	 * with the post being saved.
+	 * 
+	 * @param $taxonomy The name of the taxonomy to check
+	 *
+	 * @return bool Whether or not to sync the taxonomy
+	 */
+	protected function push_taxonomy( $taxonomy ) {
+
+		// Get the push settings
+		$push_settings = $this->get_push_settings();
+
+		// We need to whitelist a few taxonomies that WP includes
+		$terms_whitelist = array( 'post_format', 'post-collection', 'author' );
+		$push_settings['taxonomies'] = array_merge( $push_settings['taxonomies'], $terms_whitelist );
+pj_error_log( 'push_settings', $push_settings['taxonomies'] );
+		// Check if this taxonomy is in the list of taxonomies to sync
+		if ( in_array( $taxonomy, $push_settings['taxonomies'] ) )
+			return true; // Yep, we should sync this taxonomy
 
 		return false; // Nope
 

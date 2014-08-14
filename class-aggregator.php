@@ -236,79 +236,135 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
-pj_error_log( 'pushing', $orig_post_id );
-pj_error_log( '$this->recursing', $this->recursing );
+
 		if ( $this->recursing )
 			return;
 		$this->recursing = true;
-pj_error_log( '$this->recursing', $this->recursing );
-		// Get post data
-		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
-		unset( $orig_post_data[ 'ID' ] );
 
-		// Remove post_tag and category as they're covered later on with other taxonomies
-		unset( $orig_post_data['tags_input'] );
-		unset( $orig_post_data['post_category'] );
-
-		/**
-		 * Alter the post data before syncing.
-		 *
-		 * Allows plugins or themes to modify the main post data due to be pushed to the portal site.
-		 *
-		 * @param array $orig_post_data Array of post data, such as title and content
-		 * @param int $orig_post_id The ID of the original post
-		 */
-		$orig_post_data = apply_filters( 'aggregator_orig_post_data', $orig_post_data, $orig_post_id );
+		// Get the post data
+		$orig_post_data = $this->orig_post_data( $orig_post_id );
 		
 		// Get metadata
-		$orig_meta_data = get_post_meta( $orig_post_id );
+		$orig_meta_data = $this->orig_meta_data( $orig_post_id, $current_blog );
+
+		// Get terms
+		$orig_terms = $this->orig_terms($orig_post_id, $orig_post );
+
+		// Process any P2P connections
+		// @todo IF p2p is available
+		$this->sync_p2p_connections( $orig_post_id );
+
+		// Get the array of sites to sync to
+		$sync_destinations = $this->get_push_blogs();
+
+		// Loop through all destinations to perform the sync
+		foreach ( $sync_destinations as $sync_destination ) {
+
+			// Check if we should sync to this blog
+			if ( ! $this->sync_to_blog( $sync_destination, $orig_post_data ) )
+				return;
+
+			// Okay, fine, switch sites and do the synchronisation dance.
+			switch_to_blog( $sync_destination );
+
+			// Acquire ID and update post (or insert post and acquire ID)
+			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
+				$orig_post_data[ 'ID' ] = $target_post_id;
+				wp_update_post( $orig_post_data );
+			} else {
+				$target_post_id = wp_insert_post( $orig_post_data );
+			}
+
+			// Push the meta data
+			$this->push_meta_data( $target_post_id, $orig_meta_data );
+
+			// Push the featured image
+			$this->push_featured_image( $target_post_id, $orig_meta_data );
+
+			// Push taxonomies and terms
+			$this->push_taxonomy_terms( $target_post_id, $orig_terms );
+
+			restore_current_blog();
+
+		}
 		
+		$this->recursing = false;
+	}
+
+	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
+
+		// Set terms in the meta data, then schedule a Cron to come along and import them
+		// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,
+		// meaning we have the wrong taxonomies in the Global scope.
+		update_post_meta( $target_post_id, '_orig_terms', $orig_terms );
+		wp_schedule_single_event( time(), 'aggregator_import_terms', array( $target_post_id ) );
+
+	}
+
+	protected function push_featured_image( $target_post_id, $orig_meta_data ) {
+
 		// Check if there's a featured image
 		if ( isset( $orig_meta_data['_thumbnail_id'] ) ){
 			$orig_thumbnail = array_shift( wp_get_attachment_image_src( intval( $orig_meta_data['_thumbnail_id'][0] ), 'full' ) );
 		}
-		
-		// Remove any meta keys we explicitly don't want to sync
+
+		// Migrate the featured image
+		if ( isset( $orig_thumbnail ) ) {
+			// Get the image from the original site and download to new
+			$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
+
+			// Strip the src out of the IMG tag
+			$array = array();
+			preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
+
+			// Get the ID of the attachment, and generate thumbnail
+			$target_thumbnail = $this->get_image_id( $array[1] );
+			$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
+
+
+			// Add the featured image to the post
+			update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
+		}
+
+	}
+
+	protected function push_meta_data( $target_post_id, $orig_meta_data ) {
+
+		// Delete all metadata
+		$target_meta_data = get_post_meta( $target_post_id );
+		foreach ( $target_meta_data as $meta_key => $meta_rows )
+			delete_post_meta( $target_post_id, $meta_key );
+
+		// Re-add metadata
 		foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
-			if ( ! $this->allow_sync_meta_key( $meta_key ) )
-				unset( $orig_meta_data[ $meta_key ] );
-		}
-		// Note the following have to be one item arrays, to fit in with the
-		// output of get_post_meta.
-		$orig_meta_data[ '_aggregator_permalink' ] = array( get_permalink( $orig_post_id ) );
-		$orig_meta_data[ '_aggregator_orig_post_id' ] = array( $orig_post_id );
-		$orig_meta_data[ '_aggregator_orig_blog_id' ] = array( $current_blog->blog_id );
-		
-		$orig_meta_data = apply_filters( 'aggregator_orig_meta_data', $orig_meta_data, $orig_post_id );
-
-		// Get terms
-		$taxonomies = get_object_taxonomies( $orig_post );
-		$orig_terms = array();
-
-		// Loop the taxonomies, syncing if we should
-		foreach ( $taxonomies as $taxonomy ) {
-
-			// Don't sync taxonomies that aren't explicitly whitelisted in push settings
-			if ( ! $this->push_taxonomy( $taxonomy ) )
-				continue; // Skip this taxonomy, we don't want to sync it
-
-			$orig_terms[ $taxonomy ] = array();
-			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
-			foreach ( $terms as & $term )
-				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
-
+			$unique = ( count( $meta_rows ) == 1 );
+			foreach ( $meta_rows as $meta_row )
+				add_post_meta( $target_post_id, $meta_key, $meta_row, $unique );
 		}
 
-		/**
-		 * Alter the taxonomy terms to be synced.
-		 *
-		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
-		 * up to the 'portal' site.
-		 *
-		 * @param array $orig_terms The list of taxonomy terms
-		 * @param int $orig_post_id ID of the originating post
-		 */
-		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
+	}
+
+	protected function sync_to_blog( $sync_destination, $orig_post_data ) {
+
+		// Just double-check it's an int so we get no nasty errors
+		if ( ! intval( $sync_destination ) )
+			return false;
+
+		// It should never be, but just check the sync site isn't the current site.
+		// That'd be horrific (probably).
+		if ( $sync_destination == get_current_blog_id() )
+			return false;
+
+		// Check if the target post type exists on the destination blog
+		$cpts = $this->get_cpt_cache( $sync_destination );
+		if ( ! in_array( $orig_post_data['post_type'], $cpts ) )
+			return false;
+
+		return true;
+
+	}
+
+	protected function sync_p2p_connections( $orig_post_id ) {
 
 		// Get connections to sync from push settings
 		$push_settings = $this->get_push_settings();
@@ -338,77 +394,85 @@ pj_error_log( '$this->recursing', $this->recursing );
 
 		}
 
-		// Get the array of sites to sync to
-		$sync_destinations = $this->get_push_blogs();
-pj_error_log( '$sync_destinations', $sync_destinations );
-		// Loop through all destinations to perform the sync
-		foreach ( $sync_destinations as $sync_destination ) {
+	}
 
-			// Just double-check it's an int so we get no nasty errors
-			if ( ! intval( $sync_destination ) )
-				continue;
+	protected function orig_terms( $orig_post_id, $orig_post ) {
 
-			// It should never be, but just check the sync site isn't the current site.
-			// That'd be horrific (probably).
-			if ( $sync_destination == get_current_blog_id() )
-				continue;
-			// Check if the target post type exists on the destination blog
-			$cpts = $this->get_cpt_cache( $sync_destination );
-			if ( ! in_array( $orig_post_data['post_type'], $cpts ) )
-				continue;
+		$taxonomies = get_object_taxonomies( $orig_post );
+		$orig_terms = array();
 
-			// Okay, fine, switch sites and do the synchronisation dance.
-			switch_to_blog( $sync_destination );
+		// Loop the taxonomies, syncing if we should
+		foreach ( $taxonomies as $taxonomy ) {
 
-			// Acquire ID and update post (or insert post and acquire ID)
-			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
-				$orig_post_data[ 'ID' ] = $target_post_id;
-				wp_update_post( $orig_post_data );
-			} else {
-				$target_post_id = wp_insert_post( $orig_post_data );
-			}
-pj_error_log( '$target_post_id', $target_post_id );
-			// Delete all metadata
-			$target_meta_data = get_post_meta( $target_post_id );
-			foreach ( $target_meta_data as $meta_key => $meta_rows )
-				delete_post_meta( $target_post_id, $meta_key );
+			// Don't sync taxonomies that aren't explicitly whitelisted in push settings
+			if ( ! $this->push_taxonomy( $taxonomy ) )
+				continue; // Skip this taxonomy, we don't want to sync it
 
-			// Re-add metadata
-			foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
-				$unique = ( count( $meta_rows ) == 1 );
-				foreach ( $meta_rows as $meta_row )
-					add_post_meta( $target_post_id, $meta_key, $meta_row, $unique );
-			}
-
-			// Migrate the featured image
-			if ( isset( $orig_thumbnail ) ) {
-				// Get the image from the original site and download to new
-				$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
-
-				// Strip the src out of the IMG tag
-				$array = array();
-				preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
-
-				// Get the ID of the attachment, and generate thumbnail
-				$target_thumbnail = $this->get_image_id( $array[1] );
-				$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
-
-
-				// Add the featured image to the post
-				update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
-			}
-
-			// Set terms in the meta data, then schedule a Cron to come along and import them
-			// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,
-			// meaning we have the wrong taxonomies in the Global scope.
-			update_post_meta( $target_post_id, '_orig_terms', $orig_terms );
-			wp_schedule_single_event( time(), 'aggregator_import_terms', array( $target_post_id ) );
-
-			restore_current_blog();
+			$orig_terms[ $taxonomy ] = array();
+			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
+			foreach ( $terms as & $term )
+				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
 
 		}
-		
-		$this->recursing = false;
+
+		/**
+		 * Alter the taxonomy terms to be synced.
+		 *
+		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
+		 * up to the 'portal' site.
+		 *
+		 * @param array $orig_terms The list of taxonomy terms
+		 * @param int $orig_post_id ID of the originating post
+		 */
+		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
+
+		return $orig_terms;
+
+	}
+
+	protected function orig_meta_data( $orig_post_id, $current_blog ) {
+
+		$orig_meta_data = get_post_meta( $orig_post_id );
+
+		// Remove any meta keys we explicitly don't want to sync
+		foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
+			if ( ! $this->allow_sync_meta_key( $meta_key ) )
+				unset( $orig_meta_data[ $meta_key ] );
+		}
+		// Note the following have to be one item arrays, to fit in with the
+		// output of get_post_meta.
+		$orig_meta_data[ '_aggregator_permalink' ] = array( get_permalink( $orig_post_id ) );
+		$orig_meta_data[ '_aggregator_orig_post_id' ] = array( $orig_post_id );
+		$orig_meta_data[ '_aggregator_orig_blog_id' ] = array( $current_blog->blog_id );
+
+		$orig_meta_data = apply_filters( 'aggregator_orig_meta_data', $orig_meta_data, $orig_post_id );
+
+		return $orig_meta_data;
+
+	}
+
+	protected function orig_post_data( $orig_post_id ) {
+
+		// Get post data
+		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
+		unset( $orig_post_data[ 'ID' ] );
+
+		// Remove post_tag and category as they're covered later on with other taxonomies
+		unset( $orig_post_data['tags_input'] );
+		unset( $orig_post_data['post_category'] );
+
+		/**
+		 * Alter the post data before syncing.
+		 *
+		 * Allows plugins or themes to modify the main post data due to be pushed to the portal site.
+		 *
+		 * @param array $orig_post_data Array of post data, such as title and content
+		 * @param int $orig_post_id The ID of the original post
+		 */
+		$orig_post_data = apply_filters( 'aggregator_orig_post_data', $orig_post_data, $orig_post_id );
+
+		return $orig_post_data;
+
 	}
 	
 	function get_image_id($image_url) {

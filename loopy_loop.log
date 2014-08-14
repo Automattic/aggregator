@@ -1,0 +1,28 @@
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L239 pushing : 134
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L240 $this->recursing : false
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L244 $this->recursing : true
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L239 pushing : 126
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L240 $this->recursing : false
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L244 $this->recursing : true
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L343 $sync_destinations : array (
+  0 => 22,
+)
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L370 $target_post_id : 143
+[14-Aug-2014 12:22:25 UTC] 53ecaa0072eab L343 $sync_destinations : array (
+  0 => 22,
+)
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L370 $target_post_id : 144
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L239 pushing : 134
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L240 $this->recursing : false
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L244 $this->recursing : true
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L239 pushing : 126
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L240 $this->recursing : false
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L244 $this->recursing : true
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L343 $sync_destinations : array (
+  0 => 22,
+)
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L370 $target_post_id : 145
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L343 $sync_destinations : array (
+  0 => 22,
+)
+[14-Aug-2014 12:22:26 UTC] 53ecaa0072eab L370 $target_post_id : 146

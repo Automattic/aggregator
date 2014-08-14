@@ -237,11 +237,11 @@ class Aggregator extends Aggregator_Plugin {
 	function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
 pj_error_log( 'pushing', $orig_post_id );
-
+pj_error_log( '$this->recursing', $this->recursing );
 		if ( $this->recursing )
 			return;
 		$this->recursing = true;
-
+pj_error_log( '$this->recursing', $this->recursing );
 		// Get post data
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
 		unset( $orig_post_data[ 'ID' ] );
@@ -340,7 +340,7 @@ pj_error_log( 'pushing', $orig_post_id );
 
 		// Get the array of sites to sync to
 		$sync_destinations = $this->get_push_blogs();
-
+pj_error_log( '$sync_destinations', $sync_destinations );
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
 

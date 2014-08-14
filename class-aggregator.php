@@ -48,6 +48,16 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public $version;
 
+	/**
+	 * A flag to say whether we're currently syncing a connected post, or not.
+	 *
+	 * @var type boolean
+	 */
+	protected $pushing_connection = false;
+
+	/**
+	 * @todo document
+	 */
 	protected $list_table;
 
 	/**
@@ -226,6 +236,7 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
 		global $current_site, $current_blog;
+pj_error_log( 'pushing', $orig_post_id );
 
 		if ( $this->recursing )
 			return;
@@ -299,6 +310,34 @@ class Aggregator extends Aggregator_Plugin {
 		 */
 		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
+		// Get connections to sync from push settings
+		$push_settings = $this->get_push_settings();
+
+		// Only push if settings tell us too. Also, don't push if we're already pushing a connection,
+		// to avoid any nasty infinite loops from syncing connected posts
+		if ( isset( $push_settings['p2p_connections'] ) && ! $this->pushing_connection ){
+
+			foreach ( $push_settings['p2p_connections'] as $ctype ) {
+
+				// Check for P2P connections
+				$ctype = p2p_type( $ctype );
+				$connected = $ctype->get_connected( $orig_post_id, array(), 'abstract' );
+				foreach ( $connected as $connection ) {
+					if ( 'object' == gettype( $connection[0] ) ) {
+
+						$this->pushing_connection = true;
+						$this->recursing = false;
+
+						$this->push_post_data_to_blogs( $connection[0]->get_id(), get_post( $connection[0]->get_object() ) );
+
+						$this->pushing_connection = false;
+						$this->recursing = true;
+					}
+				}
+			}
+
+		}
+
 		// Get the array of sites to sync to
 		$sync_destinations = $this->get_push_blogs();
 
@@ -313,10 +352,9 @@ class Aggregator extends Aggregator_Plugin {
 			// That'd be horrific (probably).
 			if ( $sync_destination == get_current_blog_id() )
 				continue;
-
 			// Check if the target post type exists on the destination blog
 			$cpts = $this->get_cpt_cache( $sync_destination );
-			if ( ! in_array( $orig_post_data->post_type, $cpts ) )
+			if ( ! in_array( $orig_post_data['post_type'], $cpts ) )
 				continue;
 
 			// Okay, fine, switch sites and do the synchronisation dance.
@@ -329,7 +367,7 @@ class Aggregator extends Aggregator_Plugin {
 			} else {
 				$target_post_id = wp_insert_post( $orig_post_data );
 			}
-
+pj_error_log( '$target_post_id', $target_post_id );
 			// Delete all metadata
 			$target_meta_data = get_post_meta( $target_post_id );
 			foreach ( $target_meta_data as $meta_key => $meta_rows )

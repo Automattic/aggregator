@@ -72,7 +72,7 @@ class Aggregator extends Aggregator_Plugin {
 		$this->add_action( 'admin_init' );
 
 		if ( is_admin() ) {
-			$this->add_action( 'save_post', null, null, 2 );
+			$this->add_action( 'save_post', null, 11, 2 );
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 		}
@@ -251,8 +251,7 @@ class Aggregator extends Aggregator_Plugin {
 		$orig_terms = $this->orig_terms($orig_post_id, $orig_post );
 
 		// Process any P2P connections
-		// @todo IF p2p is available
-		#$this->sync_p2p_connections( $orig_post_id );
+		$this->sync_p2p_connections( $orig_post_id );
 
 		// Get the array of sites to sync to
 		$sync_destinations = $this->get_push_blogs();
@@ -366,6 +365,14 @@ class Aggregator extends Aggregator_Plugin {
 
 	protected function sync_p2p_connections( $orig_post_id ) {
 
+		// Don't bother if P2P isn't active/available
+		if ( ! function_exists( 'p2p_register_connection_type' ) )
+			return;
+
+		// We're already pushing a connection so don't continue, else we'll end up in an infinite loop
+		if ( $this->pushing_connection )
+			return;
+
 		// Get connections to sync from push settings
 		$push_settings = $this->get_push_settings();
 
@@ -378,6 +385,7 @@ class Aggregator extends Aggregator_Plugin {
 				// Check for P2P connections
 				$ctype = p2p_type( $ctype );
 				$connected = $ctype->get_connected( $orig_post_id, array(), 'abstract' );
+
 				foreach ( $connected as $connection ) {
 					if ( 'object' == gettype( $connection[0] ) ) {
 

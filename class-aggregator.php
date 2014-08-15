@@ -250,9 +250,6 @@ class Aggregator extends Aggregator_Plugin {
 		// Get terms
 		$orig_terms = $this->orig_terms($orig_post_id, $orig_post );
 
-		// Process any P2P connections
-		$this->sync_p2p_connections( $orig_post_id );
-
 		// Get the array of sites to sync to
 		$sync_destinations = $this->get_push_blogs();
 
@@ -274,6 +271,9 @@ class Aggregator extends Aggregator_Plugin {
 				$target_post_id = wp_insert_post( $orig_post_data );
 			}
 
+			// Process any P2P connections
+			$this->sync_p2p_connections( $orig_post_id, $target_post_id );
+
 			// Push the meta data
 			$this->push_meta_data( $target_post_id, $orig_meta_data );
 
@@ -288,6 +288,8 @@ class Aggregator extends Aggregator_Plugin {
 		}
 		
 		$this->recursing = false;
+
+		return $target_post_id;
 	}
 
 	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
@@ -363,7 +365,8 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
-	protected function sync_p2p_connections( $orig_post_id ) {
+	protected function sync_p2p_connections( $orig_post_id, $target_post_id ) {
+		global $current_blog;
 
 		// Don't bother if P2P isn't active/available
 		if ( ! function_exists( 'p2p_register_connection_type' ) )
@@ -383,8 +386,8 @@ class Aggregator extends Aggregator_Plugin {
 			foreach ( $push_settings['p2p_connections'] as $ctype ) {
 
 				// Check for P2P connections
-				$ctype = p2p_type( $ctype );
-				$connected = $ctype->get_connected( $orig_post_id, array(), 'abstract' );
+				$p2p_type = p2p_type( $ctype );
+				$connected = $p2p_type->get_connected( $orig_post_id, array(), 'abstract' );
 
 				foreach ( $connected as $connection ) {
 					if ( 'object' == gettype( $connection[0] ) ) {
@@ -392,7 +395,11 @@ class Aggregator extends Aggregator_Plugin {
 						$this->pushing_connection = true;
 						$this->recursing = false;
 
-						$this->push_post_data_to_blogs( $connection[0]->get_id(), get_post( $connection[0]->get_object() ) );
+						$pushed_connection = $this->push_post_data_to_blogs( $connection[0]->get_id(), get_post( $connection[0]->get_object() ) );
+
+						p2p_type( $ctype )->connect( $target_post_id, $pushed_connection, array(
+							'date' => current_time('mysql')
+						) );
 
 						$this->pushing_connection = false;
 						$this->recursing = true;

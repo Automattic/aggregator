@@ -252,7 +252,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Process any P2P connections
 		// @todo IF p2p is available
-		$this->sync_p2p_connections( $orig_post_id );
+		#$this->sync_p2p_connections( $orig_post_id );
 
 		// Get the array of sites to sync to
 		$sync_destinations = $this->get_push_blogs();

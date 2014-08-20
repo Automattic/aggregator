@@ -728,6 +728,38 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Given a blog id, retrieve portal blogs to sync to
+	 *
+	 * @param int $blog_id ID of the source blog
+	 */
+	public function get_portal_sites_for_blog( $blog_id ) {
+
+		/**
+		 * Retrieve a site (network) option named like so;
+		 * 	`aggregator_{$blog_id}_portals`
+		 */
+
+		// Return a basic array of blog IDs
+
+	}
+
+	/**
+	 * Given a blog id, retrieve source blogs to sync from
+	 *
+	 * @param int $blog_id ID of the portal blog
+	 */
+	public function get_source_sites_for_blog( $blog_id ) {
+
+		/**
+		 * Retrieve a site (network) option named like so;
+		 * 	`aggregator_{$blog_id}_sources`
+		 */
+
+		// Return a basic array of blog IDs
+
+	}
+
 } // END Aggregator class
 
 $aggregator = new Aggregator();

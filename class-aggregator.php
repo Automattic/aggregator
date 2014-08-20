@@ -61,6 +61,13 @@ class Aggregator extends Aggregator_Plugin {
 	protected $list_table;
 
 	/**
+	 * Is Posts-to-Posts available?
+	 *
+	 * @var type boolean
+	 */
+	protected $p2p = false;
+
+	/**
 	 * Initiate!
 	 *
 	 * @return void
@@ -86,6 +93,11 @@ class Aggregator extends Aggregator_Plugin {
 
 		$this->recursing = false;
 		$this->version = 1;
+
+		// Check if we have P2P available
+		if ( ! function_exists( 'p2p_register_connection_type' ) )
+			$this->p2p = true;
+
 	}
 
 	function admin_init() {
@@ -168,9 +180,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Only push published posts
 		if ( 'publish' == $orig_post->post_status )
-			$this->push_post_data_to_blogs( $orig_post_id, $orig_post );
+			$pushed = $this->push_post_data_to_blogs( $orig_post_id, $orig_post );
 		else
-			$this->delete_pushed_posts( $orig_post_id, $orig_post );
+			$deleted = $this->delete_pushed_posts( $orig_post_id, $orig_post );
+
+		// Did we push or delete?
+		$action = ( isset( $pushed ) ) ? 'pushed' : 'deleted';
+
+		// Sync any connected posts
+		$this->sync_p2p_connections( $orig_post_id, $action, $$action );
 		
 	}
 
@@ -271,9 +289,6 @@ class Aggregator extends Aggregator_Plugin {
 				$target_post_id = wp_insert_post( $orig_post_data );
 			}
 
-			// Process any P2P connections
-			$this->sync_p2p_connections( $orig_post_id, $target_post_id );
-
 			// Push the meta data
 			$this->push_meta_data( $target_post_id, $orig_meta_data );
 
@@ -365,46 +380,51 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
-	protected function sync_p2p_connections( $orig_post_id, $target_post_id ) {
-		global $current_blog;
+	protected function sync_p2p_connections( $orig_post_id, $action, $target ) {
 
-		// Don't bother if P2P isn't active/available
-		if ( ! function_exists( 'p2p_register_connection_type' ) )
-			return;
+		// Check if there are connections to sync/delete
+		if ( $this->p2p ) {
 
-		// We're already pushing a connection so don't continue, else we'll end up in an infinite loop
-		if ( $this->pushing_connection )
-			return;
+			// What connection types are available for this post?
+			if ( $ctypes = $this->p2p_get_connection_types_for_post( $orig_post_id ) ){
 
-		// Get connections to sync from push settings
-		$push_settings = $this->get_push_settings();
+				// Loop through each connection type, syncing any connected posts
+				foreach ( $ctypes as $ctype ) {
 
-		// Only push if settings tell us too. Also, don't push if we're already pushing a connection,
-		// to avoid any nasty infinite loops from syncing connected posts
-		if ( isset( $push_settings['p2p_connections'] ) && ! $this->pushing_connection ){
+					// check for connections
+					$connected = new WP_Query( array(
+						'connected_type' => $ctype,
+						'connected_items' => $orig_post_id,
+						'nopaging' => true,
+					) );
+					if ( $connected->have_posts() ) { // There are connections, so deal with them
 
-			foreach ( $push_settings['p2p_connections'] as $ctype ) {
+						while ( $connected->have_posts() ) {
+							$connected->the_post();
+#pj_error_log( 'syncing connected post', get_the_ID() );
+							if ( 'pushed' == $action ) {
 
-				// Check for P2P connections
-				$p2p_type = p2p_type( $ctype );
-				$connected = $p2p_type->get_connected( $orig_post_id, array(), 'abstract' );
+								// push the post
+								$pushed_connection = $this->push_post_data_to_blogs( get_the_ID(), get_post( get_the_ID() ) );
+/*pj_error_log( 'Attempting to connect posts for connection', $ctype );
+pj_error_log( '$pushed_connection', $pushed_connection );
+pj_error_log( '$target', $target );*/
+								// Make the connection
+								$result = p2p_type( $ctype )->connect( get_post( $target ), get_post( $pushed_connection ), array(
+									'date' => current_time('mysql'),
+								) );
+#pj_error_log( '$result', $result );
 
-				foreach ( $connected as $connection ) {
-					if ( 'object' == gettype( $connection[0] ) ) {
+							}
 
-						$this->pushing_connection = true;
-						$this->recursing = false;
-
-						$pushed_connection = $this->push_post_data_to_blogs( $connection[0]->get_id(), get_post( $connection[0]->get_object() ) );
-
-						p2p_type( $ctype )->connect( $target_post_id, $pushed_connection, array(
-							'date' => current_time('mysql')
-						) );
-
-						$this->pushing_connection = false;
-						$this->recursing = true;
+							/*if ( 'deleted' == $action ) {
+								$this->delete_pushed_posts( get_the_ID(), get_post( get_the_ID() ) );
+							}*/
+						}
 					}
+
 				}
+
 			}
 
 		}
@@ -544,6 +564,8 @@ class Aggregator extends Aggregator_Plugin {
 		}
 		
 		$this->recursing = false;
+
+		return $target_post_id;
 	}
 	
 	function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
@@ -773,6 +795,37 @@ class Aggregator extends Aggregator_Plugin {
 			return false;
 
 		return $cpt_cache;
+
+	}
+
+	/**
+	 * Get a list of connection types relevant to a single post.
+	 *
+	 * Given a post ID, this function returns an array of connection types for which the
+	 * post has active connections. If the post has no connected posts, the function will
+	 * return false.
+	 *
+	 * @param $post_id int ID of the post for which to fetch connection types
+	 *
+	 * @return array|bool An array of connection types or false if there are no connected posts
+	 */
+	function p2p_get_connection_types_for_post( $post_id ) {
+		global $wpdb;
+
+		// Get the connection types for this post from the DB
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT p2p_type FROM %1$s WHERE p2p_from = %2$d OR p2p_to = %2$d', $wpdb->p2p, intval( $post_id ) ) );
+
+		// Discontinue if there are no results
+		if ( empty( $rows) || is_null( $rows ) )
+			return false;
+
+		// Pluck out the connection types from each result row
+		$rows = wp_list_pluck( $rows, 'p2p_type' );
+
+		// Remove duplicates
+		$rows = array_unique( $rows );
+
+		return array_values( $rows );
 
 	}
 	

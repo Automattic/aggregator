@@ -61,13 +61,6 @@ class Aggregator extends Aggregator_Plugin {
 	protected $list_table;
 
 	/**
-	 * Is Posts-to-Posts available?
-	 *
-	 * @var type boolean
-	 */
-	protected $p2p = false;
-
-	/**
 	 * Initiate!
 	 *
 	 * @return void
@@ -93,10 +86,6 @@ class Aggregator extends Aggregator_Plugin {
 
 		$this->recursing = false;
 		$this->version = 1;
-
-		// Check if we have P2P available
-		if ( ! function_exists( 'p2p_register_connection_type' ) )
-			$this->p2p = true;
 
 	}
 
@@ -180,16 +169,10 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Only push published posts
 		if ( 'publish' == $orig_post->post_status )
-			$pushed = $this->push_post_data_to_blogs( $orig_post_id, $orig_post );
+			$this->push_post_data_to_blogs( $orig_post_id, $orig_post );
 		else
-			$deleted = $this->delete_pushed_posts( $orig_post_id, $orig_post );
+			$this->delete_pushed_posts( $orig_post_id, $orig_post );
 
-		// Did we push or delete?
-		$action = ( isset( $pushed ) ) ? 'pushed' : 'deleted';
-
-		// Sync any connected posts
-		$this->sync_p2p_connections( $orig_post_id, $action, $$action );
-		
 	}
 
 	/**
@@ -304,7 +287,6 @@ class Aggregator extends Aggregator_Plugin {
 		
 		$this->recursing = false;
 
-		return $target_post_id;
 	}
 
 	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
@@ -377,57 +359,6 @@ class Aggregator extends Aggregator_Plugin {
 			return false;
 
 		return true;
-
-	}
-
-	protected function sync_p2p_connections( $orig_post_id, $action, $target ) {
-
-		// Check if there are connections to sync/delete
-		if ( $this->p2p ) {
-
-			// What connection types are available for this post?
-			if ( $ctypes = $this->p2p_get_connection_types_for_post( $orig_post_id ) ){
-
-				// Loop through each connection type, syncing any connected posts
-				foreach ( $ctypes as $ctype ) {
-
-					// check for connections
-					$connected = new WP_Query( array(
-						'connected_type' => $ctype,
-						'connected_items' => $orig_post_id,
-						'nopaging' => true,
-					) );
-					if ( $connected->have_posts() ) { // There are connections, so deal with them
-
-						while ( $connected->have_posts() ) {
-							$connected->the_post();
-#pj_error_log( 'syncing connected post', get_the_ID() );
-							if ( 'pushed' == $action ) {
-
-								// push the post
-								$pushed_connection = $this->push_post_data_to_blogs( get_the_ID(), get_post( get_the_ID() ) );
-/*pj_error_log( 'Attempting to connect posts for connection', $ctype );
-pj_error_log( '$pushed_connection', $pushed_connection );
-pj_error_log( '$target', $target );*/
-								// Make the connection
-								$result = p2p_type( $ctype )->connect( get_post( $target ), get_post( $pushed_connection ), array(
-									'date' => current_time('mysql'),
-								) );
-#pj_error_log( '$result', $result );
-
-							}
-
-							/*if ( 'deleted' == $action ) {
-								$this->delete_pushed_posts( get_the_ID(), get_post( get_the_ID() ) );
-							}*/
-						}
-					}
-
-				}
-
-			}
-
-		}
 
 	}
 
@@ -565,7 +496,6 @@ pj_error_log( '$target', $target );*/
 		
 		$this->recursing = false;
 
-		return $target_post_id;
 	}
 	
 	function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
@@ -798,37 +728,6 @@ pj_error_log( '$target', $target );*/
 
 	}
 
-	/**
-	 * Get a list of connection types relevant to a single post.
-	 *
-	 * Given a post ID, this function returns an array of connection types for which the
-	 * post has active connections. If the post has no connected posts, the function will
-	 * return false.
-	 *
-	 * @param $post_id int ID of the post for which to fetch connection types
-	 *
-	 * @return array|bool An array of connection types or false if there are no connected posts
-	 */
-	function p2p_get_connection_types_for_post( $post_id ) {
-		global $wpdb;
-
-		// Get the connection types for this post from the DB
-		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT p2p_type FROM %1$s WHERE p2p_from = %2$d OR p2p_to = %2$d', $wpdb->p2p, intval( $post_id ) ) );
-
-		// Discontinue if there are no results
-		if ( empty( $rows) || is_null( $rows ) )
-			return false;
-
-		// Pluck out the connection types from each result row
-		$rows = wp_list_pluck( $rows, 'p2p_type' );
-
-		// Remove duplicates
-		$rows = array_unique( $rows );
-
-		return array_values( $rows );
-
-	}
-	
 } // END Aggregator class
 
 $aggregator = new Aggregator();

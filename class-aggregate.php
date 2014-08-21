@@ -38,6 +38,8 @@ Class Aggregate extends Aggregator_Plugin {
 
 		if ( is_admin() ) {
 			$this->add_action( 'save_post', null, 11, 2 );
+			$this->add_action( 'load-post.php', 'load_post_edit' );
+			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 		}
 
 		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
@@ -214,6 +216,20 @@ Class Aggregate extends Aggregator_Plugin {
 
 		// Just in case
 		return false;
+
+	}
+
+	/**
+	 * Allow the forcing of term import on the portal blog.
+	 *
+	 * When an attempt is made to edit a pushed post, this will trigger the import of terms from the
+	 * original post to catch situations where the scheduled import didn't run for some reason.
+	 */
+	public function load_post_edit() {
+
+		$post_id = isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : false;
+
+		$this->process_import_terms( $post_id );
 
 	}
 

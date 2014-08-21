@@ -58,6 +58,7 @@ class Aggregator extends Aggregator_Plugin {
 		if ( is_admin() ) {
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
+			$this->add_action( 'init', 'register_post_types' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -282,6 +283,25 @@ class Aggregator extends Aggregator_Plugin {
 		return $jobs;
 
 	}
+
+	public function register_post_types() {
+
+		register_post_type( 'aggregator_job', array(
+			'label' => __('Aggregator Jobs'),
+			'labels' => array(
+				'name' => __('Aggregator Job'),
+			),
+			'public' => false,
+			'supports' => false,
+			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
+			'taxonomies' => get_taxonomies( array( 'public' => true, '_builtin' => false ) ),
+			'query_var' => false,
+			'can_export' => false,
+		) );
+
+	}
+
+	// @todo meta_boxes()
 
 } // END Aggregator class
 

@@ -252,6 +252,37 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Provide a list of sync jobs that apply to a given portal blog.
+	 *
+	 * @param int $portal ID of a blog acting as a portal
+	 *
+	 * @return array An array of Aggregator_Job objects
+	 */
+	public function get_jobs_for_portal( $portal ) {
+
+		// Validate
+		if ( ! $portal = intval( $portal ) )
+			return false; // @todo throw error
+
+		// Get the sources for this portal
+		$sources = $this->get_sources( $portal );
+
+		// Holder for the jobs
+		$jobs = array();
+
+		// Loop through each source, getting the sync job
+		foreach ( $sources as $source ) {
+
+			// Aggregator_Job does the leg work for us
+			$jobs[] = new Aggregator_Job( $portal, $source );
+
+		}
+
+		return $jobs;
+
+	}
+
 } // END Aggregator class
 
 $aggregator = new Aggregator();

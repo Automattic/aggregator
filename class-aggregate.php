@@ -36,6 +36,10 @@ Class Aggregate extends Aggregator_Plugin {
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
+		// Get the aggregator object for some functions
+		global $aggregator;
+		$this->aggregator = $aggregator;
+
 		if ( is_admin() ) {
 			$this->add_action( 'save_post', null, 11, 2 );
 			$this->add_action( 'load-post.php', 'load_post_edit' );
@@ -77,7 +81,7 @@ Class Aggregate extends Aggregator_Plugin {
 		$this->recursing = true;
 
 		// Get the portal blogs we've pushed this post to
-		$portals = $this->get_push_blogs();
+		$portals = $this->aggregator->get_portals( $current_blog->blog_id );
 
 		// Loop through each portal and delete this post
 		foreach ( $portals as $portal ) {
@@ -147,30 +151,6 @@ Class Aggregate extends Aggregator_Plugin {
 			return $query->post->ID;
 
 		return false;
-	}
-
-	protected function get_push_blogs( $portal_id = NULL ) {
-
-		// Grab the current push sites from our site option
-		if ( is_null( $portal_id ) ) {
-			$sync = get_option( 'aggregator_push_blogs', array() );
-		} else { // @todo CHECK THIS - is it right? Do these two options do the same thing?
-			$sync = get_site_option( "aggregator_portal_{$portal_id}_blogs", array() );
-		}
-
-		/**
-		 * Filters the list of blogs to push to.
-		 *
-		 * Called when a post is saved, this filter can be used to change the sites
-		 * that the post is pushed to, overriding the settings.
-		 *
-		 * @param array $sync Array of site IDs to sync to
-		 * @param int $portal_id Blog ID of the portal site
-		 */
-		$sync = apply_filters( 'aggregator_sync_blogs', $sync, $portal_id );
-
-		return $sync;
-
 	}
 
 	/**
@@ -406,7 +386,7 @@ Class Aggregate extends Aggregator_Plugin {
 		$orig_terms = $this->orig_terms($orig_post_id, $orig_post );
 
 		// Get the array of sites to sync to
-		$sync_destinations = $this->get_push_blogs();
+		$sync_destinations = $this->aggregator->get_portals( $current_blog->blog_id );
 
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
@@ -514,9 +494,10 @@ Class Aggregate extends Aggregator_Plugin {
 	 * @return void
 	 **/
 	public function save_post( $orig_post_id, $orig_post ) {
+		global $current_blog;
 
 		// Are we syncing anything from this site? If not, stop.
-		if ( ! $this->get_push_blogs() )
+		if ( ! $this->aggregator->get_portals( $current_blog->blog_id ) )
 			return;
 
 		// Check if we should be pushing this post, don't if not

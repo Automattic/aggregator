@@ -44,6 +44,11 @@ Class Aggregator_Job {
 	protected $terms = array();
 
 	/**
+	 * @var string An ID constructed as {$source_id}_{$post_id}
+	 */
+	public $job_id;
+
+	/**
 	 * Set up all the things
 	 *
 	 * @param int $portal ID of the portal blog
@@ -59,9 +64,14 @@ Class Aggregator_Job {
 
 		// Get the details of the source blog for this job and store in $this->source
 
-		// Switch to source blog and fetch the settings storing them in properties
+		// Switch to source blog if not already on it
+
+		// Fetch the post of type 'aggregator_job' where;
+		//  * post meta 'portal' is equal to $portal
 
 		// Store in $this->post_id the ID of the custom post type used to store info
+
+		// Create a "Job ID" using source and post IDs
 
 	}
 
@@ -190,6 +200,36 @@ Class Aggregator_Job {
 		// Update the author post meta for $this->post_id
 
 		// Update $this->author
+
+	}
+
+	/**
+	 * Get the edit link for this post
+	 *
+	 * @todo switch_to_blog
+	 *
+	 * @return string The edit URL
+	 */
+	public function get_edit_post_link() {
+
+		$url = esc_url( get_edit_post_link( $this->post_id ) );
+
+		return $url;
+
+	}
+
+	/**
+	 * Get the delete link for this post
+	 *
+	 * @todo switch_to_blog
+	 *
+	 * @return string The delete URL
+	 */
+	public function get_delete_post_link() {
+
+		$url = esc_url( get_delete_post_link( $this->post_id, '', true ) );
+
+		return $url;
 
 	}
 

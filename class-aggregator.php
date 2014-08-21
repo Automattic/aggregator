@@ -311,6 +311,54 @@ class Aggregator extends Aggregator_Plugin {
 
 	public function meta_boxes( $post ) {
 
+		// Replace default submit box
+		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
+		add_meta_box( 'submitdiv', __('Save'), array( $this, 'meta_box_submitdiv' ), 'aggregator_job', 'side', 'high' );
+
+	}
+
+	public function meta_box_submitdiv( $post, $args = array() ) {
+
+		?>
+		<div id="major-publishing-actions">
+		<?php
+		/**
+		 * Fires at the beginning of the publishing actions section of the Publish meta box.
+		 *
+		 * @since 2.7.0
+		 */
+		do_action( 'post_submitbox_start' );
+		?>
+		<div id="delete-action">
+			<?php
+			if ( current_user_can( "delete_post", $post->ID ) ) {
+				if ( !EMPTY_TRASH_DAYS )
+					$delete_text = __('Delete Permanently');
+				else
+					$delete_text = __('Move to Trash');
+				?>
+				<a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
+			} ?>
+		</div>
+
+		<div id="publishing-action">
+			<span class="spinner"></span>
+			<?php
+			if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
+				?>
+				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Save') ?>" />
+				<?php submit_button( __( 'Save' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
+				<?php
+			} else { ?>
+				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Save') ?>" />
+				<input name="save" type="submit" class="button button-primary button-large" id="publish" accesskey="p" value="<?php esc_attr_e('Save') ?>" />
+			<?php
+			} ?>
+		</div>
+		<div class="clear"></div>
+		</div>
+		<?php
+
 	}
 
 } // END Aggregator class

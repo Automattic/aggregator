@@ -2,7 +2,7 @@
 
 if ( class_exists( 'WP_List_Table' ) ) {
 
-	class Aggregator_List_Table extends WP_List_Table {
+	class Aggregator_Portals_List_Table extends WP_List_Table {
 
 		/**
 		 * Constructor, we override the parent to pass our own arguments

@@ -24,7 +24,7 @@ require_once( 'class-plugin.php' );
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-require_once( 'class-aggregator_list_table.php' );
+require_once( 'class-aggregator_portal_list_table.php' );
 
 /**
  * 
@@ -71,7 +71,7 @@ class Aggregator extends Aggregator_Plugin {
 
 	function admin_init() {
 
-		$this->list_table = new Aggregator_List_Table();
+		$this->list_table = new Aggregator_Portals_List_Table();
 
 		$this->set_cpt_cache();
 
@@ -190,6 +190,36 @@ class Aggregator extends Aggregator_Plugin {
 		$cpt_cache = get_site_transient( $cpt_cache_name );
 		if ( ! $cpt_cache )
 			set_site_transient( $cpt_cache_name, $cpts );
+
+	}
+
+	/**
+	 * Get a list of portals to which a blog should push.
+	 *
+	 * @param int $source_id ID of the source blog, from which posts will be pushed
+	 *
+	 * @return bool|array False if there are no portals to sync to, otherwise an array of portal IDs
+	 */
+	public function get_portals( $source_id ) {
+
+		// Grab the current portal sites from our site option
+		$sync = get_site_option( "aggregator_{$source_id}_portal_blogs", array() );
+
+		/**
+		 * Filters the list of blogs to push to.
+		 *
+		 * Called when a post is saved, this filter can be used to change the sites
+		 * that the post is pushed to, overriding the settings.
+		 *
+		 * @param array $sync Array of portal blog IDs to push to
+		 * @param int $source_id Blog ID of the source site
+		 */
+		$sync = apply_filters( 'aggregator_portal_blogs', $sync, $source_id );
+
+		if ( empty( $sync ) )
+			return false;
+		else
+			return $sync;
 
 	}
 

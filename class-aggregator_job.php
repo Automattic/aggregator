@@ -214,6 +214,9 @@ Class Aggregator_Job {
 
 		$url = esc_url( get_edit_post_link( $this->post_id ) );
 
+		// Add the portal ID as a parameter to the URL
+		$url = add_query_arg( 'portal', $this->portal, $url );
+
 		return $url;
 
 	}

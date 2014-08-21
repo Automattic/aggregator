@@ -566,3 +566,5 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 }
+
+$aggregate = new Aggregate();

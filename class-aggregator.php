@@ -223,6 +223,35 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Get a list of source blogs which push to the given portal
+	 *
+	 * @param int $portal_id ID of the portal blog, to which posts will be pushed
+	 *
+	 * @return bool|array False if there are no sources to sync from, otherwise an array of source blog IDs
+	 */
+	public function get_sources( $portal_id ) {
+
+		// Grab the current source blogs from our site option
+		$sync = get_site_option( "aggregator_{$portal_id}_source_blogs", array() );
+
+		/**
+		 * Filters the list of blogs to push from.
+		 *
+		 * This filter can be used to change the sites that the post is pushed to, overriding the settings.
+		 *
+		 * @param array $sync Array of source blog IDs to push from
+		 * @param int $portal_id Blog ID of the portal site
+		 */
+		$sync = apply_filters( 'aggregator_source_blogs', $sync, $portal_id );
+
+		if ( empty( $sync ) )
+			return false;
+		else
+			return $sync;
+
+	}
+
 } // END Aggregator class
 
 $aggregator = new Aggregator();

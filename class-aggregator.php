@@ -24,7 +24,7 @@ require_once( 'class-plugin.php' );
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-require_once( 'class-aggregator_portal_list_table.php' );
+require_once( 'class-aggregator_portals_list_table.php' );
 
 /**
  * 
@@ -54,11 +54,11 @@ class Aggregator extends Aggregator_Plugin {
 
 		$this->add_action( 'network_admin_menu' );
 		$this->add_action( 'admin_init' );
+		$this->add_action( 'init', 'register_post_types', 11 );
 
 		if ( is_admin() ) {
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
-			$this->add_action( 'init', 'register_post_types' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -289,9 +289,17 @@ class Aggregator extends Aggregator_Plugin {
 		register_post_type( 'aggregator_job', array(
 			'label' => __('Aggregator Jobs'),
 			'labels' => array(
-				'name' => __('Aggregator Job'),
+				'singular_name' => __('Aggregator Job'),
+				'add_new_item' => __('Add New Sync Job'),
+				'edit_item' => __('Edit Sync Job'),
+				'new_item' => __('New Sync Job'),
+				'view_item' => __('View Sync Job'),
+				'not_found' => __('No sync jobs found'),
+				'not_found_in_trash' => __('No sync jobs found in trash'),
 			),
 			'public' => false,
+			'show_ui' => true,
+			'show_in_menu' => false,
 			'supports' => false,
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
 			'taxonomies' => get_taxonomies( array( 'public' => true, '_builtin' => false ) ),
@@ -301,7 +309,9 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
-	// @todo meta_boxes()
+	public function meta_boxes( $post ) {
+
+	}
 
 } // END Aggregator class
 

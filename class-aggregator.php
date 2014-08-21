@@ -317,13 +317,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		/**
 		 * @todo Add meta boxes for;
-		 *       * Description
 		 *       * post types
 		 *       * taxonomies
 		 */
 
-		// Post types meta box
+		// Description meta box
 		add_meta_box( 'description', __('Description'), array( $this, 'meta_box_description' ), 'aggregator_job', 'normal', 'high' );
+
+		// Post types meta box
+		add_meta_box( 'post_types', __('Post Types'), array( $this, 'meta_box_post_types' ), 'aggregator_job', 'normal', 'core' );
 
 	}
 
@@ -386,6 +388,26 @@ class Aggregator extends Aggregator_Plugin {
 			$source->domain,
 			$portal->domain
 		);
+
+	}
+
+	public function meta_box_post_types() {
+
+		// Get all the post types
+		$cpts = get_post_types( array(
+			'public' => true,
+		), 'names' );
+
+		echo sprintf(
+			'<p>%s</p>',
+			__('Choose the post types to include in the sync:')
+		);
+
+		foreach ( $cpts as $cpt ) {
+
+			echo '<label for="cpt_' . $cpt . '"><input type="checkbox" name="cpts[]" id="cpt_' . $cpt . '" value="' . $cpt . '"> ' . $cpt . '</label><br/>';
+
+		}
 
 	}
 

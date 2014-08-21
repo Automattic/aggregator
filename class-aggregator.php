@@ -315,6 +315,16 @@ class Aggregator extends Aggregator_Plugin {
 		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
 		add_meta_box( 'submitdiv', __('Save'), array( $this, 'meta_box_submitdiv' ), 'aggregator_job', 'side', 'high' );
 
+		/**
+		 * @todo Add meta boxes for;
+		 *       * Description
+		 *       * post types
+		 *       * taxonomies
+		 */
+
+		// Post types meta box
+		add_meta_box( 'description', __('Description'), array( $this, 'meta_box_description' ), 'aggregator_job', 'normal', 'high' );
+
 	}
 
 	public function meta_box_submitdiv( $post, $args = array() ) {
@@ -358,6 +368,24 @@ class Aggregator extends Aggregator_Plugin {
 		<div class="clear"></div>
 		</div>
 		<?php
+
+	}
+
+	public function meta_box_description( $post, $args = array() ) {
+
+		// Grab the portal ID from the REQUEST vars hopefully
+		$portal = intval( $_REQUEST['portal'] );
+		$portal = get_blog_details( $portal );
+
+		// and the current blog
+		$source = get_blog_details( get_current_blog_id() );
+
+		// @todo style this to remove the border, heading and background
+		echo sprintf(
+			__('<h1>Edit Sync: %s to %s</h1>'),
+			$source->domain,
+			$portal->domain
+		);
 
 	}
 

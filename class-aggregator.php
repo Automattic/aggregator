@@ -37,7 +37,7 @@ class Aggregator extends Aggregator_Plugin {
 	/**
 	 * A version number for cache busting, etc.
 	 *
-	 * @var type boolean
+	 * @var boolean A version tag for cache-busting
 	 */
 	public $version;
 
@@ -48,9 +48,7 @@ class Aggregator extends Aggregator_Plugin {
 
 	/**
 	 * Initiate!
-	 *
-	 * @return void
-	 **/
+	 */
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
@@ -89,10 +87,7 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function load_post_edit() {
 
-		$screen = get_current_screen();
 		$post_id = isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : false;
-		
-		$this->process_import_terms( $post_id );
 		
 		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
 
@@ -158,7 +153,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * @return void
 	 */
 	public function network_admin_menu() {
-		$page = add_submenu_page(
+		add_submenu_page(
 			'settings.php',
 			__('Aggregator Setup'),
 			__('Aggregator'),
@@ -195,38 +190,6 @@ class Aggregator extends Aggregator_Plugin {
 		$cpt_cache = get_site_transient( $cpt_cache_name );
 		if ( ! $cpt_cache )
 			set_site_transient( $cpt_cache_name, $cpts );
-
-	}
-
-	/**
-	 * Given a blog id, retrieve portal blogs to sync to
-	 *
-	 * @param int $blog_id ID of the source blog
-	 */
-	public function get_portal_sites_for_blog( $blog_id ) {
-
-		/**
-		 * Retrieve a site (network) option named like so;
-		 * 	`aggregator_{$blog_id}_portals`
-		 */
-
-		// Return a basic array of blog IDs
-
-	}
-
-	/**
-	 * Given a blog id, retrieve source blogs to sync from
-	 *
-	 * @param int $blog_id ID of the portal blog
-	 */
-	public function get_source_sites_for_blog( $blog_id ) {
-
-		/**
-		 * Retrieve a site (network) option named like so;
-		 * 	`aggregator_{$blog_id}_sources`
-		 */
-
-		// Return a basic array of blog IDs
 
 	}
 

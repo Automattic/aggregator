@@ -327,6 +327,9 @@ class Aggregator extends Aggregator_Plugin {
 		// Post types meta box
 		add_meta_box( 'post_types', __('Post Types'), array( $this, 'meta_box_post_types' ), 'aggregator_job', 'normal', 'core' );
 
+		// Taxonomies meta box
+		add_meta_box( 'taxonomies', __('Taxonomies'), array( $this, 'meta_box_taxonomies' ), 'aggregator_job', 'normal', 'core' );
+
 	}
 
 	public function meta_box_submitdiv( $post, $args = array() ) {
@@ -391,12 +394,10 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
-	public function meta_box_post_types() {
+	public function meta_box_post_types( $post, $args = array() ) {
 
 		// Get all the post types
-		$cpts = get_post_types( array(
-			'public' => true,
-		), 'names' );
+		$cpts = get_post_types( array( 'public' => true, ), 'objects' );
 
 		echo sprintf(
 			'<p>%s</p>',
@@ -405,7 +406,25 @@ class Aggregator extends Aggregator_Plugin {
 
 		foreach ( $cpts as $cpt ) {
 
-			echo '<label for="cpt_' . $cpt . '"><input type="checkbox" name="cpts[]" id="cpt_' . $cpt . '" value="' . $cpt . '"> ' . $cpt . '</label><br/>';
+			echo '<label for="cpt_' . $cpt->name . '"><input type="checkbox" name="cpts[]" id="cpt_' . $cpt->name . '" value="' . $cpt->name . '"> ' . $cpt->labels->name . '</label><br/>';
+
+		}
+
+	}
+
+	public function meta_box_taxonomies( $post, $args = array() ) {
+
+		// Get all the taxonomies
+		$taxos = get_taxonomies( array( 'public' => true ), 'objects' );
+
+		echo sprintf(
+			'<p>%s</p>',
+			__('Choose the taxonomies to include in the sync:')
+		);
+
+		foreach ( $taxos as $taxo ) {
+
+			echo '<label for="taxo_' . $taxo->name . '"><input type="checkbox" name="taxos[]" id="taxo_' . $taxo->name . '" value="' . $taxo->name . '"> ' . $taxo->labels->name . '</label><br/>';
 
 		}
 

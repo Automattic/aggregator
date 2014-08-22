@@ -54,14 +54,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		$this->add_action( 'network_admin_menu' );
 		$this->add_action( 'admin_init' );
-		$this->add_action( 'init', 'register_post_types', 11 );
 
 		if ( is_admin() ) {
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
+			$this->add_action( 'init', 'register_post_types', 11 );
 		}
 
 		$this->add_action( 'template_redirect' );
+		$this->add_action( 'admin_enqueue_scripts' );
 		$this->add_filter( 'post_link', null, null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
 		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
@@ -427,6 +428,27 @@ class Aggregator extends Aggregator_Plugin {
 			echo '<label for="taxo_' . $taxo->name . '"><input type="checkbox" name="taxos[]" id="taxo_' . $taxo->name . '" value="' . $taxo->name . '"> ' . $taxo->labels->name . '</label><br/>';
 
 		}
+
+	}
+
+	public function admin_enqueue_scripts() {
+
+		// Fetch the current screen so we know what admin page we're on
+		global $current_screen, $pagenow;
+
+		// Javascript to be loaded on the post edit screen for our aggregator_job post type
+		wp_register_script(
+			'aggregator_job_edit',
+			$this->url( 'js/aggregator_job_edit.js' ),
+			array('jquery'),
+			$this->version,
+			true
+		);
+
+		// Queue up only on post add/edit screen for our post type
+		if ( 'aggregator_job' == $current_screen->post_type
+			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) )
+			wp_enqueue_script('aggregator_job_edit');
 
 	}
 

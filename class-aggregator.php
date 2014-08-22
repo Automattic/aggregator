@@ -551,7 +551,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		}
 
-		// Save the post types to a meta field in this post
+		// Save the taxonomies to a meta field in this post
 		update_post_meta( $post_id, '_aggregator_taxonomies', $taxos );
 
 	}

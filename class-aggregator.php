@@ -59,6 +59,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 			$this->add_action( 'init', 'register_post_types', 11 );
+			$this->add_action( 'save_post' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -482,6 +483,44 @@ class Aggregator extends Aggregator_Plugin {
 		unset( $taxonomies['post_format'] );
 
 		return $taxonomies;
+
+	}
+
+	public function save_post( $post_id ) {
+
+		// Only affect our aggregation_job post type
+		if ( 'aggregator_job' != get_post_type( $post_id ) )
+			return;
+
+		// Get any selected post types
+		if ( isset( $_REQUEST['cpts'] ) ) {
+
+			$cpts = $_REQUEST['cpts'];
+
+			// Make sure there's nothing suspect
+			for ( $i = 0; $i < count( $cpts ); $i++ ) {
+				$cpts[$i] = esc_attr( $cpts[$i] );
+			}
+
+		}
+
+		// Save the post types to a meta field in this post
+		update_post_meta( $post_id, '_aggregator_post_types', $cpts );
+
+		// Get any selected taxonomies
+		if ( isset( $_REQUEST['taxos'] ) ) {
+
+			$taxos = $_REQUEST['taxos'];
+
+			// Make sure there's nothing suspect
+			for ( $i = 0; $i < count( $taxos ); $i++ ) {
+				$taxos[$i] = esc_attr( $taxos[$i] );
+			}
+
+		}
+
+		// Save the post types to a meta field in this post
+		update_post_meta( $post_id, '_aggregator_taxonomies', $taxos );
 
 	}
 

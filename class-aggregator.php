@@ -395,6 +395,18 @@ class Aggregator extends Aggregator_Plugin {
 			$portal->domain
 		);
 
+		// Get the portal ID, wherever it may be
+		if ( isset( $_REQUEST['portal'] ) )
+			$portal = intval( $_REQUEST['portal'] );
+		else
+			$portal = get_post_meta( $post->ID, '_aggregator_portal', true );
+
+		// Sneak the portal ID in here as a hidden field
+		echo sprintf(
+			'<input type="hidden" name="portal" value="%d">',
+			$portal
+		);
+
 	}
 
 	public function meta_box_post_types( $post, $args = array() ) {
@@ -553,6 +565,10 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Save the taxonomies to a meta field in this post
 		update_post_meta( $post_id, '_aggregator_taxonomies', $taxos );
+
+		// Save the portal ID as post meta
+		$portal = intval( $_REQUEST['portal'] );
+		update_post_meta( $post_id, '_aggregator_portal', $portal );
 
 	}
 

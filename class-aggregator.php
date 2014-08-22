@@ -304,7 +304,7 @@ class Aggregator extends Aggregator_Plugin {
 			'show_in_menu' => false, // Otherwise uses show_ui value
 			'supports' => false,
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
-			'taxonomies' => $this->get_taxonomies_for_sync_settings,
+			'taxonomies' => $this->get_taxonomies_for_sync_settings(),
 			'query_var' => false,
 			'can_export' => false,
 		) );
@@ -448,8 +448,16 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Queue up only on post add/edit screen for our post type
 		if ( 'aggregator_job' == $current_screen->post_type
-			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) )
+			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
+
+			// Queue the script for inclusion
 			wp_enqueue_script('aggregator_job_edit');
+
+			// Pass to the script a list of taxonomies, rather than scan the page after loading
+			wp_localize_script( 'aggregator_job_edit', 'aggregator_taxonomies', $this->get_taxonomies_for_sync_settings() );
+
+		}
+
 
 	}
 

@@ -212,12 +212,12 @@ Class Aggregator_Job {
 	 */
 	public function get_edit_post_link() {
 
-		$url = esc_url( get_edit_post_link( $this->post_id ) );
+		$url = get_edit_post_link( $this->post_id );
 
 		// Add the portal ID as a parameter to the URL
 		$url = add_query_arg( 'portal', $this->portal, $url );
 
-		return $url;
+		return esc_url( $url );
 
 	}
 
@@ -230,9 +230,9 @@ Class Aggregator_Job {
 	 */
 	public function get_delete_post_link() {
 
-		$url = esc_url( get_delete_post_link( $this->post_id, '', true ) );
+		$url = get_delete_post_link( $this->post_id, '', true );
 
-		return $url;
+		return esc_url( $url );
 
 	}
 

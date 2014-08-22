@@ -532,9 +532,19 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'aggregator_job' != get_post_type( $post_id ) )
 			return;
 
+		// Find the portal ID
+		if ( isset( $_REQUEST['portal'] ) )
+			$portal = intval( $_REQUEST['portal'] );
+		else
+			return;
+
+		// Create a new aggregator job. If one alread exists for this porta/source combination
+		// the following will load the existing settings
+		$sync_job = new Aggregator_Job( $portal, get_current_blog_id() );
+
 		// Defaults for the post types and taxonomies
-		$cpts = array();
-		$taxos = array();
+		$cpts = $sync_job->get_post_types();
+		$taxos = $sync_job->get_taxonomies();
 
 		// Get any selected post types
 		if ( isset( $_REQUEST['cpts'] ) ) {
@@ -548,8 +558,8 @@ class Aggregator extends Aggregator_Plugin {
 
 		}
 
-		// Save the post types to a meta field in this post
-		update_post_meta( $post_id, '_aggregator_post_types', $cpts );
+		// Save the new/changed post types
+		$sync_job->set_post_types( $cpts );
 
 		// Get any selected taxonomies
 		if ( isset( $_REQUEST['taxos'] ) ) {
@@ -563,12 +573,11 @@ class Aggregator extends Aggregator_Plugin {
 
 		}
 
-		// Save the taxonomies to a meta field in this post
-		update_post_meta( $post_id, '_aggregator_taxonomies', $taxos );
+		// Save the new/changed taxonomies
+		$sync_job->set_taxonomies( $taxos );
 
 		// Save the portal ID as post meta
-		$portal = intval( $_REQUEST['portal'] );
-		update_post_meta( $post_id, '_aggregator_portal', $portal );
+		$sync_job->set_portal_blog_id_meta();
 
 	}
 

@@ -112,7 +112,7 @@ Class Aggregator_Job {
 	 */
 	public function get_portal_blog_name() {
 
-		return '';
+		return $this->portal->domain;
 
 	}
 
@@ -128,13 +128,24 @@ Class Aggregator_Job {
 	}
 
 	/**
+	 * Sets the post meta field to hold the portal blog ID
+	 *
+	 * @return void
+	 */
+	public function set_portal_blog_id_meta() {
+
+		update_post_meta( $this->post_id, '_aggregator_portal', $this->get_portal_blog_id() );
+
+	}
+
+	/**
 	 * Get the name of the source blog, for use in admin screens
 	 *
 	 * @return string Name of the source blog
 	 */
 	public function get_source_blog_name() {
 
-		return '';
+		return $this->source->domain;
 
 	}
 
@@ -145,7 +156,7 @@ Class Aggregator_Job {
 	 */
 	public function get_source_blog_id() {
 
-		return '';
+		return $this->source->blog_id;
 
 	}
 
@@ -156,7 +167,7 @@ Class Aggregator_Job {
 	 */
 	public function get_post_types() {
 
-		return array();
+		return $this->post_types;
 
 	}
 
@@ -170,8 +181,10 @@ Class Aggregator_Job {
 	public function set_post_types( $post_types ) {
 
 		// Update the post meta of $this->post_id
+		update_post_meta( $this->post_id, '_aggregator_post_types', $post_types );
 
 		// Update $this->post_types
+		$this->post_types = $post_types;
 
 	}
 
@@ -182,7 +195,7 @@ Class Aggregator_Job {
 	 */
 	public function get_taxonomies() {
 
-		return array();
+		return $this->taxonomies;
 
 	}
 
@@ -196,8 +209,10 @@ Class Aggregator_Job {
 	public function set_taxonomies( $taxonomies ) {
 
 		// Update the taxonomies meta field for $this->post_id
+		update_post_meta( $this->post_id, '_aggregator_taxonomies', $taxonomies );
 
 		// Update $this->taxonomies
+		$this->taxonomies = $taxonomies;
 
 	}
 

@@ -287,12 +287,6 @@ class Aggregator extends Aggregator_Plugin {
 
 	public function register_post_types() {
 
-		// Get all the taxonomies so we can attach to our post type
-		$taxonomies = get_taxonomies( array( 'public' => true ) );
-
-		// We don't want post formats, though
-		unset( $taxonomies['post_format'] );
-
 		// Now register our psot type, for managing aggregator job settings
 		register_post_type( 'aggregator_job', array(
 			'label' => __('Aggregator Jobs'),
@@ -310,7 +304,7 @@ class Aggregator extends Aggregator_Plugin {
 			'show_in_menu' => false, // Otherwise uses show_ui value
 			'supports' => false,
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
-			'taxonomies' => $taxonomies,
+			'taxonomies' => $this->get_taxonomies_for_sync_settings,
 			'query_var' => false,
 			'can_export' => false,
 		) );
@@ -456,6 +450,18 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'aggregator_job' == $current_screen->post_type
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) )
 			wp_enqueue_script('aggregator_job_edit');
+
+	}
+
+	protected function get_taxonomies_for_sync_settings() {
+
+		// Get all the taxonomies so we can attach to our post type
+		$taxonomies = get_taxonomies( array( 'public' => true ) );
+
+		// We don't want post formats, though
+		unset( $taxonomies['post_format'] );
+
+		return $taxonomies;
 
 	}
 

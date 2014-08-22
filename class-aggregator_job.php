@@ -21,7 +21,7 @@ Class Aggregator_Job {
 	/**
 	 * @var int ID of the post used to store sync settings
 	 */
-	protected $post_id;
+	public $post_id;
 
 	/**
 	 * @var int ID of the blog we're currently on
@@ -134,7 +134,14 @@ Class Aggregator_Job {
 	 */
 	public function set_portal_blog_id_meta() {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
+		// Update the post meta
 		update_post_meta( $this->post_id, '_aggregator_portal', $this->get_portal_blog_id() );
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 
@@ -180,11 +187,17 @@ Class Aggregator_Job {
 	 */
 	public function set_post_types( $post_types ) {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
 		// Update the post meta of $this->post_id
 		update_post_meta( $this->post_id, '_aggregator_post_types', $post_types );
 
 		// Update $this->post_types
 		$this->post_types = $post_types;
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 
@@ -208,11 +221,17 @@ Class Aggregator_Job {
 	 */
 	public function set_taxonomies( $taxonomies ) {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
 		// Update the taxonomies meta field for $this->post_id
 		update_post_meta( $this->post_id, '_aggregator_taxonomies', $taxonomies );
 
 		// Update $this->taxonomies
 		$this->taxonomies = $taxonomies;
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 
@@ -238,9 +257,15 @@ Class Aggregator_Job {
 	 */
 	public function set_terms( $terms ) {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
 		// Update the terms for $this->post_id
 
 		// Update $this->terms
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 
@@ -264,9 +289,15 @@ Class Aggregator_Job {
 	 */
 	public function set_author( $author_id ) {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
 		// Update the author post meta for $this->post_id
 
 		// Update $this->author
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 

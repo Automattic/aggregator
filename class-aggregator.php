@@ -446,6 +446,15 @@ class Aggregator extends Aggregator_Plugin {
 			true
 		);
 
+		// CSS to be loaded on the post edit screen for our aggregator_job post type
+		wp_register_style(
+			'aggregator_job_edit',
+			$this->url( 'css/aggregator_job_edit.css' ),
+			array(),
+			$this->version,
+			'all'
+		);
+
 		// Queue up only on post add/edit screen for our post type
 		if ( 'aggregator_job' == $current_screen->post_type
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
@@ -455,6 +464,9 @@ class Aggregator extends Aggregator_Plugin {
 
 			// Pass to the script a list of taxonomies, rather than scan the page after loading
 			wp_localize_script( 'aggregator_job_edit', 'aggregator_taxonomies', $this->get_taxonomies_for_sync_settings() );
+
+			// Queue up our custom CSS, too
+			wp_enqueue_style('aggregator_job_edit');
 
 		}
 

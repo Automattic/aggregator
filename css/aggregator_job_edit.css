@@ -1,0 +1,11 @@
+#description {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+}
+
+#description .hndle,
+#description .handlediv {
+	display: none;
+	visibility: hidden;
+}

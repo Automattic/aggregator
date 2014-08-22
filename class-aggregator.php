@@ -387,7 +387,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// @todo style this to remove the border, heading and background
 		echo sprintf(
-			__('<h1>Edit Sync: %s to %s</h1>'),
+			__('<h1>%s to %s</h1>'),
 			$source->domain,
 			$portal->domain
 		);

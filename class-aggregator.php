@@ -402,6 +402,9 @@ class Aggregator extends Aggregator_Plugin {
 		// Get all the post types
 		$cpts = get_post_types( array( 'public' => true, ), 'objects' );
 
+		// Get the post types for this post, if applicable
+		$chosen_cpts = get_post_meta( $post->ID, '_aggregator_post_types', true );
+
 		echo sprintf(
 			'<p>%s</p>',
 			__('Choose the post types to include in the sync:')
@@ -409,7 +412,18 @@ class Aggregator extends Aggregator_Plugin {
 
 		foreach ( $cpts as $cpt ) {
 
-			echo '<label for="cpt_' . $cpt->name . '"><input type="checkbox" name="cpts[]" id="cpt_' . $cpt->name . '" value="' . $cpt->name . '"> ' . $cpt->labels->name . '</label><br/>';
+			// We want to check the box if this CPT has been chosen
+			$checked = '';
+			if ( in_array( $cpt->name, $chosen_cpts ) )
+				$checked = ' checked="checked"';
+
+			// Print the field
+			echo sprintf(
+				'<label for="cpt_%1$s"><input type="checkbox" name="cpts[]" id="cpt_%1$s" value="%1$s"%2$s> %3$s</label><br/>',
+				$cpt->name,
+				$checked,
+				$cpt->labels->name
+			);
 
 		}
 
@@ -420,6 +434,9 @@ class Aggregator extends Aggregator_Plugin {
 		// Get all the taxonomies
 		$taxos = get_taxonomies( array( 'public' => true ), 'objects' );
 
+		// Get the taxonomies for this post, if applicable
+		$chosen_taxos = get_post_meta( $post->ID, '_aggregator_taxonomies', true );
+
 		echo sprintf(
 			'<p>%s</p>',
 			__('Choose the taxonomies to include in the sync:')
@@ -427,7 +444,18 @@ class Aggregator extends Aggregator_Plugin {
 
 		foreach ( $taxos as $taxo ) {
 
-			echo '<label for="taxo_' . $taxo->name . '"><input type="checkbox" name="taxos[]" id="taxo_' . $taxo->name . '" value="' . $taxo->name . '"> ' . $taxo->labels->name . '</label><br/>';
+			// We want to check the box if this Taxonomy has been chosen
+			$checked = '';
+			if ( in_array( $taxo->name, $chosen_taxos ) )
+				$checked = ' checked="checked"';
+
+			// Print field
+			echo sprintf(
+				'<label for="taxo_%1$s"><input type="checkbox" name="taxos[]" id="taxo_%1$s" value="%1$s"%2$s> %3$s</label><br/>',
+				$taxo->name,
+				$checked,
+				$taxo->labels->name
+			);
 
 		}
 
@@ -491,6 +519,10 @@ class Aggregator extends Aggregator_Plugin {
 		// Only affect our aggregation_job post type
 		if ( 'aggregator_job' != get_post_type( $post_id ) )
 			return;
+
+		// Defaults for the post types and taxonomies
+		$cpts = array();
+		$taxos = array();
 
 		// Get any selected post types
 		if ( isset( $_REQUEST['cpts'] ) ) {

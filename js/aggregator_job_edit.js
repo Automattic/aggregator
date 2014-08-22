@@ -1,38 +1,49 @@
 jQuery(document).ready(function($){
 
-    // Loop through the taxonomies, checking if they're checked and showing/hiding
-    // the relevant meta boxes accordingly
-    for ( var key in aggregator_taxonomies ) {
+    // On load, trigger toggling
+    toggle_taxonomy_meta_boxes();
 
-        // This taxonomy
-        var tax = aggregator_taxonomies[key];
+    // Toggle when the checkboxes are toggled too
+    $('#taxonomies input[type=checkbox]').on( 'change', toggle_taxonomy_meta_boxes );
 
-        // A flag to indicate whether or not the meta box should be shown for this taxonomy
-        var display = false;
+    function toggle_taxonomy_meta_boxes() {
 
-        // Is the checkbox for this taxonomy selected?
-        if ( $('input.checkbox_check').is(':checked') ) {
-            display = true;
-        }
+        // Loop through the taxonomies, checking if they're checked and showing/hiding
+        // the relevant meta boxes accordingly
+        for ( var key in aggregator_taxonomies ) {
 
-        // Find out what the ID is for the meta box
-        var meta_box_selector = '';
-        if ( $( '#' + taxonomy + 'div' ).length ) {
+            // This taxonomy
+            var tax = aggregator_taxonomies[key];
 
-            // This is a standard category-style taxonomy
-            meta_box_selector = '#' + taxonomy + 'div';
+            // A flag to indicate whether or not the meta box should be shown for this taxonomy
+            var display = false;
 
-        } else if ( $('#tagsdiv-' + taxonomy).length ) {
+            // Is the checkbox for this taxonomy selected?
+            if ( $( '#taxo_' + tax ).is(':checked') ) {
+                display = true;
+            }
 
-            // This is a tag-style taxonomy
-            meta_box_selector = '#tagsdiv-' + taxonomy;
+            // Find out what the ID is for the meta box
+            var meta_box_selector = '';
+            if ( $( '#' + tax + 'div' ).length ) {
 
-        }
+                // This is a standard category-style taxonomy
+                meta_box_selector = '#' + tax + 'div';
 
-        if ( display ) {
-            $( meta_box_selector).show();
-        } else {
-            $( meta_box_selector).hide();
+            } else if ( $('#tagsdiv-' + tax).length ) {
+
+                // This is a tag-style taxonomy
+                meta_box_selector = '#tagsdiv-' + tax;
+
+            }
+
+            // Now show/hide the meta box
+            if ( display ) {
+                $( meta_box_selector).show();
+            } else {
+                $( meta_box_selector).hide();
+            }
+
         }
 
     }

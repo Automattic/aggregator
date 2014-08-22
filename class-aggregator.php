@@ -542,6 +542,11 @@ class Aggregator extends Aggregator_Plugin {
 		// the following will load the existing settings
 		$sync_job = new Aggregator_Job( $portal, get_current_blog_id() );
 
+		// Check the post ID is the same. If it isn't, something has gone rather wrong and
+		// we should issue a warning so that debugging reveals what's wrong
+		if ( $post_id !== $sync_job->post_id )
+			trigger_error( __('Sync job IDs do not match!'), E_WARNING );
+
 		// Defaults for the post types and taxonomies
 		$cpts = $sync_job->get_post_types();
 		$taxos = $sync_job->get_taxonomies();

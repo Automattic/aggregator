@@ -44,6 +44,11 @@ Class Aggregator_Job {
 	protected $terms = array();
 
 	/**
+	 * @var int Author ID for the user to whom pushed posts should be assigned
+	 */
+	protected $author = 1;
+
+	/**
 	 * @var string An ID constructed as {$source_id}_{$post_id}
 	 */
 	public $job_id;
@@ -99,6 +104,9 @@ Class Aggregator_Job {
 		}
 
 		$this->restore_current_blog();
+
+		// Retrieve the author ID for the portal
+		$this->author = get_site_option( "aggregator_{$this->get_portal_blog_id()}_author" );
 
 		// Create a "Job ID" using source and post IDs
 		$this->job_id = $this->get_source_blog_id() . '_' . $this->post_id;
@@ -244,7 +252,7 @@ Class Aggregator_Job {
 	 */
 	public function get_terms( $taxonomy ) {
 
-		return array();
+		return $this->terms;
 
 	}
 
@@ -276,7 +284,7 @@ Class Aggregator_Job {
 	 */
 	public function get_author() {
 
-		return 1;
+		return $this->author;
 
 	}
 
@@ -289,15 +297,15 @@ Class Aggregator_Job {
 	 */
 	public function set_author( $author_id ) {
 
-		// Maybe switch to blog
-		$this->switch_to_blog( $this->get_source_blog_id() );
+		// Check it's an integer
+		if ( ! intval( $author_id ) )
+			return;
 
 		// Update the author post meta for $this->post_id
+		update_site_option( "aggregator_{$this->get_portal_blog_id()}_author", $author_id );
 
 		// Update $this->author
-
-		// Maybe restore current blog
-		$this->restore_current_blog();
+		$this->author = $author_id;
 
 	}
 

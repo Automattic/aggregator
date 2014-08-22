@@ -287,6 +287,13 @@ class Aggregator extends Aggregator_Plugin {
 
 	public function register_post_types() {
 
+		// Get all the taxonomies so we can attach to our post type
+		$taxonomies = get_taxonomies( array( 'public' => true ) );
+
+		// We don't want post formats, though
+		unset( $taxonomies['post_format'] );
+
+		// Now register our psot type, for managing aggregator job settings
 		register_post_type( 'aggregator_job', array(
 			'label' => __('Aggregator Jobs'),
 			'labels' => array(
@@ -298,12 +305,12 @@ class Aggregator extends Aggregator_Plugin {
 				'not_found' => __('No sync jobs found'),
 				'not_found_in_trash' => __('No sync jobs found in trash'),
 			),
-			'public' => false,
-			'show_ui' => true,
-			'show_in_menu' => false,
+			'public' => false, // Only access through our network admin UI
+			'show_ui' => true, // Otherwise we can't use post edit screens
+			'show_in_menu' => false, // Otherwise uses show_ui value
 			'supports' => false,
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
-			'taxonomies' => get_taxonomies( array( 'public' => true, '_builtin' => false ) ),
+			'taxonomies' => $taxonomies,
 			'query_var' => false,
 			'can_export' => false,
 		) );

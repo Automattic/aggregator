@@ -7,12 +7,16 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		/**
 		 * Constructor, we override the parent to pass our own arguments
 		 */
-		public function __construct() {
+		public function __construct( $portal ) {
 			parent::__construct( array(
 				'singular'=> 'wp_list_aggregator_job', // Singular label
 				'plural' => 'wp_list_aggregator_jobs', // plural label, also this well be one of the table css class
 				'ajax'   => false // We won't support Ajax for this table
 			) );
+
+			// Set the portal if we're given one
+			if ( isset( $portal ) )
+				$this->portal = intval( $portal );
 		}
 
 		/**
@@ -38,11 +42,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			if ( ! is_array( $this->items ) )
 				$this->items = array();
 
-			// Get the portal ID from the URL
-			$portal = intval( $_REQUEST['portal'] );
-
 			// Get all the jobs for this portal
-			$jobs = $aggregator->get_jobs_for_portal( $portal );
+			$jobs = $aggregator->get_jobs_for_portal( $this->portal );
 
 			if ( ! empty( $jobs ) )
 				$this->items = $jobs;

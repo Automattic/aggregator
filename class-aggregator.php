@@ -60,6 +60,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'save_post' );
+			$this->add_action( 'wp_ajax_get_new_job_url' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -526,6 +527,13 @@ class Aggregator extends Aggregator_Plugin {
 			// Queue up drop-down redirect JS
 			wp_enqueue_script('aggregator_job_create');
 
+			// Add the ajax_url variable
+			wp_localize_script(
+				'aggregator_job_create',
+				'ajax_object',
+				array( 'ajax_url' => admin_url( 'admin-ajax.php' ) )
+			);
+
 		}
 
 
@@ -600,6 +608,23 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Save the portal ID as post meta
 		$sync_job->set_portal_blog_id_meta();
+
+	}
+
+	public function wp_ajax_get_new_job_url() {
+
+		// Retrieve and sanitise blog IDs
+		$portal = intval( $_POST['portal'] );
+		$source = intval( $_POST['source'] );
+
+		// Grab the admin URL
+		switch_to_blog( $source );
+		$url = add_query_arg( 'portal', $portal, admin_url( 'post-new.php?post_type=aggregator_job' ) );
+		restore_current_blog();
+
+		// Send back to the script
+		echo $url;
+		die();
 
 	}
 

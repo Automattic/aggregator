@@ -13,4 +13,27 @@ jQuery(function($){
 
     } );
 
+    // Detect changes to the drop down
+    $('.new_aggregator').on( 'submit', function (e) {
+
+        // Stop submission
+        e.preventDefault();
+
+        // Grab our blog IDs
+        var portal = $('#portal').val();
+        var source = $('#source').val();
+
+        // Grab the URL
+        var ajax_data = {
+            'action': 'get_new_job_url',
+            'portal': portal,
+            'source': source
+        };
+
+        $.post( ajax_object.ajax_url, ajax_data, function ( response ) {
+            window.location.href = response;
+        } );
+
+    } );
+
 });

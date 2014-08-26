@@ -496,6 +496,15 @@ class Aggregator extends Aggregator_Plugin {
 			'all'
 		);
 
+		// JS for redirecting the user to the appropriate sub-blog post edit page
+		wp_register_script(
+			'aggregator_job_create',
+			$this->url( 'js/aggregator_job_create.js' ),
+			array('jquery'),
+			$this->version,
+			true
+		);
+
 		// Queue up only on post add/edit screen for our post type
 		if ( 'aggregator_job' == $current_screen->post_type
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
@@ -508,6 +517,14 @@ class Aggregator extends Aggregator_Plugin {
 
 			// Queue up our custom CSS, too
 			wp_enqueue_style('aggregator_job_edit');
+
+		}
+
+		// Queue up only on network admin settings page
+		if ( 'settings_page_aggregator-network' == $current_screen->id && 'add' == $_REQUEST['action'] ) {
+
+			// Queue up drop-down redirect JS
+			wp_enqueue_script('aggregator_job_create');
 
 		}
 

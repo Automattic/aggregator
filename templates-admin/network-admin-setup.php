@@ -16,18 +16,32 @@ switch ( $action ) {
 		?>
 		<div class="wrap">
 			<h2><?php _e('Add New Sync Job'); ?></h2>
-			<form action="<?php echo esc_url( network_admin_url( 'settings.php?page=aggregator&action=edit' ) ); ?>" method="get">
-				<input name="page" value="aggregator" type="hidden" />
-				<input name="action" value="edit" type="hidden" />
-				<label for="id"><?php _e('Choose the site that will act as the "portal" site:'); ?> </label>
-				<select name="id" id="id">
-					<?php
-					foreach ( $blogs as $blog ) {
+			<form class="new_aggregator" action="" method="get">
+				<p>
+					<label for="portal"><?php _e('Choose the site that will act as the "portal" site:'); ?> </label>
+					<select name="portal" id="portal">
+						<option selected="selected">-- Select a blog --</option>
+						<?php
+						foreach ( $blogs as $blog ) {
+							?>
+							<option value="<?php echo $blog['blog_id']; ?>"><?php echo $blog['domain']; ?></option><?php
+						}
 						?>
-						<option value="<?php echo $blog['blog_id']; ?>"><?php echo $blog['domain']; ?></option><?php
-					}
-					?>
-				</select>
+					</select>
+				</p>
+
+				<p>
+					<label for="source"><?php _e('Choose the site that will act as the "source" site:'); ?> </label>
+					<select name="source" id="source">
+						<option selected="selected">-- Select a blog --</option>
+						<?php
+						foreach ( $blogs as $blog ) {
+							?>
+							<option value="<?php echo $blog['blog_id']; ?>"><?php echo $blog['domain']; ?></option><?php
+						}
+						?>
+					</select>
+				</p>
 				<?php submit_button( __('Save &amp; Continue') ); ?>
 			</form>
 		</div>

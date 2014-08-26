@@ -46,39 +46,18 @@ switch ( $action ) {
 
 		// Get portal and sync sites info
 		$portal = get_blog_details( $id );
-		$sync_blogs = $this->get_push_blogs( $id );
+		$sync_blogs = $this->get_jobs_for_portal( $id );
 
 		echo '<h2>' . sprintf( __('Edit Sync Job for %s'), $portal->domain ) . '</h2>';
 
 		?>
 		<div class="wrap">
-			<form action="settings.php?page=aggregator&action=update" method="post">
-				<?php wp_nonce_field( 'edit-sync-job' ); ?>
-				<input type="hidden" name="id" value="<?php echo esc_attr( $id ) ?>" />
-				<table class="form-table">
-					<tbody>
-					<tr>
-						<th scope="row"><?php _e( 'Blogs to pull from' ); ?></th>
-						<td>
-							<?php echo sprintf( __('Any posts submitted on the blogs below will be pushed to %s. Only public blogs are available.'), $portal->domain ); ?><br/>
-							<?php
-							// List each blog with a checkbox
-							// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly
-							$blogs = wp_get_sites( array( 'public' => 1 ) );
-							foreach ( $blogs as $blog ) {
-								$current = in_array( intval( $blog['blog_id'] ), $sync_blogs ) ? $blog['blog_id'] : false;
-								?>
-								<label><input name="sync_blogs[]" type="checkbox" id="sync_blog_<?php echo $blog['blog_id']; ?>" value="<?php echo $blog['blog_id']; ?>" <?php checked( $blog['blog_id'], $current ) ?>> <?php echo $blog['domain']; ?></label><br/><?php
-								unset($current);
-							}
-							?>
-						</td>
-					</tr>
-					</tbody>
-				</table>
-				<?php submit_button(); ?>
-
-			</form>
+			<?php
+				require_once $this->dir( '/class-aggregator_jobs_list_table.php' );
+				$jobs = new Aggregator_Jobs_List_Table( $id );
+				$jobs->prepare_items();
+				$jobs->display();
+			?>
 		</div>
 		<?php
 		break;

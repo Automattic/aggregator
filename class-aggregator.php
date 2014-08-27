@@ -61,6 +61,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'save_post' );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
+			$this->add_action( 'publish_aggregator_job' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -563,14 +564,12 @@ class Aggregator extends Aggregator_Plugin {
 		else
 			return;
 
-		// Create a new aggregator job. If one alread exists for this porta/source combination
+		// Create a new aggregator job. If one already exists for this porta/source combination
 		// the following will load the existing settings
 		$sync_job = new Aggregator_Job( $portal, get_current_blog_id() );
 
-		// Check the post ID is the same. If it isn't, something has gone rather wrong and
-		// we should issue a warning so that debugging reveals what's wrong
-		if ( $post_id !== $sync_job->post_id )
-			trigger_error( __('Sync job IDs do not match!'), E_WARNING );
+		// Set the post ID. If a post already exists for this job, it will be deleted.
+		$sync_job->set_post_id( $post_id );
 
 		// Defaults for the post types and taxonomies
 		$cpts = $sync_job->get_post_types();
@@ -609,6 +608,16 @@ class Aggregator extends Aggregator_Plugin {
 		// Save the portal ID as post meta
 		$sync_job->set_portal_blog_id_meta();
 
+	}
+
+	public function publish_aggregator_job( $post_id, $post ) {
+pj_error_log( 'post ID', $post_id );
+pj_error_log( 'post', $post );
+pj_error_log( 'status', $post->post_status );
+pj_error_log( 'type', $post->post_type );
+		// Redirect back to network admin settings, with a success message
+		/*wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );
+		exit;*/
 	}
 
 	public function wp_ajax_get_new_job_url() {

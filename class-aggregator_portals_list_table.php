@@ -45,7 +45,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Check if we have sync jobs for those sites
 			foreach ( $blogs as $blog ) {
 
-				if ( $sync_blogs = get_site_option("aggregator_portal_{$blog['blog_id']}_blogs") ) {
+				if ( $sync_blogs = get_site_option("aggregator_{$blog['blog_id']}_source_blogs") ) {
 					$portals[ $blog['blog_id'] ] = $sync_blogs;
 				}
 

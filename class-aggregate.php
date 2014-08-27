@@ -94,9 +94,6 @@ Class Aggregate extends Aggregator_Plugin {
 
 			restore_current_blog();
 
-			// Remove the sync from the network options
-			$this->update_network_options( $portal, $current_blog->blog_id, 'delete' );
-
 		}
 
 		$this->recursing = false;
@@ -421,9 +418,6 @@ Class Aggregate extends Aggregator_Plugin {
 			// Switch back to source blog
 			restore_current_blog();
 
-			// Add/update the relevant network options
-			$this->update_network_options( $sync_destination, $current_blog->blog_id );
-
 		}
 
 		$this->recursing = false;
@@ -567,66 +561,6 @@ Class Aggregate extends Aggregator_Plugin {
 			wp_redirect( $original_permalink, 301 );
 			exit;
 		}
-	}
-
-	/**
-	 * Update our network options, indicating sync site partnerships.
-	 *
-	 * Sets/update the network option telling us which sources a portal will receive posts from, and
-	 * our network option denoting which portals a source will push to.
-	 *
-	 * @param int $portal ID of the portal blog
-	 * @param int $source ID of the source blog
-	 */
-	protected function update_network_options( $portal, $source, $action = 'add' ) {
-
-		// Validate
-		$portal = intval( $portal );
-		$source = intval( $source );
-
-		// Get list of existing sources for this portal
-		$sources = get_site_option( "aggregator_{$portal}_source_blogs", array() );
-
-		// Get list of existing portals for this source
-		$portals = get_site_option( "aggregator_{$source}_portal_blogs", array() );
-
-		// Decide what to do
-		switch ( $action ) {
-
-			// Remove sites
-			case "delete":
-
-				// Delete this source, if present
-				$source_found = array_search( $source, $sources );
-				if ( $source_found !== false )
-					unset( $sources[ $source_found ] );
-
-				// Delete this portal if present
-				$portal_found = array_search( $portal, $portals );
-				if ( $portal_found !== false )
-					unset( $portals[ $portal_found ] );
-
-				break;
-
-			// Add sites
-			case "add":
-
-				// Add this source, if not already added
-				if ( ! in_array( $source, $sources ) )
-					$sources[] = $source;
-
-				// Add this portal if not already added
-				if ( ! in_array( $portal, $portals ) )
-					$portals[] = $portal;
-
-				break;
-
-		}
-
-		// Update the options with our new values
-		$sources = update_site_option( "aggregator_{$portal}_source_blogs", $sources );
-		$portals = update_site_option( "aggregator_{$source}_portal_blogs", $portals );
-
 	}
 
 }

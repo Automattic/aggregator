@@ -608,6 +608,9 @@ class Aggregator extends Aggregator_Plugin {
 		// Save the portal ID as post meta
 		$sync_job->set_portal_blog_id_meta();
 
+		// Update the network options for network admin pages
+		$sync_job->update_network_options();
+
 	}
 
 	public function publish_aggregator_job( $post_id, $post ) {

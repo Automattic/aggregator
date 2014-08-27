@@ -61,7 +61,6 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			foreach ( $this->items as $job ) {
 
 				echo '<tr id="record_' . $job->job_id . '">';
-
 				foreach ( $columns as $column_name => $column_display_name ) {
 
 					// Style attributes for each col
@@ -96,19 +95,19 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							echo sprintf(
 								'%d post types',
-								count( $job->post_types )
+								count( $job->get_post_types() )
 							);
 							echo '<br/>';
 
 							echo sprintf(
 								'%d taxonomies',
-								count( $job->taxonomies )
+								count( $job->get_taxonomies() )
 							);
 							echo '<br/>';
 
 							echo sprintf(
 								'%d terms',
-								count( $job->terms )
+								count( $job->get_terms() )
 							);
 
 							echo '</p></td>';
@@ -119,7 +118,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							echo "<td $attributes><p>";
 
-							echo get_user_by( 'id', $job->author )->display_name;
+							echo get_user_by( 'id', $job->get_author() )->display_name;
 
 							echo '</p></td>';
 

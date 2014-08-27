@@ -61,7 +61,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'save_post' );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
-			$this->add_action( 'publish_aggregator_job' );
+			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -611,13 +611,11 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	public function publish_aggregator_job( $post_id, $post ) {
-pj_error_log( 'post ID', $post_id );
-pj_error_log( 'post', $post );
-pj_error_log( 'status', $post->post_status );
-pj_error_log( 'type', $post->post_type );
+
 		// Redirect back to network admin settings, with a success message
-		/*wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );
-		exit;*/
+		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );
+		exit;
+
 	}
 
 	public function wp_ajax_get_new_job_url() {

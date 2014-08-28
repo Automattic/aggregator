@@ -59,7 +59,6 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'load-post.php', 'load_post_edit' );
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 			$this->add_action( 'init', 'register_post_types', 11 );
-			$this->add_action( 'save_post' );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
@@ -553,7 +552,7 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
-	public function save_post( $post_id ) {
+	public function publish_aggregator_job( $post_id, $post ) {
 
 		// Only affect our aggregation_job post type
 		if ( 'aggregator_job' != get_post_type( $post_id ) )
@@ -611,10 +610,6 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Update the network options for network admin pages
 		$sync_job->update_network_options();
-
-	}
-
-	public function publish_aggregator_job( $post_id, $post ) {
 
 		// Redirect back to network admin settings, with a success message
 		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );

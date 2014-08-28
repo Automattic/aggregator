@@ -318,10 +318,17 @@ Class Aggregator_Job {
 	 */
 	public function get_edit_post_link() {
 
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->source->blog_id );
+
+		// Get the edit link
 		$url = get_edit_post_link( $this->post_id );
 
 		// Add the portal ID as a parameter to the URL
 		$url = add_query_arg( 'portal', $this->get_portal_blog_id(), $url );
+
+		// Switch back
+		$this->restore_current_blog();
 
 		return esc_url( $url );
 

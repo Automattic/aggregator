@@ -22,6 +22,10 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		/**
 		 * Define the columns that are going to be used in the table
 		 *
+		 * This function is in practice ineffective because we have two list tables that are operating under
+		 * the same screen ID. Therefore, a hook (aggregator_edit_columns) in the Aggregator class filters
+		 * the column headers to override it and provide the headers below.
+		 *
 		 * @return array $columns, the array of columns to use with the table
 		 */
 		public function get_columns() {

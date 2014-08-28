@@ -62,6 +62,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'save_post' );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
+			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -635,6 +636,34 @@ class Aggregator extends Aggregator_Plugin {
 		// Send back to the script
 		echo $url;
 		die();
+
+	}
+
+	/**
+	 * Force the column headers for the jobs list table.
+	 *
+	 * The $screen variable is the same for both our list tables, so we need to manually override
+	 * the column headers here for the Jobs List table. This hook accomplishes that.
+	 *
+	 * @param array $column_headers Unfiltered column headers
+	 *
+	 * @return array Filtered column headers
+	 */
+	public function aggregator_edit_columns( $column_headers ) {
+
+		// Get the portal ID
+		$id = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : false;
+
+		// Set the column headers
+		if ( $id ) {
+			$column_headers = array (
+				'col_source' => __('Sites'),
+				'col_syncing' => __('Syncing'),
+				'col_author' => __('Author'),
+			);
+		}
+
+		return $column_headers;
 
 	}
 

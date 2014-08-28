@@ -89,7 +89,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							// @todo Provide custom link for delete
 							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $job->get_delete_post_link() ) . '">' . __( 'Delete' ) . '</a></span>';
 
-							echo "<td $attributes>" . $job->portal->name . $this->row_actions( $actions ) . '</td>';
+							echo "<td $attributes>" . $job->source->blogname . ' (' . $job->source->domain . ')' . $this->row_actions( $actions ) . '</td>';
 
 							break;
 

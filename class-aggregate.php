@@ -171,6 +171,71 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Reduces the terms down to only those allowed.
+	 *
+	 * Takes the full list of taxonomy terms and removes any terms not whitelisted by settings.
+	 *
+	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
+	 *
+	 * @return array Filtered list of taxonomy terms to push
+	 */
+	protected function allowed_terms( $taxonomy_terms ) {
+
+		// Siphon off the taxonomies we shoud always sync
+		$tax_whitelist = array( 'post_format', 'post-collection', 'author' );
+		foreach ( $tax_whitelist as $tax ) {
+			// Copy any terms to the whitelist
+			if ( array_key_exists( $tax, $taxonomy_terms ) )
+				$tax_whitelist[ $tax ] = $taxonomy_terms[ $tax ];
+		}
+
+		// Now check each term
+		foreach ( $taxonomy_terms as $taxonomy => $terms ) {
+
+			// @todo $terms might be empty. If it is, all terms are acceptable
+
+			// Check each term
+			foreach ( $terms as $slug => $name ) {
+				// Remove the term if it's not allowed
+				if ( ! $this->allowed_term( $slug ) )
+					unset( $taxonomy_terms[ $taxonomy ][ $slug ] );
+			}
+
+		}
+
+		/**
+		 * Allow overriding of non-whitelisted taxonomies and terms.
+		 *
+		 * @param array $taxonomy_terms Multi-dimensional array of taxonomies and terms
+		 * @param int $blog_id ID of the current blog
+		 */
+		$taxonomy_terms = apply_filters( 'aggregator_taxonomy_terms', $taxonomy_terms, get_current_blog_id() );
+
+		// Now merge back in the whitelisted taxonomies we copied earlier
+		$taxonomy_terms = array_merge( $taxonomy_terms, $tax_whitelist );
+
+		return $taxonomy_terms;
+
+	}
+
+	/**
+	 * Checks if a term is allowed by the settings of the current job.
+	 *
+	 * @param string $term Slug of the taxonomy
+	 *
+	 * @return bool True if the term is allowed, false otherwise
+	 */
+	protected function allowed_term( $term ) {
+
+		// @todo What's the format returned by get_terms() though?!
+		if ( ! in_array( $term, $this->job->get_terms() ) )
+			return false;
+
+		return true;
+
+	}
+
 	function delete_pushed_posts( $orig_post_id, $orig_post ) {
 		global $current_blog;
 
@@ -437,8 +502,11 @@ Class Aggregate extends Aggregator_Plugin {
 			if ( ! $this->allowed_post_type( $orig_post->post_type, $this->job->get_post_types() ) )
 				return;
 
-			// Check if we should be pushing these taxonomies
+			// Check which taxonomies we should push, and filter them
 			$orig_terms = $this->allowed_taxonomies( $orig_terms );
+
+			// Check which terms we should push, and filter them
+			$orig_terms = $this->allowed_terms( $orig_terms );
 
 			// Okay, fine, switch sites and do the synchronisation dance.
 			switch_to_blog( $sync_destination );

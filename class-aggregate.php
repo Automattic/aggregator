@@ -426,6 +426,10 @@ Class Aggregate extends Aggregator_Plugin {
 			if ( ! $this->load_sync_job( $orig_post_id ) )
 				return;
 
+			// Check if we should be pushing this post, don't if not
+			if ( ! $this->push_post_type( $orig_post ) )
+				return;
+
 			// Check if we should sync to this blog
 			if ( ! $this->sync_to_blog( $sync_destination, $orig_post_data ) )
 				return;
@@ -534,10 +538,6 @@ Class Aggregate extends Aggregator_Plugin {
 
 		// Are we syncing anything from this site? If not, stop.
 		if ( ! $this->aggregator->get_portals( $current_blog->blog_id ) )
-			return;
-
-		// Check if we should be pushing this post, don't if not
-		if ( ! $this->push_post_type( $orig_post ) )
 			return;
 
 		// Only push published posts

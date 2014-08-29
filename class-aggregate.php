@@ -22,13 +22,6 @@ require_once( 'class-plugin.php' );
 Class Aggregate extends Aggregator_Plugin {
 
 	/**
-	 * An Aggregator_Job instance describing the settings to be used for this push.
-	 *
-	 * @var Aggregator_Job
-	 */
-	protected $job;
-
-	/**
 	 * A flag to say whether we're currently recursing, or not.
 	 *
 	 * @var boolean
@@ -220,30 +213,6 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	/**
-	 * Grabs the Aggregator_Job object to grab settings etc from
-	 *
-	 * Sets $this->job as the object for easy reference.
-	 *
-	 * @param int $post_id ID of the post being saved
-	 *
-	 * @return bool Success or failure
-	 */
-	protected function load_sync_job( $post_id ) {
-
-		// Get the portal meta (if it exists)
-		$portal = get_post_meta( $post_id, '_aggregator_portal' );
-		if ( empty( $portal ) )
-			return false;
-
-		// Get the job
-		$this->job = new Aggregator_Job( $portal, get_current_blog_id() );
-		if ( ! $this->job->job_id )
-			return false;
-
-		return true;
-	}
-
 	protected function orig_post_data( $orig_post_id ) {
 
 		// Get post data
@@ -423,8 +392,9 @@ Class Aggregate extends Aggregator_Plugin {
 		foreach ( $sync_destinations as $sync_destination ) {
 
 			// Get the relevant sync job, if there is one
-			if ( ! $this->load_sync_job( $orig_post_id ) )
-				return;
+			$job = new Aggregator_Job( $sync_destination, $current_blog->blog_id );
+			if ( ! $job->job_id )
+				continue; // There is no job for this destination
 
 			// Check if we should be pushing this post, don't if not
 			if ( ! $this->push_post_type( $orig_post ) )

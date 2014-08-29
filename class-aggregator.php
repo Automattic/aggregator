@@ -62,6 +62,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
+			$this->add_filter( 'coauthors_meta_box_priority' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -305,7 +306,7 @@ class Aggregator extends Aggregator_Plugin {
 			'public' => false, // Only access through our network admin UI
 			'show_ui' => true, // Otherwise we can't use post edit screens
 			'show_in_menu' => false, // Otherwise uses show_ui value
-			'supports' => false,
+			'supports' => array( 'author' ),
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
 			'taxonomies' => $this->get_taxonomies_for_sync_settings(),
 			'query_var' => false,
@@ -660,6 +661,23 @@ class Aggregator extends Aggregator_Plugin {
 
 		return $column_headers;
 
+	}
+
+	/**
+	 * Change the priority of the meta box added by Co-Authors Plus
+	 *
+	 * @param string $priority Co-Authors Plus' preferred priority
+	 *
+	 * @return string Our preferred priority
+	 */
+	public function coauthors_meta_box_priority( $priority ) {
+		global $current_screen;
+
+		// Only alter priority on our job post type
+		if ( 'aggregator_job' == $current_screen->post_type )
+			$priority = 'default';
+
+		return $priority;
 	}
 
 } // END Aggregator class

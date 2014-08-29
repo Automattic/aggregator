@@ -22,6 +22,13 @@ require_once( 'class-plugin.php' );
 Class Aggregate extends Aggregator_Plugin {
 
 	/**
+	 * An Aggregator_Job instance describing the settings for syncing.
+	 *
+	 * @var Aggregator_Job
+	 */
+	protected $job;
+
+	/**
 	 * A flag to say whether we're currently recursing, or not.
 	 *
 	 * @var boolean
@@ -107,29 +114,54 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Check whether this taxonomy should be synced.
+	 * Reduces the taxonomies down to only those allowed.
 	 *
-	 * Uses the push settings to determine whether or not the given taxonomy should be synced along
-	 * with the post being saved.
+	 * Takes the full list of taxonomy terms and removes any taxonomy terms not whitelisted by settings.
 	 *
-	 * @param string $taxonomy The name of the taxonomy to check
+	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
 	 *
-	 * @return bool Whether or not to sync the taxonomy
+	 * @return array Filtered list of taxonomy terms to push
+	 */
+	protected function allowed_taxonomies( $taxonomy_terms ) {
+
+		// Siphon off the taxonomies we shoud always sync
+		$tax_whitelist = array( 'post_format', 'post-collection', 'author' );
+		foreach ( $tax_whitelist as $tax ) {
+			// Copy any terms to the whitelist
+			if ( array_key_exists( $tax, $taxonomy_terms ) )
+				$tax_whitelist[ $tax ] = $taxonomy_terms[ $tax ];
+		}
+
+		// Now check each taxonomy
+		foreach ( $taxonomy_terms as $taxonomy => $terms ) {
+
+			if ( ! $this->allowed_taxonomy( $taxonomy ) )
+				unset( $taxonomy_terms[ $taxonomy ] );
+
+		}
+
+		// @todo filter
+
+		// Now merge back in the whitelisted taxonomies we copied earlier
+		$taxonomy_terms = array_merge( $taxonomy_terms, $tax_whitelist );
+
+		return $taxonomy_terms;
+
+	}
+
+	/**
+	 * Checks if a taxonomy is allowed by the settings of the current job.
+	 *
+	 * @param string $taxonomy Name of the taxonomy
+	 *
+	 * @return bool True if the taxonomy is allowed, false otherwise
 	 */
 	protected function allowed_taxonomy( $taxonomy ) {
 
-		// Get the push settings
-		$push_settings = $this->get_push_settings();
+		if ( ! in_array( $taxonomy, $this->job->get_taxonomies() ) )
+			return false;
 
-		// We need to whitelist a few taxonomies that WP includes
-		$terms_whitelist = array( 'post_format', 'post-collection', 'author' );
-		$push_settings['taxonomies'] = array_merge( $push_settings['taxonomies'], $terms_whitelist );
-
-		// Check if this taxonomy is in the list of taxonomies to sync
-		if ( in_array( $taxonomy, $push_settings['taxonomies'] ) )
-			return true; // Yep, we should sync this taxonomy
-
-		return false; // Nope
+		return true;
 
 	}
 
@@ -280,27 +312,12 @@ Class Aggregate extends Aggregator_Plugin {
 		// Loop the taxonomies, syncing if we should
 		foreach ( $taxonomies as $taxonomy ) {
 
-			// Don't sync taxonomies that aren't explicitly whitelisted in push settings
-			if ( ! $this->allowed_taxonomy( $taxonomy ) )
-				continue; // Skip this taxonomy, we don't want to sync it
-
 			$orig_terms[ $taxonomy ] = array();
 			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
 			foreach ( $terms as & $term )
 				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
 
 		}
-
-		/**
-		 * Alter the taxonomy terms to be synced.
-		 *
-		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
-		 * up to the 'portal' site.
-		 *
-		 * @param array $orig_terms The list of taxonomy terms
-		 * @param int $orig_post_id ID of the originating post
-		 */
-		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		return $orig_terms;
 
@@ -406,13 +423,16 @@ Class Aggregate extends Aggregator_Plugin {
 		foreach ( $sync_destinations as $sync_destination ) {
 
 			// Get the relevant sync job, if there is one
-			$job = new Aggregator_Job( $sync_destination, $current_blog->blog_id );
-			if ( ! $job->job_id )
+			$this->job = new Aggregator_Job( $sync_destination, $current_blog->blog_id );
+			if ( ! $this->job->job_id )
 				continue; // There is no job for this destination
 
 			// Check if we should be pushing this post, don't if not
-			if ( ! $this->allowed_post_type( $orig_post->post_type, $job->get_post_types() ) )
+			if ( ! $this->allowed_post_type( $orig_post->post_type, $this->job->get_post_types() ) )
 				return;
+
+			// Check if we should be pushing these taxonomies
+			$orig_terms = $this->allowed_taxonomies( $orig_terms );
 
 			// Okay, fine, switch sites and do the synchronisation dance.
 			switch_to_blog( $sync_destination );
@@ -444,6 +464,21 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
+
+		// Don't sync taxonomies that aren't explicitly whitelisted in push settings
+		if ( ! $this->allowed_taxonomies( $taxonomy ) )
+			continue; // Skip this taxonomy, we don't want to sync it
+
+		/**
+		 * Alter the taxonomy terms to be synced.
+		 *
+		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
+		 * up to the 'portal' site.
+		 *
+		 * @param array $orig_terms The list of taxonomy terms
+		 * @param int $orig_post_id ID of the originating post
+		 */
+		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		// Set terms in the meta data, then schedule a Cron to come along and import them
 		// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,

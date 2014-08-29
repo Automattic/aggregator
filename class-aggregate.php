@@ -106,6 +106,33 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Check whether this taxonomy should be synced.
+	 *
+	 * Uses the push settings to determine whether or not the given taxonomy should be synced along
+	 * with the post being saved.
+	 *
+	 * @param string $taxonomy The name of the taxonomy to check
+	 *
+	 * @return bool Whether or not to sync the taxonomy
+	 */
+	protected function allowed_taxonomy( $taxonomy ) {
+
+		// Get the push settings
+		$push_settings = $this->get_push_settings();
+
+		// We need to whitelist a few taxonomies that WP includes
+		$terms_whitelist = array( 'post_format', 'post-collection', 'author' );
+		$push_settings['taxonomies'] = array_merge( $push_settings['taxonomies'], $terms_whitelist );
+
+		// Check if this taxonomy is in the list of taxonomies to sync
+		if ( in_array( $taxonomy, $push_settings['taxonomies'] ) )
+			return true; // Yep, we should sync this taxonomy
+
+		return false; // Nope
+
+	}
+
 	function delete_pushed_posts( $orig_post_id, $orig_post ) {
 		global $current_blog;
 
@@ -254,7 +281,7 @@ Class Aggregate extends Aggregator_Plugin {
 		foreach ( $taxonomies as $taxonomy ) {
 
 			// Don't sync taxonomies that aren't explicitly whitelisted in push settings
-			if ( ! $this->push_taxonomy( $taxonomy ) )
+			if ( ! $this->allowed_taxonomy( $taxonomy ) )
 				continue; // Skip this taxonomy, we don't want to sync it
 
 			$orig_terms[ $taxonomy ] = array();
@@ -413,33 +440,6 @@ Class Aggregate extends Aggregator_Plugin {
 		}
 
 		$this->recursing = false;
-
-	}
-
-	/**
-	 * Check whether this taxonomy should be synced.
-	 *
-	 * Uses the push settings to determine whether or not the given taxonomy should be synced along
-	 * with the post being saved.
-	 *
-	 * @param string $taxonomy The name of the taxonomy to check
-	 *
-	 * @return bool Whether or not to sync the taxonomy
-	 */
-	protected function push_taxonomy( $taxonomy ) {
-
-		// Get the push settings
-		$push_settings = $this->get_push_settings();
-
-		// We need to whitelist a few taxonomies that WP includes
-		$terms_whitelist = array( 'post_format', 'post-collection', 'author' );
-		$push_settings['taxonomies'] = array_merge( $push_settings['taxonomies'], $terms_whitelist );
-
-		// Check if this taxonomy is in the list of taxonomies to sync
-		if ( in_array( $taxonomy, $push_settings['taxonomies'] ) )
-			return true; // Yep, we should sync this taxonomy
-
-		return false; // Nope
 
 	}
 

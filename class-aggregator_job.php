@@ -100,13 +100,13 @@ Class Aggregator_Job {
 
 				// Store terms for later
 				$this->terms = wp_get_object_terms( get_the_ID(), $this->taxonomies );
+
+				// Retrieve the author ID for the portal
+				$this->author = get_post_meta( get_the_ID(), '_aggregator_author', true );
 			}
 		}
 
 		$this->restore_current_blog();
-
-		// Retrieve the author ID for the portal
-		$this->author = get_site_option( "aggregator_{$this->get_portal_blog_id()}_author" );
 
 		// Create a "Job ID" using source and post IDs
 		$this->job_id = $this->get_source_blog_id() . '_' . $this->post_id;
@@ -301,11 +301,17 @@ Class Aggregator_Job {
 		if ( ! intval( $author_id ) )
 			return;
 
-		// Update the author post meta for $this->post_id
-		update_site_option( "aggregator_{$this->get_portal_blog_id()}_author", $author_id );
+		// Maybe switch to blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
+		// Update the taxonomies meta field for $this->post_id
+		update_post_meta( $this->post_id, '_aggregator_author', $author_id );
 
 		// Update $this->author
 		$this->author = $author_id;
+
+		// Maybe restore current blog
+		$this->restore_current_blog();
 
 	}
 

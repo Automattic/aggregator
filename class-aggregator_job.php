@@ -343,7 +343,11 @@ Class Aggregator_Job {
 	 */
 	public function get_delete_post_link() {
 
+		$this->switch_to_blog( $this->source->blog_id );
+
 		$url = get_delete_post_link( $this->post_id, '', true );
+
+		$this->restore_current_blog();
 
 		return esc_url( $url );
 

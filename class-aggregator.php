@@ -62,6 +62,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
 			$this->add_action( 'before_delete_post' );
+			$this->add_action( 'add_meta_boxes_aggregator_job' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
 			$this->add_filter( 'coauthors_supported_post_types' );
@@ -323,12 +324,6 @@ class Aggregator extends Aggregator_Plugin {
 		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
 		add_meta_box( 'submitdiv', __('Save'), array( $this, 'meta_box_submitdiv' ), 'aggregator_job', 'side', 'high' );
 
-		/**
-		 * @todo Add meta boxes for;
-		 *       * post types
-		 *       * taxonomies
-		 */
-
 		// Description meta box
 		add_meta_box( 'description', __('Description'), array( $this, 'meta_box_description' ), 'aggregator_job', 'normal', 'high' );
 
@@ -337,6 +332,13 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Taxonomies meta box
 		add_meta_box( 'taxonomies', __('Taxonomies'), array( $this, 'meta_box_taxonomies' ), 'aggregator_job', 'normal', 'core' );
+
+		// Author meta box
+		if ( post_type_supports($post->post_type, 'author') ) {
+			$post_type_object = get_post_type_object($post->post_type);
+			if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
+				add_meta_box('jobauthordiv', __('Author'), array( $this, 'post_author_meta_box' ), null, 'normal', 'core');
+		}
 
 	}
 
@@ -739,6 +741,39 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		return $post_types;
+	}
+
+	/**
+	 * Replace the default author meta box with our own.
+	 *
+	 * Allows for the selection of any portal site user, not the source site users.
+	 *
+	 * @param WP_Post $post Post object
+	 */
+	public function add_meta_boxes_aggregator_job( $post ) {
+		remove_meta_box( 'authordiv', $post->post_type, 'normal' );
+	}
+
+	public function post_author_meta_box( $post ) {
+		global $user_ID;
+
+		// Build args
+		$args = array(
+			'who' => 'authors',
+			'name' => 'post_author_override',
+			'selected' => empty($post->ID) ? $user_ID : $post->post_author,
+			'include_selected' => true
+		);
+
+		// Find the portal ID
+		if ( isset( $_REQUEST['portal'] ) )
+			$args['blog_id'] = intval( $_REQUEST['portal'] );
+
+		?>
+		<label class="screen-reader-text" for="post_author_override"><?php _e('Author'); ?></label>
+		<?php
+		wp_dropdown_users( $args );
+
 	}
 
 } // END Aggregator class

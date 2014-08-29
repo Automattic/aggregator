@@ -73,6 +73,39 @@ Class Aggregate extends Aggregator_Plugin {
 		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
 
+	/**
+	 * Check if the given post type should be pushed.
+	 *
+	 * Queries the push settings to decide whether or not the given post
+	 * should be pushed.
+	 *
+	 * @param WP_Post $post A WP_Post object for the post to check against settings
+	 *
+	 * @uses $this->get_push_settings()
+	 *
+	 * @return bool Whether (true) or not (false) a post of this type should be pushed
+	 */
+	protected function allowed_post_type( $post_type, $allowed_types ) {
+
+		/**
+		 * Override the allowed post types as set by a sync job.
+		 *
+		 * Triggers during a push, allowing for last minute-override of the allowed post types. As such,
+		 * the ID of the blog doing the 'pushing' is provided for per-blog overrides.
+		 *
+		 * @param array $allowed_types Array of allowed post types
+		 * @param int $blog_id ID of the blog currently pushing a post
+		 */
+		$allowed_types = apply_filters( 'aggregator_allowed_post_types', $allowed_types, get_current_blog_id() );
+
+		// Check if this post's type is in the list of types to sync
+		if ( in_array( $post_type, $allowed_types ) )
+			return true; // Yep, we should sync this post type
+
+		return false; // Nope
+
+	}
+
 	function delete_pushed_posts( $orig_post_id, $orig_post ) {
 		global $current_blog;
 
@@ -351,7 +384,7 @@ Class Aggregate extends Aggregator_Plugin {
 				continue; // There is no job for this destination
 
 			// Check if we should be pushing this post, don't if not
-			if ( ! $this->push_post_type( $orig_post->post_type, $job->get_post_types() ) )
+			if ( ! $this->allowed_post_type( $orig_post->post_type, $job->get_post_types() ) )
 				return;
 
 			// Okay, fine, switch sites and do the synchronisation dance.
@@ -380,39 +413,6 @@ Class Aggregate extends Aggregator_Plugin {
 		}
 
 		$this->recursing = false;
-
-	}
-
-	/**
-	 * Check if the given post type should be pushed.
-	 *
-	 * Queries the push settings to decide whether or not the given post
-	 * should be pushed.
-	 *
-	 * @param WP_Post $post A WP_Post object for the post to check against settings
-	 *
-	 * @uses $this->get_push_settings()
-	 *
-	 * @return bool Whether (true) or not (false) a post of this type should be pushed
-	 */
-	protected function push_post_type( $post_type, $allowed_types ) {
-
-		/**
-		 * Override the allowed post types as set by a sync job.
-		 *
-		 * Triggers during a push, allowing for last minute-override of the allowed post types. As such,
-		 * the ID of the blog doing the 'pushing' is provided for per-blog overrides.
-		 *
-		 * @param array $allowed_types Array of allowed post types
-		 * @param int $blog_id ID of the blog currently pushing a post
-		 */
-		$allowed_types = apply_filters( 'aggregator_allowed_post_types', $allowed_types, get_current_blog_id() );
-
-		// Check if this post's type is in the list of types to sync
-		if ( in_array( $post_type, $allowed_types ) )
-			return true; // Yep, we should sync this post type
-
-		return false; // Nope
 
 	}
 

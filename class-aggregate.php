@@ -430,10 +430,6 @@ Class Aggregate extends Aggregator_Plugin {
 			if ( ! $this->push_post_type( $orig_post ) )
 				return;
 
-			// Check if we should sync to this blog
-			if ( ! $this->sync_to_blog( $sync_destination, $orig_post_data ) )
-				return;
-
 			// Okay, fine, switch sites and do the synchronisation dance.
 			switch_to_blog( $sync_destination );
 

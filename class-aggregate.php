@@ -140,7 +140,13 @@ Class Aggregate extends Aggregator_Plugin {
 
 		}
 
-		// @todo filter
+		/**
+		 * Allow overriding of non-whitelisted taxonomies and terms.
+		 *
+		 * @param array $taxonomy_terms Multi-dimensional array of taxonomies and terms
+		 * @param int $blog_id ID of the current blog
+		 */
+		$taxonomy_terms = apply_filters( 'aggregator_taxonomy_terms', $taxonomy_terms, get_current_blog_id() );
 
 		// Now merge back in the whitelisted taxonomies we copied earlier
 		$taxonomy_terms = array_merge( $taxonomy_terms, $tax_whitelist );
@@ -464,21 +470,6 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
-
-		// Don't sync taxonomies that aren't explicitly whitelisted in push settings
-		if ( ! $this->allowed_taxonomies( $taxonomy ) )
-			continue; // Skip this taxonomy, we don't want to sync it
-
-		/**
-		 * Alter the taxonomy terms to be synced.
-		 *
-		 * Allows plugins or themes to modify the list of taxonomy terms that are due to be pushed
-		 * up to the 'portal' site.
-		 *
-		 * @param array $orig_terms The list of taxonomy terms
-		 * @param int $orig_post_id ID of the originating post
-		 */
-		$orig_terms = apply_filters( 'aggregator_orig_terms', $orig_terms, $orig_post_id );
 
 		// Set terms in the meta data, then schedule a Cron to come along and import them
 		// We cannot import them here, as switch_to_blog doesn't affect taxonomy setup,

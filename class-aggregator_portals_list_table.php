@@ -22,8 +22,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 */
 		public function get_columns() {
 			return array (
-				'col_site_domain' => __('Domain'),
-				'col_sync_sites' => __('Syncing From'),
+				'col_site_domain' => __('Portals'),
+				'col_sync_sites' => __('Sources'),
 			);
 		}
 

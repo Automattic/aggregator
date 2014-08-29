@@ -61,6 +61,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
+			$this->add_action( 'before_delete_post' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
 		}
@@ -614,6 +615,38 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Update the network options for network admin pages
 		$sync_job->update_network_options();
+
+		// Redirect back to network admin settings, with a success message
+		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );
+		exit;
+
+	}
+
+	/**
+	 * Handle deletions of the aggregator_job post type
+	 *
+	 * @param int $post_id ID of the post to be deleted
+	 * @param object $post WP_Post object of the post
+	 */
+	public function before_delete_post( $post_id ) {
+
+		// Only our jobs post type
+		if ( 'aggregator_job' != get_post_type( $post_id ) )
+			return;
+
+pj_error_log('trashing job',$post_id);
+		// Get the portal that relates to this job
+		$portal = get_post_meta( $post_id, '_aggregator_portal', true );
+		if ( ! $portal )
+			return;
+
+		// Get the relevant job object
+		$job = new Aggregator_Job( $portal, get_current_blog_id() );
+		if ( ! $job )
+			return;
+
+		// Delete the job
+		$job->delete_job();
 
 		// Redirect back to network admin settings, with a success message
 		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );

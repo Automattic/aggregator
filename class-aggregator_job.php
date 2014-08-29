@@ -438,4 +438,14 @@ Class Aggregator_Job {
 
 	}
 
+	/**
+	 * Removes all relevant meta data relating to this job
+	 */
+	public function delete_job() {
+
+		// Update the network options
+		$this->update_network_options( 'delete' );
+
+	}
+
 }

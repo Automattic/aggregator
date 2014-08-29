@@ -257,27 +257,6 @@ Class Aggregator_Job {
 	}
 
 	/**
-	 * Set the terms that are to be included in this job
-	 *
-	 * @param array $terms Array of taxonomy => terms
-	 *
-	 * @return bool Success (true) or failure (false)
-	 */
-	public function set_terms( $terms ) {
-
-		// Maybe switch to blog
-		$this->switch_to_blog( $this->get_source_blog_id() );
-
-		// Update the terms for $this->post_id
-
-		// Update $this->terms
-
-		// Maybe restore current blog
-		$this->restore_current_blog();
-
-	}
-
-	/**
 	 * Get the author to use on the portal site for all pushed posts
 	 *
 	 * @return int ID of the author

@@ -422,6 +422,10 @@ Class Aggregate extends Aggregator_Plugin {
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
 
+			// Get the relevant sync job, if there is one
+			if ( ! $this->load_sync_job( $orig_post_id ) )
+				return;
+
 			// Check if we should sync to this blog
 			if ( ! $this->sync_to_blog( $sync_destination, $orig_post_data ) )
 				return;
@@ -527,10 +531,6 @@ Class Aggregate extends Aggregator_Plugin {
 	 **/
 	public function save_post( $orig_post_id, $orig_post ) {
 		global $current_blog;
-
-		// Get the relevant sync job, if there is one
-		if ( ! $this->load_sync_job( $orig_post_id ) )
-			return;
 
 		// Are we syncing anything from this site? If not, stop.
 		if ( ! $this->aggregator->get_portals( $current_blog->blog_id ) )

@@ -556,10 +556,6 @@ class Aggregator extends Aggregator_Plugin {
 
 	public function publish_aggregator_job( $post_id, $post ) {
 
-		// Only affect our aggregation_job post type
-		if ( 'aggregator_job' != get_post_type( $post_id ) )
-			return;
-
 		// Find the portal ID
 		if ( isset( $_REQUEST['portal'] ) )
 			$portal = intval( $_REQUEST['portal'] );
@@ -634,7 +630,6 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'aggregator_job' != get_post_type( $post_id ) )
 			return;
 
-pj_error_log('trashing job',$post_id);
 		// Get the portal that relates to this job
 		$portal = get_post_meta( $post_id, '_aggregator_portal', true );
 		if ( ! $portal )

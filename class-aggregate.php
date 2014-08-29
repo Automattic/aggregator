@@ -154,52 +154,6 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Retrieve the push settings for the current blog.
-	 *
-	 * Returns an array containing the post types and taxonomies that should be synced
-	 * when a post on the current site is saved.
-	 *
-	 * @return bool|array|WP_Error Errors when used in network admin, false if there are no settings for this
-	 *                             blog and an array of settings on success.
-	 */
-	protected function get_push_settings() {
-		global $current_blog;
-
-		// This function is useless in network admin
-		if ( is_network_admin() )
-			return new WP_Error( 'not_in_network_admin', __("You can't use this function in network admin.") );
-
-		// Set default push settings here
-		$defaults = array(
-			'post_types' => array( 'post' ),
-			'taxonomies' => array( 'category', 'post_tag' ),
-		);
-
-		// Get the option
-		$push_settings = get_option( 'aggregator_push_settings', $defaults );
-
-		/**
-		 * Filters the settings that determine what gets pushed.
-		 *
-		 * Allows for on-the-fly changes to be made to the settings governing which post types and
-		 * taxonomies are synced to a portal. The $current_blog parameter can be used to do this on
-		 * a blog-by-blog basis.
-		 *
-		 * @param array $push_settings Array of settings - see $defaults
-		 * @param int $current_blog ID of the blog we're pushing from
-		 */
-		$push_settings = apply_filters( 'aggregator_push_settings', $push_settings, $current_blog );
-
-		// Just check we have something to return
-		if ( $push_settings )
-			return $push_settings;
-
-		// Just in case
-		return false;
-
-	}
-
-	/**
 	 * Allow the forcing of term import on the portal blog.
 	 *
 	 * When an attempt is made to edit a pushed post, this will trigger the import of terms from the
@@ -397,7 +351,7 @@ Class Aggregate extends Aggregator_Plugin {
 				continue; // There is no job for this destination
 
 			// Check if we should be pushing this post, don't if not
-			if ( ! $this->push_post_type( $orig_post ) )
+			if ( ! $this->push_post_type( $orig_post->post_type, $job->get_post_types() ) )
 				return;
 
 			// Okay, fine, switch sites and do the synchronisation dance.
@@ -441,13 +395,21 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @return bool Whether (true) or not (false) a post of this type should be pushed
 	 */
-	protected function push_post_type( $post ) {
+	protected function push_post_type( $post_type, $allowed_types ) {
 
-		// Get the push settings
-		$push_settings = $this->get_push_settings();
+		/**
+		 * Override the allowed post types as set by a sync job.
+		 *
+		 * Triggers during a push, allowing for last minute-override of the allowed post types. As such,
+		 * the ID of the blog doing the 'pushing' is provided for per-blog overrides.
+		 *
+		 * @param array $allowed_types Array of allowed post types
+		 * @param int $blog_id ID of the blog currently pushing a post
+		 */
+		$allowed_types = apply_filters( 'aggregator_allowed_post_types', $allowed_types, get_current_blog_id() );
 
 		// Check if this post's type is in the list of types to sync
-		if ( in_array( $post->post_type, $push_settings['post_types'] ) )
+		if ( in_array( $post_type, $allowed_types ) )
 			return true; // Yep, we should sync this post type
 
 		return false; // Nope

@@ -64,6 +64,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'before_delete_post' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
+			$this->add_filter( 'coauthors_supported_post_types' );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -709,6 +710,35 @@ class Aggregator extends Aggregator_Plugin {
 			$priority = 'default';
 
 		return $priority;
+	}
+
+	/**
+	 * Remove job post type from Co-Authors Plus
+	 *
+	 * Stops Co-Authors Plus from overtaking the author box on the aggregator_job post type
+	 *
+	 * @param array $post_types Array of post types Co-Authors Plus will consider
+	 *
+	 * @return array Filtered array, with aggregator_job removed
+	 */
+	public function coauthors_supported_post_types ( $post_types ) {
+
+		if ( ! is_array( $post_types ) )
+			$post_types = array( $post_types );
+
+		$post_types_to_remove = array(
+			'aggregator_job',
+		);
+
+		foreach ( $post_types_to_remove as $post_type_to_remove ) {
+
+			$key = array_search( $post_type_to_remove, $post_types );
+			if ( $key !== false )
+				unset( $post_types[ $key ] );
+
+		}
+
+		return $post_types;
 	}
 
 } // END Aggregator class

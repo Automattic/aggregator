@@ -369,10 +369,6 @@ Class Aggregator_Job {
 
 	public function set_post_id( $post_id ) {
 
-		// Delete any existing post so we can overwrite this job
-		if ( intval( $this->post_id ) )
-			wp_delete_post( $this->post_id, true );
-
 		// Set the post ID
 		$this->post_id = intval( $post_id );
 

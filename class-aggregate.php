@@ -279,6 +279,33 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
+	 * Check if we should definitely push posts to this destination.
+	 *
+	 * @param int $destination ID of the portal site we're pushing too
+	 *
+	 * @return bool Whether we think it's safe (true) or not (false) to push
+	 */
+	protected function check_destination( $destination ) {
+
+		// Just double-check it's an int so we get no nasty errors
+		if ( ! intval( $destination ) )
+			return false;
+
+		// It should never be, but just check the sync site isn't the current site.
+		// That'd be horrific (probably).
+		if ( $destination == get_current_blog_id() )
+			return false;
+
+		// Make sure the destination site exists! A good thing to be sure of...
+		$destination = get_blog_details( $destination, true );
+		if ( $destination === false || empty( $destination ) )
+			return false;
+
+		return true;
+
+	}
+
+	/**
 	 * When a post is deleted at source, delete all it's pushed clones.
 	 *
 	 * Searches out any versions of this post pushed to portals and deletes each one.
@@ -681,6 +708,10 @@ Class Aggregate extends Aggregator_Plugin {
 		// Loop through all destinations to perform the sync
 		foreach ( $sync_destinations as $sync_destination ) {
 
+			// Check this destination is (probably) okay to push to
+			if ( ! $this->check_destination( $sync_destination ) )
+				continue;
+
 			// Get the relevant sync job, if there is one
 			$this->job = new Aggregator_Job( $sync_destination, $current_blog->blog_id );
 			if ( ! $this->job->job_id )
@@ -797,36 +828,6 @@ Class Aggregate extends Aggregator_Plugin {
 			$sync = false;
 
 		return $sync;
-	}
-
-	/**
-	 * Unused
-	 *
-	 * @todo Remove, unused
-	 *
-	 * @param $sync_destination
-	 * @param $orig_post_data
-	 *
-	 * @return bool
-	 */
-	protected function sync_to_blog( $sync_destination, $orig_post_data ) {
-
-		// Just double-check it's an int so we get no nasty errors
-		if ( ! intval( $sync_destination ) )
-			return false;
-
-		// It should never be, but just check the sync site isn't the current site.
-		// That'd be horrific (probably).
-		if ( $sync_destination == get_current_blog_id() )
-			return false;
-
-		// Check if the target post type exists on the destination blog
-		$cpts = $this->get_cpt_cache( $sync_destination );
-		if ( ! in_array( $orig_post_data['post_type'], $cpts ) )
-			return false;
-
-		return true;
-
 	}
 
 }

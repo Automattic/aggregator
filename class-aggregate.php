@@ -36,10 +36,10 @@ Class Aggregate extends Aggregator_Plugin {
 	public $recursing;
 
 	/**
-	 * Initiate!
+	 * Make it so!
 	 *
-	 * @return void
-	 **/
+	 * @return \Aggregate
+	 */
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
@@ -49,8 +49,8 @@ Class Aggregate extends Aggregator_Plugin {
 
 		if ( is_admin() ) {
 			$this->add_action( 'save_post', null, 11, 2 );
-			$this->add_action( 'load-post.php', 'load_post_edit' );
-			$this->add_action( 'load-post-new.php', 'load_post_edit' );
+			$this->add_action( 'load-post.php', 'force_term_import' );
+			$this->add_action( 'load-post-new.php', 'force_term_import' );
 		}
 
 		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
@@ -63,7 +63,18 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	function allow_sync_meta_key( $meta_key ) {
+	/**
+	 * Check if a meta key should be pushed to the portal.
+	 *
+	 * By default, Aggregator will push all meta data to a portal. However, this function will prevent some
+	 * meta data from syncing, based on the key. The decision is then filtered, allowing plugins/themes to
+	 * check for their own meta data and stop it syncing, if necessary.
+	 *
+	 * @param string $meta_key Meta data key name to check for
+	 *
+	 * @return bool Returns true if the meta data should sync, false if not
+	 */
+	protected function allow_sync_meta_key( $meta_key ) {
 		// FIXME: Not now, but ultimately should this take into account Babble meta key syncing bans?
 
 		switch ( $meta_key ) {
@@ -77,6 +88,17 @@ Class Aggregate extends Aggregator_Plugin {
 
 		}
 
+		/**
+		 * Decide whether to push some meta data to a portal site.
+		 *
+		 * Based on the meta key, decide whether or not that post meta data should be pushed up to a portal
+		 * along with the rest of the post data.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param bool $allow Whether to allow the meta data to be synced
+		 * @param string $meta_key The meta key for this piece of meta data
+		 */
 		return apply_filters( 'aggregator_sync_meta_key', $allow, $meta_key );
 	}
 
@@ -86,9 +108,8 @@ Class Aggregate extends Aggregator_Plugin {
 	 * Queries the push settings to decide whether or not the given post
 	 * should be pushed.
 	 *
-	 * @param WP_Post $post A WP_Post object for the post to check against settings
-	 *
-	 * @uses $this->get_push_settings()
+	 * @param string $post_type The post type to check
+	 * @param array $allowed_types An array of allowed post types
 	 *
 	 * @return bool Whether (true) or not (false) a post of this type should be pushed
 	 */
@@ -135,6 +156,7 @@ Class Aggregate extends Aggregator_Plugin {
 		// Now check each taxonomy
 		foreach ( $taxonomy_terms as $taxonomy => $terms ) {
 
+			// Not allowed? Remove it
 			if ( ! $this->allowed_taxonomy( $taxonomy ) )
 				unset( $taxonomy_terms[ $taxonomy ] );
 
@@ -151,6 +173,7 @@ Class Aggregate extends Aggregator_Plugin {
 		// Now merge back in the whitelisted taxonomies we copied earlier
 		$taxonomy_terms = array_merge( $taxonomy_terms, $tax_whitelist );
 
+		// Send back our butchered list
 		return $taxonomy_terms;
 
 	}
@@ -164,10 +187,11 @@ Class Aggregate extends Aggregator_Plugin {
 	 */
 	protected function allowed_taxonomy( $taxonomy ) {
 
+		// Is the taxonomy in the list of user-chosen taxonomies?
 		if ( ! in_array( $taxonomy, $this->job->get_taxonomies() ) )
-			return false;
+			return false; // No
 
-		return true;
+		return true; // Yes
 
 	}
 
@@ -254,9 +278,19 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	function delete_pushed_posts( $orig_post_id, $orig_post ) {
+	/**
+	 * When a post is deleted at source, delete all it's pushed clones.
+	 *
+	 * Searches out any versions of this post pushed to portals and deletes each one.
+	 *
+	 * @param int $post_id ID of the source post
+	 * @param WP_Post $post WP_Post object of the source post
+	 */
+	protected function delete_pushed_posts( $post_id, $post ) {
+		// We need to know which blog we're on
 		global $current_blog;
 
+		// Prevent recursion, which will lead to infinite loops
 		if ( $this->recursing )
 			return;
 		$this->recursing = true;
@@ -267,22 +301,27 @@ Class Aggregate extends Aggregator_Plugin {
 		// Loop through each portal and delete this post
 		foreach ( $portals as $portal ) {
 
+			// Switch to the portal to find the pushed post
 			switch_to_blog( $portal );
 
 			// Acquire ID and update post (or insert post and acquire ID)
-			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) )
-				wp_delete_post ( $target_post_id, true );
+			if ( $target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id ) )
+				wp_delete_post ( $target_post_id, true ); // DIE!
 
+			// Back to the current blog
 			restore_current_blog();
 
 		}
 
+		// Reset recursion flag, we're done with deleting posts for now
 		$this->recursing = false;
 
 	}
 
 	/**
 	 * Get a cached list of CPTs for the specified blog.
+	 *
+	 * @todo Remove, unused
 	 *
 	 * @param int|null $blog_id ID of the blog whose CPTs to retrieve
 	 *
@@ -302,13 +341,39 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	function get_image_id($image_url) {
+	/**
+	 * Find the ID of a media item, given it's URL.
+	 *
+	 * @param string $image_url URL to the media item
+	 *
+	 * @return int Media item's ID
+	 */
+	protected function get_image_id( $image_url ) {
 		global $wpdb;
-		$attachment = $wpdb->get_col($wpdb->prepare("SELECT ID FROM " . $wpdb->prefix . "posts" . " WHERE guid='%s';", $image_url ));
+
+		// Query the DB to get the ID
+		$attachment = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM " . $wpdb->prefix . "posts" . " WHERE guid='%s';", $image_url ) );
+
+		// ID should be the first element of the returned array
+		// @todo Check this!
 		return $attachment[0];
+
 	}
 
-	function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
+	/**
+	 * Get the ID of any pushed posts.
+	 *
+	 * Given the ID of an original post, and the source blog it came from, find and return the ID of the
+	 * pushed post. To be used only when on a portal site.
+	 *
+	 * @param int $orig_post_id ID of the source post
+	 * @param int $orig_blog_id ID of the source blog
+	 *
+	 * @return bool|int ID of the pushed post, or false if none exists
+	 */
+	protected function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
+
+		// Build a query, checking for the relevant meta data
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',
@@ -328,9 +393,11 @@ Class Aggregate extends Aggregator_Plugin {
 		);
 		$query = new WP_Query( $args );
 
+		// If there are posts, get the ID of the first one, ignoring any others.
 		if ( $query->have_posts() )
 			return $query->post->ID;
 
+		// Nothing found
 		return false;
 	}
 
@@ -339,111 +406,201 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * When an attempt is made to edit a pushed post, this will trigger the import of terms from the
 	 * original post to catch situations where the scheduled import didn't run for some reason.
+	 *
+	 * @return void
 	 */
-	public function load_post_edit() {
+	public function force_term_import() {
 
+		// Get the post ID
 		$post_id = isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : false;
 
+		// Do the import dance \o/
 		$this->process_import_terms( $post_id );
 
 	}
 
-	protected function prepare_post_data( $orig_post_id ) {
+	/**
+	 * Clone the source post data ready for pushing to the portal.
+	 *
+	 * Takes the post data (content etc) from the source blog post and tweaks it a bit in preparation
+	 * for using it to create a new post on the portal site.
+	 *
+	 * @param int $post_id ID of the source post
+	 *
+	 * @return array An array of post data
+	 */
+	protected function prepare_post_data( $post_id ) {
 
 		// Get post data
-		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
-		unset( $orig_post_data[ 'ID' ] );
+		$post_data = get_post( $post_id, ARRAY_A );
+		unset( $post_data[ 'ID' ] );
 
 		// Remove post_tag and category as they're covered later on with other taxonomies
-		unset( $orig_post_data['tags_input'] );
-		unset( $orig_post_data['post_category'] );
+		unset( $post_data['tags_input'] );
+		unset( $post_data['post_category'] );
 
 		/**
 		 * Alter the post data before syncing.
 		 *
 		 * Allows plugins or themes to modify the main post data due to be pushed to the portal site.
 		 *
-		 * @param array $orig_post_data Array of post data, such as title and content
-		 * @param int $orig_post_id The ID of the original post
+		 * @param array $post_data Array of post data, such as title and content
+		 * @param int $post_id The ID of the original post
 		 */
-		$orig_post_data = apply_filters( 'aggregator_orig_post_data', $orig_post_data, $orig_post_id );
+		$post_data = apply_filters( 'aggregator_orig_post_data', $post_data, $post_id );
 
-		return $orig_post_data;
+		return $post_data;
 
 	}
 
-	protected function prepare_meta_data( $orig_post_id, $current_blog ) {
+	/**
+	 * Clone the source post meta data ready for pushing to the portal.
+	 *
+	 * Takes the meta data from the source blog post and tweaks it a bit in preparation for using it to
+	 * create a new post on the portal site.
+	 *
+	 * @param int $post_id ID of the source post
+	 *
+	 * @return array An array of meta data (`meta_key => array( meta_value )`)
+	 */
+	protected function prepare_meta_data( $post_id ) {
+		global $current_blog;
 
-		$orig_meta_data = get_post_meta( $orig_post_id );
+		// Get the source post meta data
+		$meta_data = get_post_meta( $post_id );
 
 		// Remove any meta keys we explicitly don't want to sync
-		foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
+		foreach ( $meta_data as $meta_key => $meta_rows ) {
 			if ( ! $this->allow_sync_meta_key( $meta_key ) )
-				unset( $orig_meta_data[ $meta_key ] );
+				unset( $meta_data[ $meta_key ] );
 		}
-		// Note the following have to be one item arrays, to fit in with the
-		// output of get_post_meta.
-		$orig_meta_data[ '_aggregator_permalink' ] = array( get_permalink( $orig_post_id ) );
-		$orig_meta_data[ '_aggregator_orig_post_id' ] = array( $orig_post_id );
-		$orig_meta_data[ '_aggregator_orig_blog_id' ] = array( $current_blog->blog_id );
 
-		$orig_meta_data = apply_filters( 'aggregator_orig_meta_data', $orig_meta_data, $orig_post_id );
+		/**
+		 * Alter the meta data before syncing.
+		 *
+		 * Allows plugins or themes to modify the post meta data due to be pushed to the portal site
+		 *
+		 * @param array $meta_data An array of meta data. Note that values must be arrays, even if only
+		 *                         single-item arrays.
+		 * @param int $post_id ID of the source post
+		 */
+		$meta_data = apply_filters( 'aggregator_orig_meta_data', $meta_data, $post_id );
 
-		return $orig_meta_data;
+		// Add our special Aggregator meta data. Note the following have to be one item arrays, to
+		// fit in with the output of get_post_meta.
+		$meta_data[ '_aggregator_permalink' ] = array( get_permalink( $post_id ) );
+		$meta_data[ '_aggregator_orig_post_id' ] = array( $post_id );
+		$meta_data[ '_aggregator_orig_blog_id' ] = array( $current_blog->blog_id );
+
+		return $meta_data;
 
 	}
 
-	protected function prepare_terms( $orig_post_id, $orig_post ) {
+	/**
+	 * Clone the source post terms ready for pushing to the portal.
+	 *
+	 * Takes the list of taxonomy terms assigned to the post and tweaks it in preparation for pushing
+	 * to the portal site.
+	 *
+	 * @param int $post_id ID of the source post
+	 * @param WP_Post $post Post object for the source post
+	 *
+	 * @return array
+	 */
+	protected function prepare_terms( $post_id, $post ) {
 
-		$taxonomies = get_object_taxonomies( $orig_post );
-		$orig_terms = array();
+		// Get the taxonomies for this post
+		$taxonomies = get_object_taxonomies( $post );
 
-		// Loop the taxonomies, syncing if we should
+		// Prepare to store the taxonomy terms
+		$terms = array();
+
+		// Check each taxonomy
 		foreach ( $taxonomies as $taxonomy ) {
 
-			$orig_terms[ $taxonomy ] = array();
-			$terms = wp_get_object_terms( $orig_post_id, $taxonomy );
-			foreach ( $terms as & $term )
-				$orig_terms[ $taxonomy ][ $term->slug ] = $term->name;
+			$terms[ $taxonomy ] = array();
+
+			// Get the terms from this taxonomy attached to the post
+			$tax_terms = wp_get_object_terms( $post_id, $taxonomy );
+
+			// Add each of the attached terms to our new array
+			foreach ( $tax_terms as & $term )
+				$terms[ $taxonomy ][ $term->slug ] = $term->name;
 
 		}
 
-		return $orig_terms;
+		// Our custom list of attached taxonomy terms
+		return $terms;
 
 	}
 
-	function process_import_terms( $target_post_id ) {
-		if ( ! $orig_terms = get_post_meta( $target_post_id, '_orig_terms', true ) )
+	/**
+	 * Import the terms from the source post to the portal post.
+	 *
+	 * Runs on a schedule after posts are pushed, because we can push terms at the same time as saving the post.
+	 *
+	 * @param int $post_id ID of the pushed post on the portal site
+	 */
+	public function process_import_terms( $post_id ) {
+
+		// Get the original terms for this post
+		if ( ! $orig_terms = get_post_meta( $post_id, '_orig_terms', true ) )
 			return;
+
+		// Check each term for stuff
 		foreach ( $orig_terms as $taxonomy => & $terms ) {
+
+			// Make sure the taxonomy exists before importing
 			if ( ! taxonomy_exists( $taxonomy ) )
 				continue;
+
+			// Storage for terms of this taxonomy that will be imported.
 			$target_terms = array();
+
+			// Go thruogh each term
 			foreach ( $terms as $slug => $name ) {
+
+				// Get the term if it exists...
 				if ( $term = get_term_by( 'name', $name, $taxonomy ) ) {
 					$term_id = $term->term_id;
+
+				// ...otherwise, create it.
 				} else {
 					$result = wp_insert_term( $name, $taxonomy, array( 'slug' => $slug ) );
-					if ( !is_wp_error( $result ) )
+					if ( ! is_wp_error( $result ) )
 						$term_id = $result[ 'term_id' ];
 					else
-						$term_id = 0;
+						$term_id = 0; // Couldn't create term for some reason
 				}
+
+				// Add the term to our import array
 				$target_terms[] = absint( $term_id );
 			}
-			wp_set_object_terms( $target_post_id, $target_terms, $taxonomy );
+
+			// Import the terms for this taxonomy
+			wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+
 		}
+
 	}
 
+	/**
+	 * Pushes a featured image from the source post to the portal post.
+	 *
+	 * @param int $target_post_id ID of the pushed portal post
+	 * @param int $orig_meta_data Array of meta data from the source post
+	 */
 	protected function push_featured_image( $target_post_id, $orig_meta_data ) {
 
 		// Check if there's a featured image
 		if ( isset( $orig_meta_data['_thumbnail_id'] ) ){
+			// Get the raw image URL
 			$orig_thumbnail = array_shift( wp_get_attachment_image_src( intval( $orig_meta_data['_thumbnail_id'][0] ), 'full' ) );
 		}
 
 		// Migrate the featured image
 		if ( isset( $orig_thumbnail ) ) {
+
 			// Get the image from the original site and download to new
 			$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
 
@@ -451,29 +608,42 @@ Class Aggregate extends Aggregator_Plugin {
 			$array = array();
 			preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
 
-			// Get the ID of the attachment, and generate thumbnail
+			// Get the ID of the attachment
 			$target_thumbnail = $this->get_image_id( $array[1] );
+
+			// Generate thumbnails, because WP usually do this for us
 			$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
 
-
-			// Add the featured image to the post
+			// Add the featured image to the target post
 			update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
+
 		}
 
 	}
 
+	/**
+	 * Push the meta data to the portal site.
+	 *
+	 * @param int $target_post_id ID of the pushed post
+	 * @param array $orig_meta_data Meta data from the source post
+	 */
 	protected function push_meta_data( $target_post_id, $orig_meta_data ) {
 
-		// Delete all metadata
+		// Delete all metadata from the pushed post
 		$target_meta_data = get_post_meta( $target_post_id );
 		foreach ( $target_meta_data as $meta_key => $meta_rows )
 			delete_post_meta( $target_post_id, $meta_key );
 
-		// Re-add metadata
+		// Add our prepared source meta data
 		foreach ( $orig_meta_data as $meta_key => $meta_rows ) {
+
+			// If only a single value exists for a key, make it a unique key (see add_post_meta)
 			$unique = ( count( $meta_rows ) == 1 );
+
+			// Add each piece of meta data
 			foreach ( $meta_rows as $meta_row )
 				add_post_meta( $target_post_id, $meta_key, $meta_row, $unique );
+
 		}
 
 	}
@@ -489,7 +659,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @return void
 	 */
-	function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
+	protected function push_post_data_to_blogs( $orig_post_id, $orig_post ) {
 		global $current_blog;
 
 		if ( $this->recursing )
@@ -520,10 +690,10 @@ Class Aggregate extends Aggregator_Plugin {
 			if ( ! $this->allowed_post_type( $orig_post->post_type, $this->job->get_post_types() ) )
 				return;
 
-			// Check which taxonomies we should push, and filter them
+			// Take the list of associated taxonomy terms and remove any taxonomies not allowed
 			$orig_terms = $this->allowed_taxonomies( $orig_terms );
 
-			// Check which terms we should push, and filter them
+			// Take the list of associated taxonomy terms and remove any terms not allowed
 			$orig_terms = $this->allowed_terms( $orig_terms );
 
 			// Okay, fine, switch sites and do the synchronisation dance.
@@ -555,6 +725,15 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Schedules the taxonomy terms to be pushed to the portal.
+	 *
+	 * We can't do it alongside saving so we need to schedule an event to happen quickly. It should
+	 * happen straight away, in theory.
+	 *
+	 * @param int $target_post_id ID of the pushed portal post
+	 * @param array $orig_terms An array of taxonomy terms to push
+	 */
 	protected function push_taxonomy_terms( $target_post_id, $orig_terms ) {
 
 		// Set terms in the meta data, then schedule a Cron to come along and import them
@@ -566,11 +745,13 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Hooks the WP save_post action, fired after a post has been inserted/updated in the
-	 * database, to duplicate the posts in the index site.
+	 * Kicks off the aggregation process.
+	 *
+	 * Starts the aggregation if there are any portals to push to.
 	 *
 	 * @param int $orig_post_id The ID of the post being saved
-	 * @param object $orig_post A WP Post object of unknown type
+	 * @param WP_Post $orig_post Object for the saved post
+	 *
 	 * @return void
 	 **/
 	public function save_post( $orig_post_id, $orig_post ) {
@@ -589,15 +770,21 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
+	 * Checks if a custom field should be synced.
+	 *
 	 * Hooks the aggregator_sync_meta_key filter from this class which checks
 	 * if a meta_key should be synced. If we return false, it won't be.
+	 *
+	 * @todo Merge this with prepare_meta_data()
 	 *
 	 * @param bool $sync Whether (true) or not (false) to sync this meta key
 	 * @param string $meta_key The meta key to make a decision about
 	 *
 	 * @return bool Whether or not to sync the key
 	 */
-	function sync_meta_key( $sync, $meta_key ) {
+	protected function sync_meta_key( $sync, $meta_key ) {
+
+		// Specific keys we do not want to sync
 		$sync_not = array(
 			'_edit_last', // Related to edit lock, should be individual to translations
 			'_edit_lock', // The edit lock, should be individual to translations
@@ -605,11 +792,23 @@ Class Aggregate extends Aggregator_Plugin {
 			'_wp_trash_meta_status',
 			'_wp_trash_meta_time',
 		);
+
 		if ( in_array( $meta_key, $sync_not ) )
 			$sync = false;
+
 		return $sync;
 	}
 
+	/**
+	 * Unused
+	 *
+	 * @todo Remove, unused
+	 *
+	 * @param $sync_destination
+	 * @param $orig_post_data
+	 *
+	 * @return bool
+	 */
 	protected function sync_to_blog( $sync_destination, $orig_post_data ) {
 
 		// Just double-check it's an int so we get no nasty errors
@@ -630,6 +829,7 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
+	// @todo Move to main Aggregator class
 	function template_redirect() {
 		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
 		if ( is_single() && is_main_site() && $original_permalink ) {

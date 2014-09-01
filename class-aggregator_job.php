@@ -252,6 +252,7 @@ Class Aggregator_Job {
 	 */
 	public function get_terms( $taxonomy ) {
 
+		// $this-terms is an array of Term objects
 		return $this->terms;
 
 	}

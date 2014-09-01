@@ -198,7 +198,7 @@ Class Aggregate extends Aggregator_Plugin {
 			// Check each term
 			foreach ( $terms as $slug => $name ) {
 				// Remove the term if it's not allowed
-				if ( ! $this->allowed_term( $slug ) )
+				if ( ! $this->allowed_term( $slug, $taxonomy ) )
 					unset( $taxonomy_terms[ $taxonomy ][ $slug ] );
 			}
 
@@ -226,12 +226,30 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @return bool True if the term is allowed, false otherwise
 	 */
-	protected function allowed_term( $term ) {
+	protected function allowed_term( $term, $taxonomy ) {
 
-		// @todo What's the format returned by get_terms() though?
-		if ( ! in_array( $term, $this->job->get_terms() ) )
+		// Grab the taxonomy terms for this job
+		$tt = $this->job->get_terms();
+
+		// Pull out a list of just the terms and taxonomies
+		$taxonomies = wp_list_pluck( $tt, 'taxonomy' );
+		$terms= wp_list_pluck( $tt, 'slug' );
+
+		// Does the term exist? We use array_search because we need the key for later...
+		$term_found = array_search( $term, $terms );
+		if ( $term_found === false )
 			return false;
 
+		// Does the taxonomy match?
+		$taxonomy_found = array_search( $taxonomy, $taxonomies );
+		if ( $taxonomy_found === false )
+			return false;
+
+		// Double check the term we found and the taxonomy found are together
+		if ( $term_found !== $taxonomy_found )
+			return false;
+
+		// We must have found the term and taxonomy provided
 		return true;
 
 	}

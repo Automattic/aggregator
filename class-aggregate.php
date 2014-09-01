@@ -829,15 +829,6 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	// @todo Move to main Aggregator class
-	function template_redirect() {
-		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
-		if ( is_single() && is_main_site() && $original_permalink ) {
-			wp_redirect( $original_permalink, 301 );
-			exit;
-		}
-	}
-
 }
 
 $aggregate = new Aggregate();

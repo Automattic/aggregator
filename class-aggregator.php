@@ -776,6 +776,14 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
+	function template_redirect() {
+		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
+		if ( is_single() && is_main_site() && $original_permalink ) {
+			wp_redirect( $original_permalink, 301 );
+			exit;
+		}
+	}
+
 } // END Aggregator class
 
 $aggregator = new Aggregator();

@@ -346,29 +346,6 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Get a cached list of CPTs for the specified blog.
-	 *
-	 * @todo Remove, unused
-	 *
-	 * @param int|null $blog_id ID of the blog whose CPTs to retrieve
-	 *
-	 * @return array|bool Cached version of $wp_post_types, false on failure.
-	 */
-	protected function get_cpt_cache( $blog_id = null ) {
-
-		if ( is_null( $blog_id ) )
-			return false;
-
-		$cpt_cache_name = 'cpt_cache_' . $blog_id;
-		$cpt_cache = get_site_transient( $cpt_cache_name );
-		if ( ! $cpt_cache )
-			return false;
-
-		return $cpt_cache;
-
-	}
-
-	/**
 	 * Find the ID of a media item, given it's URL.
 	 *
 	 * @param string $image_url URL to the media item

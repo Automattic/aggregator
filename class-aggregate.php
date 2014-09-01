@@ -228,7 +228,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 */
 	protected function allowed_term( $term ) {
 
-		// @todo What's the format returned by get_terms() though?!
+		// @todo What's the format returned by get_terms() though?
 		if ( ! in_array( $term, $this->job->get_terms() ) )
 			return false;
 

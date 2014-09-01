@@ -348,7 +348,7 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	protected function orig_post_data( $orig_post_id ) {
+	protected function prepare_post_data( $orig_post_id ) {
 
 		// Get post data
 		$orig_post_data = get_post( $orig_post_id, ARRAY_A );
@@ -372,7 +372,7 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	protected function orig_meta_data( $orig_post_id, $current_blog ) {
+	protected function prepare_meta_data( $orig_post_id, $current_blog ) {
 
 		$orig_meta_data = get_post_meta( $orig_post_id );
 
@@ -393,7 +393,7 @@ Class Aggregate extends Aggregator_Plugin {
 
 	}
 
-	protected function orig_terms( $orig_post_id, $orig_post ) {
+	protected function prepare_terms( $orig_post_id, $orig_post ) {
 
 		$taxonomies = get_object_taxonomies( $orig_post );
 		$orig_terms = array();
@@ -496,14 +496,14 @@ Class Aggregate extends Aggregator_Plugin {
 			return;
 		$this->recursing = true;
 
-		// Get the post data
-		$orig_post_data = $this->orig_post_data( $orig_post_id );
+		// Prepare the post data
+		$orig_post_data = $this->prepare_post_data( $orig_post_id );
 
-		// Get metadata
-		$orig_meta_data = $this->orig_meta_data( $orig_post_id, $current_blog );
+		// Prepare the metadata
+		$orig_meta_data = $this->prepare_meta_data( $orig_post_id, $current_blog );
 
-		// Get terms
-		$orig_terms = $this->orig_terms($orig_post_id, $orig_post );
+		// Prepare terms
+		$orig_terms = $this->prepare_terms($orig_post_id, $orig_post );
 
 		// Get the array of sites to sync to
 		$sync_destinations = $this->aggregator->get_portals( $current_blog->blog_id );

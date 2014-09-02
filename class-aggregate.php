@@ -33,7 +33,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @var boolean
 	 */
-	public $recursing;
+	protected $recursing;
 
 	/**
 	 * Make it so!

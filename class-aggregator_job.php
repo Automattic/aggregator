@@ -99,7 +99,7 @@ Class Aggregator_Job {
 				$this->taxonomies = get_post_meta( get_the_ID(), '_aggregator_taxonomies', true );
 
 				// Store terms for later
-				$this->terms = wp_get_object_terms( get_the_ID(), $this->taxonomies );
+				$this->terms = $this->set_terms( wp_get_object_terms( get_the_ID(), $this->taxonomies ) );
 
 				// Retrieve the author ID for the portal
 				$this->author = get_post_meta( get_the_ID(), '_aggregator_author', true );
@@ -253,7 +253,33 @@ Class Aggregator_Job {
 	public function get_terms( $taxonomy ) {
 
 		// $this-terms is an array of Term objects
-		return $this->terms;
+		if ( array_key_exists( $taxonomy, $this->terms ) )
+			return $this->terms[ $taxonomy ];
+
+	}
+
+	/**
+	 * Store the terms allowed for this job.
+	 *
+	 * We want our stored term array to be in the format;
+	 * 	array(
+	 * 		'taxonomy_name' => array(
+	 * 			... WP_Term objects ...
+	 * 		)
+	 * 	)
+	 *
+	 * @param array $terms Array of WP_Term objects
+	 */
+	protected function set_terms( $terms ) {
+
+		// Store terms
+		$store_terms = array();
+
+		foreach ( $terms as $term ) {
+			$store_terms[ $term->taxonomy ][] = $term;
+		}
+
+		return $store_terms;
 
 	}
 

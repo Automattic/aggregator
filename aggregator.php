@@ -13,6 +13,7 @@ Author URI: http://codeforthepeople.com/
 require_once( 'class-plugin.php' );
 require_once( 'class-aggregator.php' );
 require_once( 'class-aggregator_job.php' );
+require_once( 'class-aggregate.php' );
 
 function aggregator_file() {
 	return __FILE__;

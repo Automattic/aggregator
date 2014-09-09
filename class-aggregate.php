@@ -146,11 +146,13 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_taxonomies( $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we shoud always sync
-		$tax_whitelist = array( 'post_format', 'post-collection', 'author' );
-		foreach ( $tax_whitelist as $tax ) {
+		$tax_whitelist = $this->taxonomy_whitelist();
+		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist
-			if ( array_key_exists( $tax, $taxonomy_terms ) )
+			if ( array_key_exists( $tax, $taxonomy_terms ) ){
 				$tax_whitelist[ $tax ] = $taxonomy_terms[ $tax ];
+				unset( $taxonomy_terms[ $tax ] );
+			}
 		}
 
 		// Now check each taxonomy
@@ -207,20 +209,25 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_terms( $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we shoud always sync
-		$tax_whitelist = array( 'post_format', 'post-collection', 'author' );
-		foreach ( $tax_whitelist as $tax ) {
+		$tax_whitelist = $this->taxonomy_whitelist();
+		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist
-			if ( array_key_exists( $tax, $taxonomy_terms ) )
+			if ( array_key_exists( $tax, $taxonomy_terms ) ) {
 				$tax_whitelist[ $tax ] = $taxonomy_terms[ $tax ];
+				unset( $taxonomy_terms[ $tax ] );
+			}
 		}
 
 		// Now check each term
 		foreach ( $taxonomy_terms as $taxonomy => $terms ) {
 
-			// @todo $terms might be empty. If it is, all terms are acceptable
+			// Terms might be empty. If so, all terms are allowed!
+			if ( empty( $terms ) )
+				continue; // I.e. don't check each term
 
 			// Check each term
 			foreach ( $terms as $slug => $name ) {
+
 				// Remove the term if it's not allowed
 				if ( ! $this->allowed_term( $slug, $taxonomy ) )
 					unset( $taxonomy_terms[ $taxonomy ][ $slug ] );
@@ -253,11 +260,15 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_term( $term, $taxonomy ) {
 
 		// Grab the taxonomy terms for this job
-		$tt = $this->job->get_terms();
+		$tt = $this->job->get_terms( $taxonomy );
+
+		// If the list of terms is empty, it means ALL terms are allowed
+		if ( empty( $tt ) || is_null( $tt ) )
+			return true;
 
 		// Pull out a list of just the terms and taxonomies
 		$taxonomies = wp_list_pluck( $tt, 'taxonomy' );
-		$terms= wp_list_pluck( $tt, 'slug' );
+		$terms = wp_list_pluck( $tt, 'slug' );
 
 		// Does the term exist? We use array_search because we need the key for later...
 		$term_found = array_search( $term, $terms );
@@ -677,6 +688,7 @@ Class Aggregate extends Aggregator_Plugin {
 		$orig_meta_data = $this->prepare_meta_data( $orig_post_id, $current_blog );
 
 		// Prepare terms
+
 		$orig_terms = $this->prepare_terms($orig_post_id, $orig_post );
 
 		// Get the array of sites to sync to
@@ -790,7 +802,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @return bool Whether or not to sync the key
 	 */
-	protected function sync_meta_key( $sync, $meta_key ) {
+	public function sync_meta_key( $sync, $meta_key ) {
 
 		// Specific keys we do not want to sync
 		$sync_not = array(
@@ -805,6 +817,21 @@ Class Aggregate extends Aggregator_Plugin {
 			$sync = false;
 
 		return $sync;
+	}
+
+	/**
+	 * Provides a list of taxonomies that should always be synced, and not altered.
+	 *
+	 * @return array Array of taxonomy => terms
+	 */
+	protected function taxonomy_whitelist() {
+
+		return array(
+			'post_format' => array(),
+			'post-collection' => array(),
+			'author' => array(),
+		);
+
 	}
 
 }

@@ -2,12 +2,47 @@
 
 /*
 Plugin Name: Aggregator
-Plugin URI: https://bitbucket.org/cftp/aggregator/
+Plugin URI: https://github.com/cftp/aggregator/
 Description: Synchronise posts between blogs in a multisite network
 Network: true
 Version: 1.0
-Author: Simon Wheatley, Philip John
+Author: Code For The People
 Author URI: http://codeforthepeople.com/
+License: GPLv2
+
+Copyright 2014 Code for the People Ltd
+
+                _____________
+               /      ____   \
+         _____/       \   \   \
+        /\    \        \___\   \
+       /  \    \                \
+      /   /    /          _______\
+     /   /    /          \       /
+    /   /    /            \     /
+    \   \    \ _____    ___\   /
+     \   \    /\    \  /       \
+      \   \  /  \____\/    _____\
+       \   \/        /    /    / \
+        \           /____/    /___\
+         \                        /
+          \______________________/
+
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 */
 
 require_once( 'class-plugin.php' );

@@ -66,6 +66,7 @@ There are a couple of pretty important site options (as in [get_site_option](htt
 ### Filters
 
 There are some strategically placed filters that you can use to overwrite some of Aggregator's behaviour. These are well documented inline, so they are listed below and linked to the code.
+
 * `aggregator_sync_meta_key` - [class-aggregate.php:91-102](Class_Aggregate#L91-102) - Decide whether to push some meta data to a portal site.
 * `aggregator_allowed_post_types` - [class-aggregate.php:118-127](Class_Aggregate#L118-127) - Override the allowed post types as set by a sync job.
 * `aggregator_taxonomy_terms` - [class-aggregate.php:167-173](Class_Aggregate#L167-173) - Allow overriding of non-whitelisted taxonomies and terms.

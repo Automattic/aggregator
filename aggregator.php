@@ -3,7 +3,7 @@
 /*
 Plugin Name: Aggregator
 Plugin URI: https://bitbucket.org/cftp/aggregator/
-Description: Fork of Simon Wheatley's Feature Posts on Root Blog plugin
+Description: Synchronise posts between blogs in a multisite network
 Network: true
 Version: 1.0
 Author: Simon Wheatley, Philip John

@@ -233,6 +233,11 @@ Class Aggregate extends Aggregator_Plugin {
 					unset( $taxonomy_terms[ $taxonomy ][ $slug ] );
 			}
 
+			// If there are no terms for this taxonomy at this point, it means that *none* of our
+			// white-listed terms are present, and as such we must stop the sync
+			if ( empty( $taxonomy_terms[ $taxonomy ] ) )
+				return new WP_Error( 'term_whitelist', __('Post does not contain any white-listed terms') );
+
 		}
 
 		/**
@@ -715,6 +720,8 @@ Class Aggregate extends Aggregator_Plugin {
 
 			// Take the list of associated taxonomy terms and remove any terms not allowed
 			$orig_terms = $this->allowed_terms( $orig_terms );
+			if ( is_wp_error( $orig_terms ) )
+				continue; // see allowed_terms()
 
 			// Okay, fine, switch sites and do the synchronisation dance.
 			switch_to_blog( $sync_destination );

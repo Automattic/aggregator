@@ -1,0 +1,12 @@
+{
+    "name": "cftp/aggregator",
+    "description": "Synchronise posts between blogs in a multisite network",
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Code For The People",
+            "homepage": "http://codeforthepeople.com"
+        }
+    ],
+    "minimum-stability": "stable",
+}

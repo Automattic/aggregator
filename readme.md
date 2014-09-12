@@ -23,7 +23,7 @@ Site A  | Site B
 Site B  | Site A
 Site B  | Site A
 
-The last second and third jobs here conflict with each other. This is open to change, if you want to send in a pull request.
+The second and third jobs here conflict with each other. This is open to change, if you want to send in a pull request.
 
 ### Job settings
 
@@ -66,11 +66,11 @@ There are a couple of pretty important site options (as in [get_site_option](htt
 ### Filters
 
 There are some strategically placed filters that you can use to overwrite some of Aggregator's behaviour. These are well documented inline, so they are listed below and linked to the code.
-* `[aggregator_sync_meta_key](class-aggregate.php#L91-102)` - Decide whether to push some meta data to a portal site.
-* `[aggregator_allowed_post_types](class-aggregate.php#L118-127)` - Override the allowed post types as set by a sync job.
-* `[aggregator_taxonomy_terms](class-aggregate.php#L167-173)` - Allow overriding of non-whitelisted taxonomies and terms.
-* `[aggregator_taxonomy_terms](class-aggregate.php#L243-249)` - Allow overriding of non-whitelisted taxonomies and terms.
-* `[aggregator_orig_post_data](class-aggregate.php#L462-470)` - Alter the post data before syncing.
-* `[aggregator_orig_meta_data](class-aggregate.php#L498-507)` - Alter the meta data before syncing.
-* `[aggregator_portal_blogs](class-aggregator.php#L217-226)` - Filters the list of blogs to push to.
-* `[aggregator_source_blogs](class-aggregator.php#L247-255)` - Filters the list of blogs to push from.
+* `aggregator_sync_meta_key` - [class-aggregate.php:91-102](Class_Aggregate#L91-102) - Decide whether to push some meta data to a portal site.
+* `aggregator_allowed_post_types` - [class-aggregate.php:118-127](Class_Aggregate#L118-127) - Override the allowed post types as set by a sync job.
+* `aggregator_taxonomy_terms` - [class-aggregate.php:167-173](Class_Aggregate#L167-173) - Allow overriding of non-whitelisted taxonomies and terms.
+* `aggregator_taxonomy_terms` - [class-aggregate.php:243-249](Class_Aggregate#L243-249) - Allow overriding of non-whitelisted taxonomies and terms.
+* `aggregator_orig_post_data` - [class-aggregate.php:462-470](Class_Aggregate#L462-470) - Alter the post data before syncing.
+* `aggregator_orig_meta_data` - [class-aggregate.php:498-507](Class_Aggregate#L498-507) - Alter the meta data before syncing.
+* `aggregator_portal_blogs` - [class-aggregator.php:217-226](Class_Aggregator#L217-226) - Filters the list of blogs to push to.
+* `aggregator_source_blogs` - [class-aggregator.php:247-255](Class_Aggregator#L247-255) - Filters the list of blogs to push from.

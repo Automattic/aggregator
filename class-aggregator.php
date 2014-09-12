@@ -770,6 +770,7 @@ class Aggregator extends Aggregator_Plugin {
 			$args['blog_id'] = intval( $_REQUEST['portal'] );
 
 		?>
+		<p><?php __e('Choose the user to whom posts will be attributed to on the portal site.'); ?></p>
 		<label class="screen-reader-text" for="post_author_override"><?php _e('Author'); ?></label>
 		<?php
 		wp_dropdown_users( $args );

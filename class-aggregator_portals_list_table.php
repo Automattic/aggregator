@@ -93,15 +93,10 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							// Define the action links order
 							$actions = array(
 								'edit' => '',
-								/* @todo make activate/deactivate a thing
-								'activate' => '',
-								'deactivate' => '',*/
-								'delete' => '',
 							);
 
 							// Create the links
 							$actions['edit'] = '<span class="edit"><a href="' . esc_url( network_admin_url( 'settings.php?page=aggregator&action=edit&id=' . $portal->blog_id ) ) . '">' . __( 'Edit' ) . '</a></span>';
-							$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( network_admin_url( 'settings.php?page=aggregator&action=delete&id=' . $portal->blog_id . '&amp;msg=' . urlencode( sprintf( __( 'You are about to delete the sync job for %s.' ), $portal->domain ) ) ), 'confirm') ) . '">' . __( 'Delete' ) . '</a></span>';
 
 							echo "<td $attributes>" . $portal->domain . $this->row_actions( $actions ) . '</td>';
 							break;

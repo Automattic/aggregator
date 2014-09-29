@@ -760,6 +760,15 @@ Class Aggregate extends Aggregator_Plugin {
 			// Push taxonomies and terms
 			$this->push_taxonomy_terms( $target_post_id, $orig_terms );
 
+            // Ping the cron on the portal site to trigger term import now
+            $portal_site_url = get_home_url( $sync_destination );
+            wp_remote_get(
+                $portal_site_url . '/wp-cron.php',
+                array(
+                    'blocking' => false,
+                )
+            );
+
 			// Switch back to source blog
 			restore_current_blog();
 

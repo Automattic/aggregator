@@ -146,7 +146,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							echo sprintf(
 								'%d terms',
-								count( $job->get_terms() )
+								$job->get_term_count()
 							);
 
 							echo '</p></td>';

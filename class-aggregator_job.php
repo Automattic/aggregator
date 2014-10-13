@@ -285,11 +285,28 @@ Class Aggregator_Job {
 	 *
 	 * @return array An array of term names
 	 */
-	public function get_terms( $taxonomy ) {
+	public function get_terms( $taxonomy = 'aggregator_term_count' ) {
 
 		// $this-terms is an array of Term objects
 		if ( array_key_exists( $taxonomy, $this->terms ) )
 			return $this->terms[ $taxonomy ];
+
+	}
+
+	/**
+	 * Returns the number of terms set to be synced
+	 *
+	 * @return int Count of terms
+	 */
+	public function get_term_count() {
+
+		$term_count = 0;
+
+		foreach ( $this->terms as $terms ) {
+			$term_count = $term_count + count( $terms );
+		}
+
+		return $term_count;
 
 	}
 

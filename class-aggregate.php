@@ -457,6 +457,34 @@ Class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
+	 * Grab the featured image for the source post, if one exists.
+	 *
+	 * @param int $post_id ID of the post to be synced
+	 *
+	 * @return bool|string Returns false if no thumbnail exists, else the image URL
+	 */
+	protected function prepare_featured_image( $post_id ) {
+
+		// Check if there's a featured image
+		if ( has_post_thumbnail( $post_id ) ){
+
+			// Get the ID of the featured image
+			$thumb_id = get_post_thumbnail_id( $post_id );
+			if ( empty( $thumb_id ) )
+				return false;
+
+			// Get the raw image URL (the first element of the returned array)
+			$thumbnail = array_shift( wp_get_attachment_image_src( $thumb_id, 'full' ) );
+
+			return $thumbnail;
+
+		}
+
+		return false;
+
+	}
+
+	/**
 	 * Clone the source post data ready for pushing to the portal.
 	 *
 	 * Takes the post data (content etc) from the source blog post and tweaks it a bit in preparation
@@ -625,36 +653,29 @@ Class Aggregate extends Aggregator_Plugin {
 	 * Pushes a featured image from the source post to the portal post.
 	 *
 	 * @param int $target_post_id ID of the pushed portal post
-	 * @param int $orig_meta_data Array of meta data from the source post
+	 * @param string $featured_image URL of the full featured image
 	 */
-	protected function push_featured_image( $target_post_id, $orig_meta_data ) {
+	protected function push_featured_image( $target_post_id, $featured_image ) {
 
-		// Check if there's a featured image
-		if ( isset( $orig_meta_data['_thumbnail_id'] ) ){
-			// Get the raw image URL
-			$orig_thumbnail = array_shift( wp_get_attachment_image_src( intval( $orig_meta_data['_thumbnail_id'][0] ), 'full' ) );
+		// Get the image from the original site and download to new
+		$target_thumbnail = media_sideload_image( $featured_image, 	$target_post_id );
+		if ( is_wp_error( $target_thumbnail ) ) {
+			error_log("Failed to add featured image to post $target_post_id");
+			return;
 		}
 
-		// Migrate the featured image
-		if ( isset( $orig_thumbnail ) ) {
+		// Strip the src out of the IMG tag
+		$array = array();
+		preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
 
-			// Get the image from the original site and download to new
-			$target_thumbnail = media_sideload_image( $orig_thumbnail, 	$target_post_id );
+		// Get the ID of the attachment
+		$target_thumbnail = $this->get_image_id( $array[1] );
 
-			// Strip the src out of the IMG tag
-			$array = array();
-			preg_match( "/src='([^']*)'/i", $target_thumbnail, $array ) ;
+		// Generate thumbnails, because WP usually do this for us
+		$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
 
-			// Get the ID of the attachment
-			$target_thumbnail = $this->get_image_id( $array[1] );
-
-			// Generate thumbnails, because WP usually do this for us
-			$target_thumbnail_data = wp_generate_attachment_metadata( $target_thumbnail, get_attached_file( $target_thumbnail ) );
-
-			// Add the featured image to the target post
-			update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
-
-		}
+		// Add the featured image to the target post
+		update_post_meta( $target_post_id, '_thumbnail_id', $target_thumbnail );
 
 	}
 
@@ -710,8 +731,10 @@ Class Aggregate extends Aggregator_Plugin {
 		$orig_meta_data = $this->prepare_meta_data( $orig_post_id, $current_blog );
 
 		// Prepare terms
-
 		$orig_terms = $this->prepare_terms($orig_post_id, $orig_post );
+
+		// Prepare featured image
+		$featured_image = $this->prepare_featured_image( $orig_post_id );
 
 		// Get the array of sites to sync to
 		$sync_destinations = $this->aggregator->get_portals( $current_blog->blog_id );
@@ -755,7 +778,8 @@ Class Aggregate extends Aggregator_Plugin {
 			$this->push_meta_data( $target_post_id, $orig_meta_data );
 
 			// Push the featured image
-			$this->push_featured_image( $target_post_id, $orig_meta_data );
+			if ( $featured_image )
+				$this->push_featured_image( $target_post_id, $featured_image );
 
 			// Push taxonomies and terms
 			$this->push_taxonomy_terms( $target_post_id, $orig_terms );

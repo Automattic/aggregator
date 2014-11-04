@@ -239,7 +239,7 @@ Class Aggregate extends Aggregator_Plugin {
 		foreach ( $taxonomy_terms as $taxonomy => $terms ) {
 
 			// Terms might be empty. If so, all terms are allowed!
-			if ( empty( $terms ) )
+			if ( empty( $this->job->get_terms( $taxonomy ) ) )
 				continue; // I.e. don't check each term
 
 			// Check each term

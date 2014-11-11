@@ -794,12 +794,22 @@ class Aggregator extends Aggregator_Plugin {
 
 	}
 
+	/**
+	 * Redirect aggregated posts to the original post
+	 */
 	function template_redirect() {
+
+		// Get the original permalink (if any)
 		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
-		if ( is_single() && is_main_site() && $original_permalink ) {
+		if ( empty ( $original_permalink ) ) // not aggregated
+			return;
+
+		// Only redirect individual posts
+		if ( is_single() ) {
 			wp_redirect( $original_permalink, 301 );
 			exit;
 		}
+		
 	}
 
 } // END Aggregator class

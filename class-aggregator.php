@@ -804,12 +804,20 @@ class Aggregator extends Aggregator_Plugin {
 		if ( empty ( $original_permalink ) ) // not aggregated
 			return;
 
-		// Only redirect individual posts
-		if ( is_single() ) {
+		/**
+		 * Allow plugins and themes to stop Aggregator from redirecting.
+		 *
+		 * @param bool $should_redirect Whether (true) or not (false) we should actually perform a redirect
+		 * @param string $original_permalink The permalink of the original post
+		 */
+		$should_redirect = apply_filters( 'aggregator_should_redirect', true, $original_permalink );
+
+		// Only redirect individual posts, when told to
+		if ( is_single() && $should_redirect ) {
 			wp_redirect( $original_permalink, 301 );
 			exit;
 		}
-		
+
 	}
 
 } // END Aggregator class

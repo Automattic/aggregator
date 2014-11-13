@@ -75,3 +75,17 @@ There are some strategically placed filters that you can use to overwrite some o
 * `aggregator_orig_meta_data` - [class-aggregate.php:498-507](Class_Aggregate#L498-507) - Alter the meta data before syncing.
 * `aggregator_portal_blogs` - [class-aggregator.php:217-226](Class_Aggregator#L217-226) - Filters the list of blogs to push to.
 * `aggregator_source_blogs` - [class-aggregator.php:247-255](Class_Aggregator#L247-255) - Filters the list of blogs to push from.
+
+## Step-by-step instructions
+
+Pushing posts to the national site is done using a plugin called Aggregator. Here's how to set that up:
+
+1. Log in to WordPress
+1. Hover over "My Sites" in the top left to reveal the sites menu, and navigate to Network Admin
+1. In Network Admin, under Settings, choose "Aggregator"
+1. Click "Add New"
+1. From the first drop down, choose the site you wish posts to be pushed to – e.g. the national site.
+1. From the second, choose the source of posts
+1. You will now be able to set the criteria for this "sync job" - this works on a whitelist system. E.g., you choose the post types, taxonaomies and terms that should be pushed. Anything that isn't selected won't be pushed.
+1. Select your preferred post types, taxonomies, and terms
+1. Click Save

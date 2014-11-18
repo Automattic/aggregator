@@ -785,14 +785,31 @@ Class Aggregate extends Aggregator_Plugin {
 			// Push taxonomies and terms
 			$this->push_taxonomy_terms( $target_post_id, $orig_terms );
 
-            // Ping the cron on the portal site to trigger term import now
-            $portal_site_url = get_home_url( $sync_destination );
-            wp_remote_get(
-                $portal_site_url . '/wp-cron.php',
-                array(
-                    'blocking' => false,
-                )
-            );
+			$portal_site_url = get_home_url( $sync_destination );
+			// Filter url of portal_site_url
+			$portal_site_url = apply_filters( 'aggregator_remote_get_url', $portal_site_url );
+
+			// Args for wp_remote_get function
+			$args = array(
+				'blocking' => false
+			);
+
+			// If WP_CRON_LOCK_TIMEOUT is set and a number, set the curl timeout to a higher value
+			if(defined(WP_CRON_LOCK_TIMEOUT) && is_numeric(WP_CRON_LOCK_TIMEOUT)){
+				// Add 1 to time, give it a little extra time
+				$timeout = intval(WP_CRON_LOCK_TIMEOUT) + 1;
+				$args['timeout'] = $timeout;
+			}
+
+			// Filter args for wp_remote_get
+			$args = apply_filters( 'aggregator_remote_get_args', $args, $portal_site_url );
+
+			// Ping the cron on the portal site to trigger term import now
+			wp_remote_get(
+				$portal_site_url . '/wp-cron.php',
+				$args
+			);
+
 
 			// Switch back to source blog
 			restore_current_blog();

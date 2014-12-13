@@ -565,7 +565,8 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		// Queue up only on network admin settings page
-		if ( 'settings_page_aggregator-network' == $current_screen->id && 'add' == $_REQUEST['action'] ) {
+		$action = ( isset( $_REQUEST['action'] ) ) ? $_REQUEST['action'] : false;
+		if ( 'settings_page_aggregator-network' == $current_screen->id && $action ) {
 
 			// Queue up drop-down redirect JS
 			wp_enqueue_script('aggregator_job_create');

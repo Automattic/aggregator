@@ -310,12 +310,12 @@ class Aggregator extends Aggregator_Plugin {
 			foreach ( $blogs as $source ) {
 
 				// Don't try and find any blogs syncing to themselves
-				if ( $portal == $source )
+				if ( $portal['blog_id'] == $source['blog_id'] )
 					continue;
 
 				// Get any jobs
-				$job = new Aggregator_Job( $portal, $source );
-				if ( is_wp_error( $job ) ) {
+				$job = new Aggregator_Job( $portal['blog_id'], $source['blog_id'] );
+				if ( is_null( $job->post_id ) ) {
 					continue;
 				} else {
 					$jobs[] = $job;

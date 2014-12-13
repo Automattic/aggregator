@@ -121,6 +121,7 @@ Class Aggregator_Job {
 			'posts_per_page' => 1,
 		) );
 		if ( $jobs_query->have_posts() ) {
+
 			while ( $jobs_query->have_posts() ) {
 				$jobs_query->the_post();
 
@@ -139,8 +140,6 @@ Class Aggregator_Job {
 				// Retrieve the author ID for the portal
 				$this->author = get_post_meta( get_the_ID(), '_aggregator_author', true );
 			}
-		} else {
-			return new WP_Error( 'no_jobs', __('There are no jobs for this portal/source combination.') );
 		}
 
 		$this->restore_current_blog();

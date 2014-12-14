@@ -121,6 +121,7 @@ Class Aggregator_Job {
 			'posts_per_page' => 1,
 		) );
 		if ( $jobs_query->have_posts() ) {
+
 			while ( $jobs_query->have_posts() ) {
 				$jobs_query->the_post();
 

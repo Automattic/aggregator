@@ -41,10 +41,10 @@ require_once( 'class-plugin.php' );
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-require_once( 'class-aggregator_portals_list_table.php' );
+require_once( 'class-aggregator_jobs_list_table.php' );
 
 /**
- * 
+ * Sets up the basics for aggregator, like the admin interface
  * 
  * @package Feature Posts on Root Blog
  * @author Code for the People Ltd
@@ -97,7 +97,7 @@ class Aggregator extends Aggregator_Plugin {
 
 	function admin_init() {
 
-		$this->list_table = new Aggregator_Portals_List_Table();
+		$this->list_table = new Aggregator_Jobs_List_Table();
 
 		$this->set_cpt_cache();
 
@@ -279,29 +279,49 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Provide a list of sync jobs that apply to a given portal blog.
+	 * Provide a list of sync jobs.
 	 *
-	 * @param int $portal ID of a blog acting as a portal
-	 *
-	 * @return array An array of Aggregator_Job objects
+	 * @return array|bool An array of Aggregator_Job objects, false on error
 	 */
-	public function get_jobs_for_portal( $portal ) {
+	public function get_jobs() {
 
-		// Validate
-		if ( ! $portal = intval( $portal ) )
-			return false; // @todo throw error
+		// Get $wpdb so that we can use the network (site) ID later on
+		global $wpdb;
 
-		// Get the sources for this portal
-		$sources = $this->get_sources( $portal );
+		// Get a list of sites
+		// @todo We need to consider is_large_network() at some point
+		$blogs = wp_get_sites( array(
+			'network_id' => $wpdb->siteid,
+		) );
+
+		// Should never be empty, but hey, let's play safe
+		if ( empty( $blogs ) ) {
+			return false;
+		}
 
 		// Holder for the jobs
 		$jobs = array();
 
-		// Loop through each source, getting the sync job
-		foreach ( $sources as $source ) {
+		// Loop through each blog, getting any sync jobs
+		foreach ( $blogs as $portal ) {
 
-			// Aggregator_Job does the leg work for us
-			$jobs[] = new Aggregator_Job( $portal, $source );
+			// Find any portal jobs
+			// @todo There's probably a better way to do this...
+			foreach ( $blogs as $source ) {
+
+				// Don't try and find any blogs syncing to themselves
+				if ( $portal['blog_id'] == $source['blog_id'] )
+					continue;
+
+				// Get any jobs
+				$job = new Aggregator_Job( $portal['blog_id'], $source['blog_id'] );
+				if ( is_null( $job->post_id ) ) {
+					continue;
+				} else {
+					$jobs[] = $job;
+				}
+
+			}
 
 		}
 
@@ -545,7 +565,8 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		// Queue up only on network admin settings page
-		if ( 'settings_page_aggregator-network' == $current_screen->id && 'add' == $_REQUEST['action'] ) {
+		$action = ( isset( $_REQUEST['action'] ) ) ? $_REQUEST['action'] : false;
+		if ( 'settings_page_aggregator-network' == $current_screen->id && $action ) {
 
 			// Queue up drop-down redirect JS
 			wp_enqueue_script('aggregator_job_create');

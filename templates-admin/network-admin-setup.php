@@ -24,7 +24,7 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo $blog['blog_id']; ?>"><?php echo $blog['domain']; ?></option><?php
+							<option value="<?php echo $blog['blog_id']; ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path']; ?></option><?php
 						}
 						?>
 					</select>
@@ -37,7 +37,7 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo $blog['blog_id']; ?>"><?php echo $blog['domain']; ?></option><?php
+							<option value="<?php echo $blog['blog_id']; ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path']; ?></option><?php
 						}
 						?>
 					</select>

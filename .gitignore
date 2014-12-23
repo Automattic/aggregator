@@ -1,0 +1,6 @@
+# Behat
+/bin
+
+# Composer
+/vendor
+/composer.lock

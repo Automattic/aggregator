@@ -46,5 +46,12 @@ class FeatureContext extends MinkContext {
 
 	}
 
+	/**
+	 * @Given /^I wait for "(\d*)" seconds$/
+	 */
+	public function iWaitForSeconds( $arg1 ) {
+		sleep( $arg1 );
+	}
+
 
 }

@@ -247,7 +247,7 @@ if ( ! isset( $action ) || ( 'edit' != $action && 'add' != $action ) ) {
 
 	// Allow network admins to add new Aggregator Jobs
 	if ( current_user_can( 'manage_sites') ) : ?>
-		<a href="<?php echo network_admin_url( 'settings.php?page=aggregator&action=add' ); ?>" class="add-new-h2"><?php echo esc_html__( 'Add New' ); ?></a>
+		<a href="<?php echo network_admin_url( 'settings.php?page=aggregator&action=add' ); ?>" class="add-new-h2"><?php echo esc_html__( 'Add New Job' ); ?></a>
 	<?php endif;
 
 	echo '</h2>';

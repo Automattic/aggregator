@@ -521,7 +521,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Fetch the current screen so we know what admin page we're on
 		global $current_screen, $pagenow;
-
+pj_error_log($current_screen->id);
 		// Javascript to be loaded on the post edit screen for our aggregator_job post type
 		wp_register_script(
 			'aggregator_job_edit',
@@ -549,6 +549,15 @@ class Aggregator extends Aggregator_Plugin {
 			true
 		);
 
+		// CSS to be loaded on our network admin page
+		wp_register_style(
+			'aggregator-styles',
+			$this->url( 'css/admin.css' ),
+			array(),
+			$this->version,
+			'all'
+		);
+
 		// Queue up only on post add/edit screen for our post type
 		if ( 'aggregator_job' == $current_screen->post_type
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
@@ -565,6 +574,14 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		// Queue up only on network admin settings page
+		if ( 'settings_page_aggregator-network' == $current_screen->id ) {
+
+			// Add our custom styling
+			wp_enqueue_style( 'aggregator-styles' );
+
+		}
+
+		// ...when creating a job
 		$action = ( isset( $_REQUEST['action'] ) ) ? $_REQUEST['action'] : false;
 		if ( 'settings_page_aggregator-network' == $current_screen->id && $action ) {
 

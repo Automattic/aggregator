@@ -521,7 +521,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Fetch the current screen so we know what admin page we're on
 		global $current_screen, $pagenow;
-pj_error_log($current_screen->id);
+
 		// Javascript to be loaded on the post edit screen for our aggregator_job post type
 		wp_register_script(
 			'aggregator_job_edit',

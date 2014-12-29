@@ -113,3 +113,13 @@ Feature: Aggregator
     And I uncheck "taxo_category"
     And I press "Save"
     Then I should see "Aggregator Setup"
+
+  @javascript
+  Scenario: Delete the aggregation job
+    Given I am on "/wp-admin/network/settings.php?page=aggregator"
+    And I am logged into WordPress with username "admin" and password "password"
+    Then I should see "Aggregator Setup"
+
+    When I follow "Delete"
+    Then I should not see "Source (local.wordpress.dev)"
+    And I should see "Sorry, no jobs were found."

@@ -1,3 +1,4 @@
 .wp_list_aggregator_jobs .row-actions {
 	visibility: visible;
+	display: block;
 }

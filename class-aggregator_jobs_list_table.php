@@ -117,7 +117,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							);
 
 							// Create the links
-							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . __( 'Edit' ) . '</a></span>';
+							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . __( 'Edit Job' ) . '</a></span>';
 							// @todo Provide custom link for delete
 							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $job->get_delete_post_link() ) . '">' . __( 'Delete' ) . '</a></span>';
 

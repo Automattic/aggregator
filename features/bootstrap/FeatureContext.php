@@ -53,5 +53,30 @@ class FeatureContext extends MinkContext {
 		sleep( $arg1 );
 	}
 
+	/**
+	 * Ensures that the RTE on the post edit screen is (not) selected.
+	 *
+	 * @param string|null $maybe_not Whether to select, or "not", the RTE
+	 *
+	 * @Then /^I ensure the editor is (not) the rich text editor$/
+	 * @Then /^I ensure the editor is the rich text editor$/
+	 *
+	 * @throws Exception
+	 */
+	public function ensureTheEditorIsRTE( $maybe_not = null ) {
+		$should_be_RTE = false;
+		if ( is_null( $maybe_not ) ) {
+			$should_be_RTE = true;
+		}
+		// Check that the driver is Selenium, not Goutte
+		if ( ! is_a($this->getSession()->getDriver(),'Behat\Mink\Driver\Selenium2Driver') ) {
+			throw new \Exception( "This step will not work without Selenium" );
+		}
+		if ( $should_be_RTE ) {
+			$this->getSession()->getDriver()->evaluateScript( 'jQuery("#content-tmce").click();' );
+		} else {
+			$this->getSession()->getDriver()->evaluateScript( 'jQuery("#content-html").click();' );
+		}
+	}
 
 }

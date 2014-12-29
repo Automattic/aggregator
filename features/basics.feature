@@ -94,6 +94,7 @@ Feature: Aggregator
 
     # Check it's deleted
     Given I am on "/source"
+    And I wait for "3" seconds
     Then I should not see "Behat test post edited"
 
     # Check the portal copy has been deleted

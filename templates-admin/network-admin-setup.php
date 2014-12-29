@@ -1,11 +1,14 @@
 <?php
 
 // Get the blog ID from the URL, if set
-$id = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : 0;
+$portal_id = isset( $_REQUEST['portal'] ) ? intval( $_REQUEST['portal'] ) : 0;
+$source_id = isset( $_REQUEST['source'] ) ? intval( $_REQUEST['source'] ) : 0;
 
 // Determine/set the action to perform
 $action = ( isset( $_REQUEST['action'] ) ) ? esc_attr( $_REQUEST['action'] ) : 'list';
-
+pj_error_log('$action',$action);
+pj_error_log('$portal_id',$portal_id);
+pj_error_log('$source_id',$source_id);
 switch ( $action ) {
 
 	case "add":
@@ -51,64 +54,18 @@ switch ( $action ) {
 
 	case "delete":
 
-		if ( ! $id )
-			wp_die( __('Invalid site ID.') );
+		// Check we have valid portal and source IDs
+		if ( ! $portal_id || ! $source_id )
+			wp_die( __('Invalid site ID(s).') );
 
-		$details = get_blog_details( $id );
-		if ( ! can_edit_network( $details->site_id ) )
-			wp_die( __( 'You do not have permission to access this page.' ) );
+		// Get the job to be deleted
+		$job = new Aggregator_Job( $portal_id, $source_id );
 
-		// Get the list of sync blogs for the portal sync we're deleting
-		$sync_blogs = get_site_option( "aggregator_portal_{$id}_blogs", array() );
+		// Do the deletion
+		$job->delete_job();
 
-		// Loop through, removing this portal from the blog option
-		foreach ( $sync_blogs as $sync_blog ) {
-
-			switch_to_blog( $sync_blog );
-
-			// Get the existing option
-			$push_blogs = get_option( 'aggregator_push_blogs' );
-
-			// Get the key containing this portal site
-			$key = array_search( $id, $push_blogs );
-
-			// Remove the key
-			if ( $key !== false )
-				unset( $push_blogs[ $key ] );
-
-			// If the array is now empty, we may as well delete the option entirely
-			if ( empty( $push_blogs ) ) {
-
-				$delete = delete_option( 'aggregator_push_blogs' );
-				if ( ! $delete )
-					wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
-
-			} else {
-
-				// Update the existing option
-				$update = update_option( 'aggregator_push_blogs', $push_blogs );
-				if ( ! $update )
-					wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
-
-			}
-
-			// Clear above vars for sanity
-			unset( $push_blogs, $key, $update );
-
-			// Switch back to the network admin
-			restore_current_blog();
-
-		}
-
-		// Remove the option for the portal now too
-		$delete = delete_site_option( "aggregator_portal_{$id}_blogs" );
-		if ( ! $delete )
-			wp_die( __("Oh I'm sorry, something went wrong when updating the database.") );
-
-		// Set a success message, because we're winners
-		$messages = array(
-			sprintf( __('Sync job for %s successfully deleted.'), $details->domain ),
-		);
+		// Return to Aggregator Setup and print a message
+		wp_redirect( network_admin_url( 'settings.php?page=aggregator&deleted=1' ) );
 
 		break;
 
@@ -127,10 +84,12 @@ if ( ! isset( $action ) || ( 'edit' != $action && 'add' != $action ) ) {
 
 	echo '</h2>';
 
-	if ( ! empty( $messages ) ) {
-		foreach ( $messages as $msg )
-			echo '<div id="message" class="updated"><p>' . $msg . '</p></div>';
-	}
+	// Print a deletion success message
+	if ( isset( $_GET['deleted'] ) )
+		printf(
+			'<div id="message" class="updated below-h2"><p>%s</p></div>',
+			sprintf( '%d jobs permanently deleted.', intval( $_GET['deleted'] ) )
+		);
 
 	$this->list_table->prepare_items();
 	$this->list_table->display();

@@ -504,6 +504,15 @@ Class Aggregator_Job {
 	 */
 	public function delete_job() {
 
+		// Switch to the source blog
+		$this->switch_to_blog( $this->get_source_blog_id() );
+
+		// Delete the job post
+		wp_delete_post( $this->post_id );
+
+		// Switch back
+		$this->restore_current_blog();
+
 		// Update the network options
 		$this->update_network_options( 'delete' );
 

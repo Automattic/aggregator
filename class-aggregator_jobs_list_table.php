@@ -118,8 +118,14 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							// Create the links
 							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . __( 'Edit Job' ) . '</a></span>';
-							// @todo Provide custom link for delete
-							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $job->get_delete_post_link() ) . '">' . __( 'Delete' ) . '</a></span>';
+
+							// Provide custom link for delete
+							$delete_url = network_admin_url( sprintf(
+								'settings.php?page=aggregator&action=delete&portal=%d&source=%d',
+								$job->portal->blog_id,
+								$job->source->blog_id
+							) );
+							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $delete_url ) . '">' . __( 'Delete' ) . '</a></span>';
 
 							echo "<td $attributes>" . $job->source->blogname . ' (' . $job->source->domain . ')' . $this->row_actions( $actions ) . '</td>';
 

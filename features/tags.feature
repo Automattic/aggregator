@@ -25,8 +25,6 @@ Feature: Aggregator Category Syncing
     And I check "taxo_post_tag"
     And I wait for "1" seconds
     And I fill in "new-tag-post_tag" with "Tag One"
-    #And I press "Add"
-    #And I wait for "3" seconds
     And I press "Save"
     Then I should see "Aggregator Setup"
     And I should see "Source (local.wordpress.dev)"
@@ -35,7 +33,7 @@ Feature: Aggregator Category Syncing
     And I should see "1 terms"
 
   @javascript
-  Scenario: Push a category-based post across sites
+  Scenario: Push a tag-based post across sites
     Given I am on "/source/wp-admin/post-new.php"
     And I am logged into WordPress with username "admin" and password "password"
     Then I should see "Add New Post"
@@ -45,8 +43,6 @@ Feature: Aggregator Category Syncing
     And I ensure the editor is not the rich text editor
     And I fill in "content" with "Foobar"
     And I fill in "new-tag-post_tag" with "Tag One"
-    #And I press "Add"
-    #And I wait for "3" seconds
     And I press "Publish"
     Then I should see "Post published."
 
@@ -59,7 +55,7 @@ Feature: Aggregator Category Syncing
     Then I should see "Tag One test post for syncing"
 
   @javascript
-  Scenario: Don't push a non-category-based post across sites
+  Scenario: Don't push a non-tag-based post across sites
     Given I am on "/source/wp-admin/post-new.php"
     And I am logged into WordPress with username "admin" and password "password"
     Then I should see "Add New Post"

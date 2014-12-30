@@ -34,3 +34,49 @@ Feature: Aggregator Category Syncing
     And I should see "1 post types"
     And I should see "1 taxonomies"
     And I should see "1 terms"
+
+  @javascript
+  Scenario: Push a category-based post across sites
+    Given I am on "/source/wp-admin/post-new.php"
+    And I am logged into WordPress with username "admin" and password "password"
+    Then I should see "Add New Post"
+
+    # Add a test post to the source blog
+    When I fill in "post_title" with "Category One test post for syncing"
+    And I ensure the editor is not the rich text editor
+    And I fill in "content" with "Foobar"
+    And I follow "+ Add New Category"
+    And I fill in "newcategory" with "Category One"
+    And I press "Add New Category"
+    And I wait for "3" seconds
+    And I press "Publish"
+    Then I should see "Post published."
+
+    # Check that the post was actually published
+    Given I am on "/source"
+    Then I should see "Category One test post for syncing"
+
+    # Check that the post was pushed to the portal
+    Given I am on "/"
+    Then I should see "Category One test post for syncing"
+
+  @javascript
+  Scenario: Don't push a non-category-based post across sites
+    Given I am on "/source/wp-admin/post-new.php"
+    And I am logged into WordPress with username "admin" and password "password"
+    Then I should see "Add New Post"
+
+    # Add a test post to the source blog
+    When I fill in "post_title" with "No category test post for syncing"
+    And I ensure the editor is not the rich text editor
+    And I fill in "content" with "Foobar"
+    And I press "Publish"
+    Then I should see "Post published."
+
+    # Check that the post was actually published
+    Given I am on "/source"
+    Then I should see "No category test post for syncing"
+
+    # Check that the post was pushed to the portal
+    Given I am on "/"
+    Then I should not see "No category test post for syncing"

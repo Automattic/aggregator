@@ -1,7 +1,7 @@
-Feature: Aggregator Category Syncing
-  In order to use Aggregator to sync based on categor
+Feature: Aggregator Tag Syncing
+  In order to use Aggregator to sync based on tags
   As a super admin
-  I need to be able to use a full range of category-based rules
+  I need to be able to use a full range of tag-based rules
 
   @javascript
   Scenario: Add a new job to sync the "Tag One" category

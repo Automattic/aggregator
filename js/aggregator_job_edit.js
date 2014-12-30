@@ -1,10 +1,7 @@
 jQuery(document).ready(function($){
 
     // On load, trigger toggling
-    toggle_taxonomy_meta_boxes();
-
-    // Toggle when the checkboxes are toggled too
-    $('#taxonomies input[type=checkbox]').on( 'change', toggle_taxonomy_meta_boxes );
+    window.setInterval( toggle_taxonomy_meta_boxes, 500 );
 
     function toggle_taxonomy_meta_boxes() {
 

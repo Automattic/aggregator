@@ -1,7 +1,4 @@
-.post-aggregator-promotion-display {
-	font-weight: bold;
-}
-
-.aggregator-promotion-select {
-	line-height: 1.5em;
+.wp_list_aggregator_jobs .row-actions {
+	visibility: visible;
+	display: block;
 }

@@ -9,3 +9,7 @@
 	display: none;
 	visibility: hidden;
 }
+
+#description h1 {
+	line-height: 1.5em;
+}

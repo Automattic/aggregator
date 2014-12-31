@@ -1,0 +1,24 @@
+# behat.yml
+default:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url: http://local.wordpress.dev
+            files_path: '%behat.paths.features%/files/'
+            goutte:
+              guzzle_parameters:
+                curl.options:
+                  CURLOPT_SSL_VERIFYPEER: false
+                  CURLOPT_CERTINFO: false
+                  CURLOPT_TIMEOUT: 120
+                ssl.certificate_authority: false
+            selenium2: ~
+
+javascript:
+  filters:
+   tags: '@javascript'
+  extensions:
+    Behat\MinkExtension\Extension:
+      default_session: selenium2
+      base_url: http://local.wordpress.dev
+      browser_name: firefox
+      selenium2: ~

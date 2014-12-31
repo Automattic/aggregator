@@ -1,0 +1,195 @@
+# Copyright (C) 2014 Aggregator
+# This file is distributed under the same license as the Aggregator package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Aggregator 1.1\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/aggregator\n"
+"POT-Creation-Date: 2014-12-31 12:09:18+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: class-aggregate.php:257
+msgid "Post does not contain any white-listed terms"
+msgstr ""
+
+#: class-aggregator.php:122
+msgid "edit post"
+msgstr ""
+
+#: class-aggregator.php:123
+msgid "Sorry, you must edit this post from the %1$s site: %2$s"
+msgstr ""
+
+#: class-aggregator.php:183
+msgid "Aggregator Setup"
+msgstr ""
+
+#. #-#-#-#-#  aggregator.pot (Aggregator 1.1)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: class-aggregator.php:184
+msgid "Aggregator"
+msgstr ""
+
+#: class-aggregator.php:335
+msgid "Aggregator Jobs"
+msgstr ""
+
+#: class-aggregator.php:337
+msgid "Aggregator Job"
+msgstr ""
+
+#: class-aggregator.php:338 templates-admin/network-admin-setup.php:21
+msgid "Add New Sync Job"
+msgstr ""
+
+#: class-aggregator.php:339
+msgid "Edit Sync Job"
+msgstr ""
+
+#: class-aggregator.php:340
+msgid "New Sync Job"
+msgstr ""
+
+#: class-aggregator.php:341
+msgid "View Sync Job"
+msgstr ""
+
+#: class-aggregator.php:342
+msgid "No sync jobs found"
+msgstr ""
+
+#: class-aggregator.php:343
+msgid "No sync jobs found in trash"
+msgstr ""
+
+#: class-aggregator.php:361 class-aggregator.php:410 class-aggregator.php:411
+#: class-aggregator.php:414 class-aggregator.php:415
+msgid "Save"
+msgstr ""
+
+#: class-aggregator.php:364
+msgid "Description"
+msgstr ""
+
+#: class-aggregator.php:367
+msgid "Post Types"
+msgstr ""
+
+#: class-aggregator.php:370
+msgid "Taxonomies"
+msgstr ""
+
+#: class-aggregator.php:376 class-aggregator.php:715 class-aggregator.php:797
+#: class-aggregator_jobs_list_table.php:67
+msgid "Author"
+msgstr ""
+
+#: class-aggregator.php:397
+msgid "Delete Permanently"
+msgstr ""
+
+#: class-aggregator.php:399
+msgid "Move to Trash"
+msgstr ""
+
+#: class-aggregator.php:436
+msgid "<h1>%s to %s</h1>"
+msgstr ""
+
+#: class-aggregator.php:465
+msgid "Choose the post types to include in the sync:"
+msgstr ""
+
+#: class-aggregator.php:497
+msgid "Choose the taxonomies to include in the sync:"
+msgstr ""
+
+#: class-aggregator.php:713 class-aggregator_jobs_list_table.php:65
+msgid "Sites"
+msgstr ""
+
+#: class-aggregator.php:714 class-aggregator_jobs_list_table.php:66
+msgid "Syncing"
+msgstr ""
+
+#: class-aggregator.php:796
+msgid "Choose the user to whom posts will be attributed to on the portal site."
+msgstr ""
+
+#: class-aggregator_jobs_list_table.php:120
+msgid "Edit Job"
+msgstr ""
+
+#: class-aggregator_jobs_list_table.php:128
+msgid "Delete"
+msgstr ""
+
+#: class-aggregator_jobs_list_table.php:180
+msgid "Sorry, no jobs were found."
+msgstr ""
+
+#: class-aggregator_portals_list_table.php:60
+msgid "Portals"
+msgstr ""
+
+#: class-aggregator_portals_list_table.php:61
+msgid "Sources"
+msgstr ""
+
+#: class-aggregator_portals_list_table.php:134
+msgid "Edit"
+msgstr ""
+
+#: class-aggregator_portals_list_table.php:161
+msgid "No sync settings found."
+msgstr ""
+
+#: class-plugin.php:339
+msgid "This plugin admin template could not be found: %s"
+msgstr ""
+
+#: class-plugin.php:473
+msgid ""
+"This plugin template could not be found, perhaps you need to hook "
+"`sil_plugins_dir` and `sil_plugins_url`: %s"
+msgstr ""
+
+#: templates-admin/network-admin-setup.php:24
+msgid "Choose the site that will act as the \"portal\" site:"
+msgstr ""
+
+#: templates-admin/network-admin-setup.php:37
+msgid "Choose the site that will act as the \"source\" site:"
+msgstr ""
+
+#: templates-admin/network-admin-setup.php:48
+msgid "Save &amp; Continue"
+msgstr ""
+
+#: templates-admin/network-admin-setup.php:59
+msgid "Invalid site ID(s)."
+msgstr ""
+
+#: templates-admin/network-admin-setup.php:82
+msgid "Add New Job"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/cftp/aggregator/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Synchronise posts between blogs in a multisite network"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Code For The People"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://codeforthepeople.com/"
+msgstr ""

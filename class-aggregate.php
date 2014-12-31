@@ -505,6 +505,9 @@ Class Aggregate extends Aggregator_Plugin {
 		unset( $post_data['tags_input'] );
 		unset( $post_data['post_category'] );
 
+		// Force the post into pending until meta data sync
+		$post_data['post_status'] = 'pending';
+
 		/**
 		 * Alter the post data before syncing.
 		 *
@@ -645,6 +648,9 @@ Class Aggregate extends Aggregator_Plugin {
 
 			// Import the terms for this taxonomy
 			wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+
+			// The post *should* be in pending status, so publish it now we have the term data
+			wp_publish_post( $post_id );
 
 		}
 

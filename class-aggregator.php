@@ -69,6 +69,8 @@ class Aggregator extends Aggregator_Plugin {
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
+		$this->version = 1.1;
+
 		$this->add_action( 'network_admin_menu' );
 		$this->add_action( 'admin_init' );
 
@@ -78,7 +80,6 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
-			$this->add_action( 'before_delete_post' );
 			$this->add_action( 'add_meta_boxes_aggregator_job' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
@@ -90,8 +91,6 @@ class Aggregator extends Aggregator_Plugin {
 		$this->add_filter( 'post_link', null, null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
 		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
-
-		$this->version = 1;
 
 	}
 
@@ -359,22 +358,22 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Replace default submit box
 		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
-		add_meta_box( 'submitdiv', __('Save'), array( $this, 'meta_box_submitdiv' ), 'aggregator_job', 'side', 'high' );
+		$this->add_meta_box( 'submitdiv', __('Save'), 'meta_box_submitdiv', 'aggregator_job', 'side', 'high' );
 
 		// Description meta box
-		add_meta_box( 'description', __('Description'), array( $this, 'meta_box_description' ), 'aggregator_job', 'normal', 'high' );
+		$this->add_meta_box( 'description', __('Description'), 'meta_box_description', 'aggregator_job', 'normal', 'high' );
 
 		// Post types meta box
-		add_meta_box( 'post_types', __('Post Types'), array( $this, 'meta_box_post_types' ), 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'post_types', __('Post Types'), 'meta_box_post_types', 'aggregator_job', 'normal', 'core' );
 
 		// Taxonomies meta box
-		add_meta_box( 'taxonomies', __('Taxonomies'), array( $this, 'meta_box_taxonomies' ), 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'taxonomies', __('Taxonomies'), 'meta_box_taxonomies', 'aggregator_job', 'normal', 'core' );
 
 		// Author meta box
 		if ( post_type_supports($post->post_type, 'author') ) {
 			$post_type_object = get_post_type_object($post->post_type);
 			if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
-				add_meta_box('jobauthordiv', __('Author'), array( $this, 'post_author_meta_box' ), null, 'normal', 'core');
+				$this->add_meta_box('jobauthordiv', __('Author'), 'post_author_meta_box', null, 'normal', 'core');
 		}
 
 	}
@@ -435,8 +434,8 @@ class Aggregator extends Aggregator_Plugin {
 		// @todo style this to remove the border, heading and background
 		echo sprintf(
 			__('<h1>%s to %s</h1>'),
-			$source->domain,
-			$portal->domain
+			$source->domain . $source->path,
+			$portal->domain . $portal->path
 		);
 
 		// Get the portal ID, wherever it may be
@@ -549,6 +548,15 @@ class Aggregator extends Aggregator_Plugin {
 			true
 		);
 
+		// CSS to be loaded on our network admin page
+		wp_register_style(
+			'aggregator-styles',
+			$this->url( 'css/admin.css' ),
+			array(),
+			$this->version,
+			'all'
+		);
+
 		// Queue up only on post add/edit screen for our post type
 		if ( 'aggregator_job' == $current_screen->post_type
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
@@ -565,6 +573,14 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		// Queue up only on network admin settings page
+		if ( 'settings_page_aggregator-network' == $current_screen->id ) {
+
+			// Add our custom styling
+			wp_enqueue_style( 'aggregator-styles' );
+
+		}
+
+		// ...when creating a job
 		$action = ( isset( $_REQUEST['action'] ) ) ? $_REQUEST['action'] : false;
 		if ( 'settings_page_aggregator-network' == $current_screen->id && $action ) {
 
@@ -652,37 +668,6 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Update the network options for network admin pages
 		$sync_job->update_network_options();
-
-		// Redirect back to network admin settings, with a success message
-		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );
-		exit;
-
-	}
-
-	/**
-	 * Handle deletions of the aggregator_job post type
-	 *
-	 * @param int $post_id ID of the post to be deleted
-	 * @param object $post WP_Post object of the post
-	 */
-	public function before_delete_post( $post_id ) {
-
-		// Only our jobs post type
-		if ( 'aggregator_job' != get_post_type( $post_id ) )
-			return;
-
-		// Get the portal that relates to this job
-		$portal = get_post_meta( $post_id, '_aggregator_portal', true );
-		if ( ! $portal )
-			return;
-
-		// Get the relevant job object
-		$job = new Aggregator_Job( $portal, get_current_blog_id() );
-		if ( ! $job )
-			return;
-
-		// Delete the job
-		$job->delete_job();
 
 		// Redirect back to network admin settings, with a success message
 		wp_redirect( network_admin_url( 'settings.php?page=aggregator' ) );

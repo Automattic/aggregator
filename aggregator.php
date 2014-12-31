@@ -5,7 +5,7 @@ Plugin Name: Aggregator
 Plugin URI: https://github.com/cftp/aggregator/
 Description: Synchronise posts between blogs in a multisite network
 Network: true
-Version: 1.0
+Version: 1.1
 Author: Code For The People
 Author URI: http://codeforthepeople.com/
 License: GPLv2

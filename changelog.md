@@ -7,6 +7,7 @@
 * Added a fix to ensure pushed posts aren't put live before term sync takes place
 * Line height tweak on edit job page
 * Cleanup plugin helper class and usage
+* Internationalisation
 
 ## 1.0
 

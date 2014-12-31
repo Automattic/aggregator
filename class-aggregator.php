@@ -69,7 +69,7 @@ class Aggregator extends Aggregator_Plugin {
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
-		$this->version = 1;
+		$this->version = 1.1;
 
 		$this->add_action( 'network_admin_menu' );
 		$this->add_action( 'admin_init' );

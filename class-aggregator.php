@@ -69,6 +69,8 @@ class Aggregator extends Aggregator_Plugin {
 	public function __construct() {
 		$this->setup( 'aggregator' );
 
+		$this->version = 1;
+
 		$this->add_action( 'network_admin_menu' );
 		$this->add_action( 'admin_init' );
 
@@ -89,8 +91,6 @@ class Aggregator extends Aggregator_Plugin {
 		$this->add_filter( 'post_link', null, null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
 		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
-
-		$this->version = 1;
 
 	}
 
@@ -358,22 +358,22 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Replace default submit box
 		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
-		add_meta_box( 'submitdiv', __('Save'), array( $this, 'meta_box_submitdiv' ), 'aggregator_job', 'side', 'high' );
+		$this->add_meta_box( 'submitdiv', __('Save'), 'meta_box_submitdiv', 'aggregator_job', 'side', 'high' );
 
 		// Description meta box
-		add_meta_box( 'description', __('Description'), array( $this, 'meta_box_description' ), 'aggregator_job', 'normal', 'high' );
+		$this->add_meta_box( 'description', __('Description'), 'meta_box_description', 'aggregator_job', 'normal', 'high' );
 
 		// Post types meta box
-		add_meta_box( 'post_types', __('Post Types'), array( $this, 'meta_box_post_types' ), 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'post_types', __('Post Types'), 'meta_box_post_types', 'aggregator_job', 'normal', 'core' );
 
 		// Taxonomies meta box
-		add_meta_box( 'taxonomies', __('Taxonomies'), array( $this, 'meta_box_taxonomies' ), 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'taxonomies', __('Taxonomies'), 'meta_box_taxonomies', 'aggregator_job', 'normal', 'core' );
 
 		// Author meta box
 		if ( post_type_supports($post->post_type, 'author') ) {
 			$post_type_object = get_post_type_object($post->post_type);
 			if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
-				add_meta_box('jobauthordiv', __('Author'), array( $this, 'post_author_meta_box' ), null, 'normal', 'core');
+				$this->add_meta_box('jobauthordiv', __('Author'), 'post_author_meta_box', null, 'normal', 'core');
 		}
 
 	}

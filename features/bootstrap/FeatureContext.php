@@ -79,4 +79,31 @@ class FeatureContext extends MinkContext {
 		}
 	}
 
+	/**
+	 * @Given /^I add the file "([^"]*)" as the featured image$/
+	 */
+	public function iAddTheFileAsTheFeaturedImage( $image ) {
+
+		$session = $this->getSession();
+		if ( ! $session->isStarted() ) {
+			$session->start();
+		}
+
+		// Check that the driver is Selenium, not Goutte
+		if ( ! is_a( $session->getDriver(), 'Behat\Mink\Driver\Selenium2Driver' ) ) {
+			throw new \Exception( "Can't log in unless you're using Selenium driver" );
+		}
+
+		// Find the file input
+		$input_field = $this->getSession()->getDriver()->evaluateScript( 'return jQuery(".media-frame input[type=file]").attr("id");' );
+
+		// Add the file
+		$this->attachFileToField( $input_field, $image );
+
+		// Find and click the link
+		$this->getSession()->getDriver()->evaluateScript( 'return jQuery(".media-frame .media-frame-toolbar .button-primary").click();' );
+
+	}
+
+
 }

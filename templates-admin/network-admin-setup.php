@@ -6,9 +6,7 @@ $source_id = isset( $_REQUEST['source'] ) ? intval( $_REQUEST['source'] ) : 0;
 
 // Determine/set the action to perform
 $action = ( isset( $_REQUEST['action'] ) ) ? esc_attr( $_REQUEST['action'] ) : 'list';
-pj_error_log('$action',$action);
-pj_error_log('$portal_id',$portal_id);
-pj_error_log('$source_id',$source_id);
+
 switch ( $action ) {
 
 	case "add":

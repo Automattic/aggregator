@@ -43,7 +43,7 @@ switch ( $action ) {
 						?>
 					</select>
 				</p>
-				<?php submit_button( __('Save &amp; Continue') ); ?>
+				<?php submit_button( esc_html__('Save &amp; Continue') ); ?>
 			</form>
 		</div>
 		<?php

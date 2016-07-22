@@ -289,7 +289,7 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_term( $term, $taxonomy ) {
 
 		// Grab the taxonomy terms for this job
-		$tt = $this->job->get_terms( $taxonomy );
+		$tt = (array) $this->job->get_terms( $taxonomy );
 
 		// If the list of terms is empty, it means ALL terms are allowed
 		if ( empty( $tt ) || is_null( $tt ) )

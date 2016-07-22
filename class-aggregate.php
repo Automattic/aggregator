@@ -224,11 +224,11 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * Takes the full list of taxonomy terms and removes any terms not whitelisted by settings.
 	 *
-	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
+	 * @param array $taxonomy_terms The taxonomy => term pairs ready to push
 	 *
 	 * @return array Filtered list of taxonomy terms to push
 	 */
-	protected function allowed_terms( $taxonomy_terms ) {
+	protected function allowed_terms( array $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we should always sync
 		$tax_whitelist = (array) $this->taxonomy_whitelist();

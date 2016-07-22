@@ -5,7 +5,7 @@ $portal_id = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : 0;
 $source_id = isset( $_GET['source'] ) ? intval( $_GET['source'] ) : 0;
 
 // Determine/set the action to perform
-$action = ( isset( $_GET['action'] ) ) ? esc_attr( $_GET['action'] ) : 'list';
+$action = ( isset( $_GET['action'] ) ) ? sanitise_text_field( $_GET['action'] ) : 'list';
 
 switch ( $action ) {
 

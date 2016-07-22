@@ -400,8 +400,11 @@ Class Aggregate extends Aggregator_Plugin {
 		$attachment = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM " . $wpdb->prefix . "posts" . " WHERE guid='%s';", $image_url ) );
 
 		// ID should be the first element of the returned array
-		// @todo Check this!
-		return $attachment[0];
+		if ( is_array( $attachment ) && isset( $attachment[0] ) ) {
+			return $attachment[0];
+		}
+
+		return false;
 
 	}
 

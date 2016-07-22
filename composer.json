@@ -1,12 +1,12 @@
 {
-    "name": "cftp/aggregator",
+    "name": "automattic/aggregator",
     "description": "Synchronise posts between blogs in a multisite network",
     "type": "wordpress-plugin",
     "license": "GPL-2.0+",
     "authors": [
         {
-            "name": "Code For The People",
-            "homepage": "http://codeforthepeople.com"
+            "name": "WordPress.com VIP / Philip John",
+            "homepage": "http://vip.wordpress.com"
         }
     ],
     "require": {

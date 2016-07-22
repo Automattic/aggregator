@@ -5,29 +5,12 @@ Plugin Name: Aggregator
 Plugin URI: https://github.com/cftp/aggregator/
 Description: Synchronise posts between blogs in a multisite network
 Network: true
-Version: 1.1
-Author: Code For The People
-Author URI: http://codeforthepeople.com/
+Version: 1.1.1
+Author: WordPress.com VIP / Philip John
+Author URI: http://vip.wordpress.com
 License: GPLv2
 
-Copyright 2014 Code for the People Ltd
-
-                _____________
-               /      ____   \
-         _____/       \   \   \
-        /\    \        \___\   \
-       /  \    \                \
-      /   /    /          _______\
-     /   /    /          \       /
-    /   /    /            \     /
-    \   \    \ _____    ___\   /
-     \   \    /\    \  /       \
-      \   \  /  \____\/    _____\
-       \   \/        /    /    / \
-        \           /____/    /___\
-         \                        /
-          \______________________/
-
+Copyright 2016 Automattic, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -812,9 +812,9 @@ Class Aggregate extends Aggregator_Plugin {
 			);
 
 			// If WP_CRON_LOCK_TIMEOUT is set and a number, set the curl timeout to a higher value
-			if(defined(WP_CRON_LOCK_TIMEOUT) && is_numeric(WP_CRON_LOCK_TIMEOUT)){
+			if ( defined( WP_CRON_LOCK_TIMEOUT ) && is_numeric( WP_CRON_LOCK_TIMEOUT ) ) {
 				// Add 1 to time, give it a little extra time
-				$timeout = intval(WP_CRON_LOCK_TIMEOUT) + 1;
+				$timeout = intval( WP_CRON_LOCK_TIMEOUT ) + 1;
 				$args['timeout'] = $timeout;
 			}
 

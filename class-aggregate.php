@@ -143,6 +143,10 @@ Class Aggregate extends Aggregator_Plugin {
 		 */
 		$allowed_types = apply_filters( 'aggregator_allowed_post_types', $allowed_types, get_current_blog_id() );
 
+		if ( ! is_array( $allowed_types ) ) {
+			$allowed_types = array();
+		}
+
 		// Check if this post's type is in the list of types to sync
 		if ( in_array( $post_type, $allowed_types ) )
 			return true; // Yep, we should sync this post type

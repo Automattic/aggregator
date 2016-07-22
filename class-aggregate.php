@@ -258,8 +258,9 @@ Class Aggregate extends Aggregator_Plugin {
 
 			// If there are no terms for this taxonomy at this point, it means that *none* of our
 			// white-listed terms are present, and as such we must stop the sync
-			if ( empty( $taxonomy_terms[ $taxonomy ] ) )
+			if ( empty( $taxonomy_terms[ $taxonomy ] ) ) {
 				return new WP_Error( 'term_whitelist', __('Post does not contain any white-listed terms') );
+			}
 
 		}
 

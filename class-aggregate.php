@@ -160,7 +160,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * Takes the full list of taxonomy terms and removes any taxonomy terms not whitelisted by settings.
 	 *
-	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
+	 * @param array $taxonomy_terms The taxonomy => term pairs ready to push
 	 *
 	 * @return array Filtered list of taxonomy terms to push
 	 */

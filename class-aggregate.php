@@ -422,6 +422,7 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
 
 		// Build a query, checking for the relevant meta data
+		// @todo consider whether we should cache this
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',

@@ -455,13 +455,13 @@ class Aggregator_Plugin {
 		}
 
 		// If there's a tpl in a (child theme or theme with no child)
-		if ( file_exists( STYLESHEETPATH . "/$sub_dir" . $template_file ) ) {
-			return STYLESHEETPATH . "/$sub_dir" . $template_file;
+		if ( file_exists( get_stylesheet_directory() . "/$sub_dir" . $template_file ) ) {
+			return get_stylesheet_directory() . "/$sub_dir" . $template_file;
 		}
 
 		// If there's a tpl in the parent of the current child theme
-		else if ( file_exists( TEMPLATEPATH . "/$sub_dir" . $template_file ) ) {
-			return TEMPLATEPATH . "/$sub_dir" . $template_file;
+		else if ( file_exists( get_template_directory() . "/$sub_dir" . $template_file ) ) {
+			return get_template_directory() . "/$sub_dir" . $template_file;
 		}
 
 		// Fall back on the bundled plugin template (N.B. no filtered subfolder involved)

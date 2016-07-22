@@ -460,6 +460,13 @@ class Aggregator extends Aggregator_Plugin {
 		// Get the post types for this post, if applicable
 		$chosen_cpts = get_post_meta( $post->ID, '_aggregator_post_types', true );
 
+		if ( ! is_array( $chosen_cpts ) ) {
+			echo sprintf(
+				'<p>%s</p>',
+				esc_html__('No post types were found.')
+			);
+		}
+
 		echo sprintf(
 			'<p>%s</p>',
 			__('Choose the post types to include in the sync:')

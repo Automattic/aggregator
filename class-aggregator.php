@@ -461,10 +461,7 @@ class Aggregator extends Aggregator_Plugin {
 		$chosen_cpts = get_post_meta( $post->ID, '_aggregator_post_types', true );
 
 		if ( ! is_array( $chosen_cpts ) ) {
-			echo sprintf(
-				'<p>%s</p>',
-				esc_html__('No post types were found.')
-			);
+			$chosen_cpts = array();
 		}
 
 		echo sprintf(
@@ -498,6 +495,10 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Get the taxonomies for this post, if applicable
 		$chosen_taxos = get_post_meta( $post->ID, '_aggregator_taxonomies', true );
+
+		if ( ! is_array( $chosen_taxos ) ) {
+			$chosen_taxos = array();
+		}
 
 		echo sprintf(
 			'<p>%s</p>',

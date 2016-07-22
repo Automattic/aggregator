@@ -164,7 +164,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * @return array Filtered list of taxonomy terms to push
 	 */
-	protected function allowed_taxonomies( $taxonomy_terms ) {
+	protected function allowed_taxonomies( array $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we shoud always sync
 		$tax_whitelist = (array) $this->taxonomy_whitelist();

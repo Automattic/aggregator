@@ -360,10 +360,11 @@ Class Aggregate extends Aggregator_Plugin {
 		// Prevent recursion, which will lead to infinite loops
 		if ( $this->recursing )
 			return;
+
 		$this->recursing = true;
 
 		// Get the portal blogs we've pushed this post to
-		$portals = $this->aggregator->get_portals( $current_blog->blog_id );
+		$portals = (array) $this->aggregator->get_portals( $current_blog->blog_id );
 
 		// Loop through each portal and delete this post
 		foreach ( $portals as $portal ) {

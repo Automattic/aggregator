@@ -143,6 +143,10 @@ Class Aggregate extends Aggregator_Plugin {
 		 */
 		$allowed_types = apply_filters( 'aggregator_allowed_post_types', $allowed_types, get_current_blog_id() );
 
+		if ( ! is_array( $allowed_types ) ) {
+			$allowed_types = array();
+		}
+
 		// Check if this post's type is in the list of types to sync
 		if ( in_array( $post_type, $allowed_types ) )
 			return true; // Yep, we should sync this post type
@@ -156,14 +160,15 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * Takes the full list of taxonomy terms and removes any taxonomy terms not whitelisted by settings.
 	 *
-	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
+	 * @param array $taxonomy_terms The taxonomy => term pairs ready to push
 	 *
 	 * @return array Filtered list of taxonomy terms to push
 	 */
-	protected function allowed_taxonomies( $taxonomy_terms ) {
+	protected function allowed_taxonomies( array $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we shoud always sync
-		$tax_whitelist = $this->taxonomy_whitelist();
+		$tax_whitelist = (array) $this->taxonomy_whitelist();
+
 		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist
 			if ( array_key_exists( $tax, $taxonomy_terms ) ){
@@ -219,14 +224,14 @@ Class Aggregate extends Aggregator_Plugin {
 	 *
 	 * Takes the full list of taxonomy terms and removes any terms not whitelisted by settings.
 	 *
-	 * @param string $taxonomy_terms The taxonomy => term pairs ready to push
+	 * @param array $taxonomy_terms The taxonomy => term pairs ready to push
 	 *
 	 * @return array Filtered list of taxonomy terms to push
 	 */
-	protected function allowed_terms( $taxonomy_terms ) {
+	protected function allowed_terms( array $taxonomy_terms ) {
 
-		// Siphon off the taxonomies we shoud always sync
-		$tax_whitelist = $this->taxonomy_whitelist();
+		// Siphon off the taxonomies we should always sync
+		$tax_whitelist = (array) $this->taxonomy_whitelist();
 		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist
 			if ( array_key_exists( $tax, $taxonomy_terms ) ) {
@@ -253,8 +258,9 @@ Class Aggregate extends Aggregator_Plugin {
 
 			// If there are no terms for this taxonomy at this point, it means that *none* of our
 			// white-listed terms are present, and as such we must stop the sync
-			if ( empty( $taxonomy_terms[ $taxonomy ] ) )
+			if ( empty( $taxonomy_terms[ $taxonomy ] ) ) {
 				return new WP_Error( 'term_whitelist', __('Post does not contain any white-listed terms') );
+			}
 
 		}
 
@@ -283,7 +289,7 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_term( $term, $taxonomy ) {
 
 		// Grab the taxonomy terms for this job
-		$tt = $this->job->get_terms( $taxonomy );
+		$tt = (array) $this->job->get_terms( $taxonomy );
 
 		// If the list of terms is empty, it means ALL terms are allowed
 		if ( empty( $tt ) || is_null( $tt ) )
@@ -354,10 +360,11 @@ Class Aggregate extends Aggregator_Plugin {
 		// Prevent recursion, which will lead to infinite loops
 		if ( $this->recursing )
 			return;
+
 		$this->recursing = true;
 
 		// Get the portal blogs we've pushed this post to
-		$portals = $this->aggregator->get_portals( $current_blog->blog_id );
+		$portals = (array) $this->aggregator->get_portals( $current_blog->blog_id );
 
 		// Loop through each portal and delete this post
 		foreach ( $portals as $portal ) {
@@ -393,8 +400,11 @@ Class Aggregate extends Aggregator_Plugin {
 		$attachment = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM " . $wpdb->prefix . "posts" . " WHERE guid='%s';", $image_url ) );
 
 		// ID should be the first element of the returned array
-		// @todo Check this!
-		return $attachment[0];
+		if ( is_array( $attachment ) && isset( $attachment[0] ) ) {
+			return $attachment[0];
+		}
+
+		return false;
 
 	}
 
@@ -412,6 +422,7 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
 
 		// Build a query, checking for the relevant meta data
+		// @todo consider whether we should cache this
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',
@@ -801,9 +812,9 @@ Class Aggregate extends Aggregator_Plugin {
 			);
 
 			// If WP_CRON_LOCK_TIMEOUT is set and a number, set the curl timeout to a higher value
-			if(defined(WP_CRON_LOCK_TIMEOUT) && is_numeric(WP_CRON_LOCK_TIMEOUT)){
+			if ( defined( WP_CRON_LOCK_TIMEOUT ) && is_numeric( WP_CRON_LOCK_TIMEOUT ) ) {
 				// Add 1 to time, give it a little extra time
-				$timeout = intval(WP_CRON_LOCK_TIMEOUT) + 1;
+				$timeout = intval( WP_CRON_LOCK_TIMEOUT ) + 1;
 				$args['timeout'] = $timeout;
 			}
 

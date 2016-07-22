@@ -1,11 +1,11 @@
 <?php
 
 // Get the blog ID from the URL, if set
-$portal_id = isset( $_REQUEST['portal'] ) ? intval( $_REQUEST['portal'] ) : 0;
-$source_id = isset( $_REQUEST['source'] ) ? intval( $_REQUEST['source'] ) : 0;
+$portal_id = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : 0;
+$source_id = isset( $_GET['source'] ) ? intval( $_GET['source'] ) : 0;
 
 // Determine/set the action to perform
-$action = ( isset( $_REQUEST['action'] ) ) ? esc_attr( $_REQUEST['action'] ) : 'list';
+$action = ( isset( $_GET['action'] ) ) ? sanitise_text_field( $_GET['action'] ) : 'list';
 
 switch ( $action ) {
 
@@ -25,7 +25,7 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo $blog['blog_id']; ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path']; ?></option><?php
+							<option value="<?php echo esc_attr( $blog['blog_id'] ); ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? esc_html( $blog['domain'] ) : esc_html( $blog['path'] ); ?></option><?php
 						}
 						?>
 					</select>
@@ -38,12 +38,12 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo $blog['blog_id']; ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path']; ?></option><?php
+							<option value="<?php echo esc_attr( $blog['blog_id'] ); ?>"><?php echo ( SUBDOMAIN_INSTALL ) ? esc_html( $blog['domain'] ) : esc_html( $blog['path'] ); ?></option><?php
 						}
 						?>
 					</select>
 				</p>
-				<?php submit_button( __('Save &amp; Continue') ); ?>
+				<?php submit_button( esc_html__('Save &amp; Continue') ); ?>
 			</form>
 		</div>
 		<?php

@@ -73,7 +73,7 @@ Class Aggregate extends Aggregator_Plugin {
 		$this->add_action( 'aggregator_import_terms', 'process_import_terms' );
 		$this->add_filter( 'aggregator_sync_meta_key', 'sync_meta_key', null, 2 );
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
-		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
+		$this->add_filter( 'page_row_actions', null, 9999, 2 );
 
 		$this->recursing = false;
 		$this->version = 1;

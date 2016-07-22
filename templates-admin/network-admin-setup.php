@@ -1,11 +1,11 @@
 <?php
 
 // Get the blog ID from the URL, if set
-$portal_id = isset( $_REQUEST['portal'] ) ? intval( $_REQUEST['portal'] ) : 0;
-$source_id = isset( $_REQUEST['source'] ) ? intval( $_REQUEST['source'] ) : 0;
+$portal_id = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : 0;
+$source_id = isset( $_GET['source'] ) ? intval( $_GET['source'] ) : 0;
 
 // Determine/set the action to perform
-$action = ( isset( $_REQUEST['action'] ) ) ? esc_attr( $_REQUEST['action'] ) : 'list';
+$action = ( isset( $_GET['action'] ) ) ? esc_attr( $_GET['action'] ) : 'list';
 
 switch ( $action ) {
 

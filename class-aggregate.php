@@ -230,7 +230,7 @@ Class Aggregate extends Aggregator_Plugin {
 	 */
 	protected function allowed_terms( $taxonomy_terms ) {
 
-		// Siphon off the taxonomies we shoud always sync
+		// Siphon off the taxonomies we should always sync
 		$tax_whitelist = $this->taxonomy_whitelist();
 		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist

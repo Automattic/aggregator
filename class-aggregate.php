@@ -231,7 +231,7 @@ Class Aggregate extends Aggregator_Plugin {
 	protected function allowed_terms( $taxonomy_terms ) {
 
 		// Siphon off the taxonomies we should always sync
-		$tax_whitelist = $this->taxonomy_whitelist();
+		$tax_whitelist = (array) $this->taxonomy_whitelist();
 		foreach ( $tax_whitelist as $tax => $terms ) {
 			// Copy any terms to the whitelist
 			if ( array_key_exists( $tax, $taxonomy_terms ) ) {

@@ -2,7 +2,7 @@
 
 /*
 Plugin Name: Aggregator
-Plugin URI: https://github.com/cftp/aggregator/
+Plugin URI: https://github.com/automattic/aggregator/
 Description: Synchronise posts between blogs in a multisite network
 Network: true
 Version: 1.1.1

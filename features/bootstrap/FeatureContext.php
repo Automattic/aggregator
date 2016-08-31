@@ -69,8 +69,8 @@ class FeatureContext extends MinkContext {
 			$should_be_RTE = true;
 		}
 		// Check that the driver is Selenium, not Goutte
-		if ( ! is_a($this->getSession()->getDriver(),'Behat\Mink\Driver\Selenium2Driver') ) {
-			throw new \Exception( "This step will not work without Selenium" );
+		if ( ! is_a( $this->getSession()->getDriver(),'Behat\Mink\Driver\Selenium2Driver' ) ) {
+			throw new \Exception( 'This step will not work without Selenium' );
 		}
 		if ( $should_be_RTE ) {
 			$this->getSession()->getDriver()->evaluateScript( 'jQuery("#content-tmce").click();' );
@@ -104,6 +104,4 @@ class FeatureContext extends MinkContext {
 		$this->getSession()->getDriver()->evaluateScript( 'return jQuery(".media-frame .media-frame-toolbar .button-primary").click();' );
 
 	}
-
-
 }

@@ -1,6 +1,7 @@
 <?php
- 
-/*  Copyright 2014 Code for the People Ltd
+
+/*
+  Copyright 2014 Code for the People Ltd
 
                 _____________
                /      ____   \
@@ -45,7 +46,7 @@ require_once( 'class-aggregator_jobs_list_table.php' );
 
 /**
  * Sets up the basics for aggregator, like the admin interface
- * 
+ *
  * @package Feature Posts on Root Blog
  * @author Code for the People Ltd
  **/
@@ -79,7 +80,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'load-post-new.php', 'load_post_edit' );
 			$this->add_action( 'init', 'register_post_types', 11 );
 			$this->add_action( 'wp_ajax_get_new_job_url' );
-			$this->add_action( 'publish_aggregator_job', NULL, NULL, 2 );
+			$this->add_action( 'publish_aggregator_job', null, null, 2 );
 			$this->add_action( 'add_meta_boxes_aggregator_job' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
@@ -112,8 +113,8 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function load_post_edit() {
 
-		$post_id = isset( $_GET[ 'post' ] ) ? absint( $_GET[ 'post' ] ) : false;
-		
+		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : false;
+
 		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
 
 			$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
@@ -133,7 +134,7 @@ class Aggregator extends Aggregator_Plugin {
 	 * We don't want folks to edit synced posts on a portal site, so we want to remove the
 	 * relevant action links from the posts table.
 	 *
-	 * @param array $actions Action links array for filtering
+	 * @param array  $actions Action links array for filtering
 	 * @param object $post WP_Post object representing the post being displayed
 	 *
 	 * @return array Filtered array of actions
@@ -142,8 +143,8 @@ class Aggregator extends Aggregator_Plugin {
 
 		if ( $orig_blog_id = get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
 			foreach ( $actions as $action_name => & $action ) {
-				if ( 'view' != $action_name )
-					unset( $actions[ $action_name ] );
+				if ( 'view' != $action_name ) {
+					unset( $actions[ $action_name ] ); }
 			}
 		}
 
@@ -163,15 +164,14 @@ class Aggregator extends Aggregator_Plugin {
 	 **/
 	public function post_link( $permalink, $post ) {
 
-		if ( $original_permalink = get_post_meta( $post->ID, '_aggregator_permalink', true ) )
-			return $original_permalink;
-		
+		if ( $original_permalink = get_post_meta( $post->ID, '_aggregator_permalink', true ) ) {
+			return $original_permalink; }
+
 		return $permalink;
 	}
-	
+
 	// UTILITIES
 	// =========
-
 	/**
 	 * Sets up our network admin settings page
 	 *
@@ -180,8 +180,8 @@ class Aggregator extends Aggregator_Plugin {
 	public function network_admin_menu() {
 		add_submenu_page(
 			'settings.php',
-			__('Aggregator Setup'),
-			__('Aggregator'),
+			__( 'Aggregator Setup' ),
+			__( 'Aggregator' ),
 			'manage_sites',
 			'aggregator',
 			array( $this, 'network_admin_menu_callback' )
@@ -213,8 +213,8 @@ class Aggregator extends Aggregator_Plugin {
 		// Get/set the cache
 		$cpt_cache_name = 'cpt_cache_' . get_current_blog_id();
 		$cpt_cache = get_site_transient( $cpt_cache_name );
-		if ( ! $cpt_cache )
-			set_site_transient( $cpt_cache_name, $cpts );
+		if ( ! $cpt_cache ) {
+			set_site_transient( $cpt_cache_name, $cpts ); }
 
 	}
 
@@ -241,10 +241,9 @@ class Aggregator extends Aggregator_Plugin {
 		 */
 		$sync = apply_filters( 'aggregator_portal_blogs', $sync, $source_id );
 
-		if ( empty( $sync ) )
+		if ( empty( $sync ) ) {
 			return false;
-		else
-			return $sync;
+		} else { 			return $sync; }
 
 	}
 
@@ -270,10 +269,9 @@ class Aggregator extends Aggregator_Plugin {
 		 */
 		$sync = apply_filters( 'aggregator_source_blogs', $sync, $portal_id );
 
-		if ( empty( $sync ) )
+		if ( empty( $sync ) ) {
 			return false;
-		else
-			return $sync;
+		} else { 			return $sync; }
 
 	}
 
@@ -309,8 +307,8 @@ class Aggregator extends Aggregator_Plugin {
 			foreach ( $blogs as $source ) {
 
 				// Don't try and find any blogs syncing to themselves
-				if ( $portal['blog_id'] == $source['blog_id'] )
-					continue;
+				if ( $portal['blog_id'] == $source['blog_id'] ) {
+					continue; }
 
 				// Get any jobs
 				$job = new Aggregator_Job( $portal['blog_id'], $source['blog_id'] );
@@ -319,9 +317,7 @@ class Aggregator extends Aggregator_Plugin {
 				} else {
 					$jobs[] = $job;
 				}
-
 			}
-
 		}
 
 		return $jobs;
@@ -332,15 +328,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Now register our psot type, for managing aggregator job settings
 		register_post_type( 'aggregator_job', array(
-			'label' => __('Aggregator Jobs'),
+			'label' => __( 'Aggregator Jobs' ),
 			'labels' => array(
-				'singular_name' => __('Aggregator Job'),
-				'add_new_item' => __('Add New Sync Job'),
-				'edit_item' => __('Edit Sync Job'),
-				'new_item' => __('New Sync Job'),
-				'view_item' => __('View Sync Job'),
-				'not_found' => __('No sync jobs found'),
-				'not_found_in_trash' => __('No sync jobs found in trash'),
+				'singular_name' => __( 'Aggregator Job' ),
+				'add_new_item' => __( 'Add New Sync Job' ),
+				'edit_item' => __( 'Edit Sync Job' ),
+				'new_item' => __( 'New Sync Job' ),
+				'view_item' => __( 'View Sync Job' ),
+				'not_found' => __( 'No sync jobs found' ),
+				'not_found_in_trash' => __( 'No sync jobs found in trash' ),
 			),
 			'public' => false, // Only access through our network admin UI
 			'show_ui' => true, // Otherwise we can't use post edit screens
@@ -358,22 +354,22 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Replace default submit box
 		remove_meta_box( 'submitdiv', 'aggregator_job', 'side' );
-		$this->add_meta_box( 'submitdiv', __('Save'), 'meta_box_submitdiv', 'aggregator_job', 'side', 'high' );
+		$this->add_meta_box( 'submitdiv', __( 'Save' ), 'meta_box_submitdiv', 'aggregator_job', 'side', 'high' );
 
 		// Description meta box
-		$this->add_meta_box( 'description', __('Description'), 'meta_box_description', 'aggregator_job', 'normal', 'high' );
+		$this->add_meta_box( 'description', __( 'Description' ), 'meta_box_description', 'aggregator_job', 'normal', 'high' );
 
 		// Post types meta box
-		$this->add_meta_box( 'post_types', __('Post Types'), 'meta_box_post_types', 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'post_types', __( 'Post Types' ), 'meta_box_post_types', 'aggregator_job', 'normal', 'core' );
 
 		// Taxonomies meta box
-		$this->add_meta_box( 'taxonomies', __('Taxonomies'), 'meta_box_taxonomies', 'aggregator_job', 'normal', 'core' );
+		$this->add_meta_box( 'taxonomies', __( 'Taxonomies' ), 'meta_box_taxonomies', 'aggregator_job', 'normal', 'core' );
 
 		// Author meta box
-		if ( post_type_supports($post->post_type, 'author') ) {
-			$post_type_object = get_post_type_object($post->post_type);
-			if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
-				$this->add_meta_box('jobauthordiv', __('Author'), 'post_author_meta_box', null, 'normal', 'core');
+		if ( post_type_supports( $post->post_type, 'author' ) ) {
+			$post_type_object = get_post_type_object( $post->post_type );
+			if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) ) {
+				$this->add_meta_box( 'jobauthordiv', __( 'Author' ), 'post_author_meta_box', null, 'normal', 'core' ); }
 		}
 
 	}
@@ -392,27 +388,26 @@ class Aggregator extends Aggregator_Plugin {
 		?>
 		<div id="delete-action">
 			<?php
-			if ( current_user_can( "delete_post", $post->ID ) ) {
-				if ( !EMPTY_TRASH_DAYS )
-					$delete_text = __('Delete Permanently');
-				else
-					$delete_text = __('Move to Trash');
+			if ( current_user_can( 'delete_post', $post->ID ) ) {
+				if ( ! EMPTY_TRASH_DAYS ) {
+					$delete_text = __( 'Delete Permanently' );
+				} else { 					$delete_text = __( 'Move to Trash' ); }
 				?>
-				<a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
+				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID ); ?>"><?php echo $delete_text; ?></a><?php
 			} ?>
 		</div>
 
 		<div id="publishing-action">
 			<span class="spinner"></span>
 			<?php
-			if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
+			if ( ! in_array( $post->post_status, array( 'publish', 'future', 'private' ) ) || 0 == $post->ID ) {
 				?>
-				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Save') ?>" />
+				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Save' ) ?>" />
 				<?php submit_button( __( 'Save' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
 				<?php
 			} else { ?>
-				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Save') ?>" />
-				<input name="save" type="submit" class="button button-primary button-large" id="publish" accesskey="p" value="<?php esc_attr_e('Save') ?>" />
+				<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Save' ) ?>" />
+				<input name="save" type="submit" class="button button-primary button-large" id="publish" accesskey="p" value="<?php esc_attr_e( 'Save' ) ?>" />
 			<?php
 			} ?>
 		</div>
@@ -433,16 +428,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		// @todo style this to remove the border, heading and background
 		echo sprintf(
-			__('<h1>%s to %s</h1>'),
+			__( '<h1>%s to %s</h1>' ),
 			$source->domain . $source->path,
 			$portal->domain . $portal->path
 		);
 
 		// Get the portal ID, wherever it may be
-		if ( isset( $_REQUEST['portal'] ) )
+		if ( isset( $_REQUEST['portal'] ) ) {
 			$portal = intval( $_REQUEST['portal'] );
-		else
-			$portal = get_post_meta( $post->ID, '_aggregator_portal', true );
+		} else { 			$portal = get_post_meta( $post->ID, '_aggregator_portal', true ); }
 
 		// Sneak the portal ID in here as a hidden field
 		echo sprintf(
@@ -455,7 +449,7 @@ class Aggregator extends Aggregator_Plugin {
 	public function meta_box_post_types( $post, $args = array() ) {
 
 		// Get all the post types
-		$cpts = get_post_types( array( 'public' => true, ), 'objects' );
+		$cpts = get_post_types( array( 'public' => true ), 'objects' );
 
 		// Get the post types for this post, if applicable
 		$chosen_cpts = get_post_meta( $post->ID, '_aggregator_post_types', true );
@@ -466,15 +460,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		echo sprintf(
 			'<p>%s</p>',
-			__('Choose the post types to include in the sync:')
+			__( 'Choose the post types to include in the sync:' )
 		);
 
 		foreach ( $cpts as $cpt ) {
 
 			// We want to check the box if this CPT has been chosen
 			$checked = '';
-			if ( in_array( $cpt->name, $chosen_cpts ) )
-				$checked = ' checked="checked"';
+			if ( in_array( $cpt->name, $chosen_cpts ) ) {
+				$checked = ' checked="checked"'; }
 
 			// Print the field
 			echo sprintf(
@@ -502,15 +496,15 @@ class Aggregator extends Aggregator_Plugin {
 
 		echo sprintf(
 			'<p>%s</p>',
-			__('Choose the taxonomies to include in the sync:')
+			__( 'Choose the taxonomies to include in the sync:' )
 		);
 
 		foreach ( $taxos as $taxo ) {
 
 			// We want to check the box if this Taxonomy has been chosen
 			$checked = '';
-			if ( in_array( $taxo->name, $chosen_taxos ) )
-				$checked = ' checked="checked"';
+			if ( in_array( $taxo->name, $chosen_taxos ) ) {
+				$checked = ' checked="checked"'; }
 
 			// Print field
 			echo sprintf(
@@ -533,7 +527,7 @@ class Aggregator extends Aggregator_Plugin {
 		wp_register_script(
 			'aggregator_job_edit',
 			$this->url( 'js/aggregator_job_edit.js' ),
-			array('jquery'),
+			array( 'jquery' ),
 			$this->version,
 			true
 		);
@@ -551,7 +545,7 @@ class Aggregator extends Aggregator_Plugin {
 		wp_register_script(
 			'aggregator_job_create',
 			$this->url( 'js/aggregator_job_create.js' ),
-			array('jquery'),
+			array( 'jquery' ),
 			$this->version,
 			true
 		);
@@ -570,13 +564,13 @@ class Aggregator extends Aggregator_Plugin {
 			&& ( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
 
 			// Queue the script for inclusion
-			wp_enqueue_script('aggregator_job_edit');
+			wp_enqueue_script( 'aggregator_job_edit' );
 
 			// Pass to the script a list of taxonomies, rather than scan the page after loading
 			wp_localize_script( 'aggregator_job_edit', 'aggregator_taxonomies', $this->get_taxonomies_for_sync_settings() );
 
 			// Queue up our custom CSS, too
-			wp_enqueue_style('aggregator_job_edit');
+			wp_enqueue_style( 'aggregator_job_edit' );
 
 		}
 
@@ -593,7 +587,7 @@ class Aggregator extends Aggregator_Plugin {
 		if ( 'settings_page_aggregator-network' == $current_screen->id && $action ) {
 
 			// Queue up drop-down redirect JS
-			wp_enqueue_script('aggregator_job_create');
+			wp_enqueue_script( 'aggregator_job_create' );
 
 			// Add the ajax_url variable
 			wp_localize_script(
@@ -603,7 +597,6 @@ class Aggregator extends Aggregator_Plugin {
 			);
 
 		}
-
 
 	}
 
@@ -622,10 +615,9 @@ class Aggregator extends Aggregator_Plugin {
 	public function publish_aggregator_job( $post_id, $post ) {
 
 		// Find the portal ID
-		if ( isset( $_REQUEST['portal'] ) )
+		if ( isset( $_REQUEST['portal'] ) ) {
 			$portal = intval( $_REQUEST['portal'] );
-		else
-			return;
+		} else { 			return; }
 
 		// Create a new aggregator job. If one already exists for this porta/source combination
 		// the following will load the existing settings
@@ -645,9 +637,8 @@ class Aggregator extends Aggregator_Plugin {
 
 			// Make sure there's nothing suspect
 			for ( $i = 0; $i < count( $cpts ); $i++ ) {
-				$cpts[$i] = esc_attr( $cpts[$i] );
+				$cpts[ $i ] = esc_attr( $cpts[ $i ] );
 			}
-
 		}
 
 		// Save the new/changed post types
@@ -660,9 +651,8 @@ class Aggregator extends Aggregator_Plugin {
 
 			// Make sure there's nothing suspect
 			for ( $i = 0; $i < count( $taxos ); $i++ ) {
-				$taxos[$i] = esc_attr( $taxos[$i] );
+				$taxos[ $i ] = esc_attr( $taxos[ $i ] );
 			}
-
 		}
 
 		// Save the new/changed taxonomies
@@ -717,10 +707,10 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Set the column headers
 		if ( $id ) {
-			$column_headers = array (
-				'col_source' => __('Sites'),
-				'col_syncing' => __('Syncing'),
-				'col_author' => __('Author'),
+			$column_headers = array(
+				'col_source' => __( 'Sites' ),
+				'col_syncing' => __( 'Syncing' ),
+				'col_author' => __( 'Author' ),
 			);
 		}
 
@@ -739,8 +729,8 @@ class Aggregator extends Aggregator_Plugin {
 		global $current_screen;
 
 		// Only alter priority on our job post type
-		if ( 'aggregator_job' == $current_screen->post_type )
-			$priority = 'default';
+		if ( 'aggregator_job' == $current_screen->post_type ) {
+			$priority = 'default'; }
 
 		return $priority;
 	}
@@ -754,10 +744,10 @@ class Aggregator extends Aggregator_Plugin {
 	 *
 	 * @return array Filtered array, with aggregator_job removed
 	 */
-	public function coauthors_supported_post_types ( $post_types ) {
+	public function coauthors_supported_post_types( $post_types ) {
 
-		if ( ! is_array( $post_types ) )
-			$post_types = array( $post_types );
+		if ( ! is_array( $post_types ) ) {
+			$post_types = array( $post_types ); }
 
 		$post_types_to_remove = array(
 			'aggregator_job',
@@ -766,9 +756,8 @@ class Aggregator extends Aggregator_Plugin {
 		foreach ( $post_types_to_remove as $post_type_to_remove ) {
 
 			$key = array_search( $post_type_to_remove, $post_types );
-			if ( $key !== false )
-				unset( $post_types[ $key ] );
-
+			if ( $key !== false ) {
+				unset( $post_types[ $key ] ); }
 		}
 
 		return $post_types;
@@ -792,17 +781,17 @@ class Aggregator extends Aggregator_Plugin {
 		$args = array(
 			'who' => 'authors',
 			'name' => 'post_author_override',
-			'selected' => empty($post->ID) ? $user_ID : $post->post_author,
-			'include_selected' => true
+			'selected' => empty( $post->ID ) ? $user_ID : $post->post_author,
+			'include_selected' => true,
 		);
 
 		// Find the portal ID
-		if ( isset( $_REQUEST['portal'] ) )
-			$args['blog_id'] = intval( $_REQUEST['portal'] );
+		if ( isset( $_REQUEST['portal'] ) ) {
+			$args['blog_id'] = intval( $_REQUEST['portal'] ); }
 
 		?>
-		<p><?php _e('Choose the user to whom posts will be attributed to on the portal site.'); ?></p>
-		<label class="screen-reader-text" for="post_author_override"><?php _e('Author'); ?></label>
+		<p><?php _e( 'Choose the user to whom posts will be attributed to on the portal site.' ); ?></p>
+		<label class="screen-reader-text" for="post_author_override"><?php _e( 'Author' ); ?></label>
 		<?php
 		wp_dropdown_users( $args );
 
@@ -815,8 +804,8 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Get the original permalink (if any)
 		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
-		if ( empty ( $original_permalink ) ) // not aggregated
-			return;
+		if ( empty( $original_permalink ) ) { // not aggregated
+			return; }
 
 		/**
 		 * Allow plugins and themes to stop Aggregator from redirecting.
@@ -833,7 +822,6 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 	}
-
 } // END Aggregator class
 
 $aggregator = new Aggregator();

@@ -9,17 +9,17 @@ $action = ( isset( $_GET['action'] ) ) ? sanitize_text_field( $_GET['action'] ) 
 
 switch ( $action ) {
 
-	case "add":
+	case 'add':
 
 		// Just print a dropdown which we can redirect to the edit page.
 		// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly
 		$blogs = wp_get_sites( array( 'public' => 1 ) );
 		?>
 		<div class="wrap">
-			<h2><?php _e('Add New Sync Job'); ?></h2>
+			<h2><?php _e( 'Add New Sync Job' ); ?></h2>
 			<form class="new_aggregator" action="" method="get">
 				<p>
-					<label for="portal"><?php _e('Choose the site that will act as the "portal" site:'); ?> </label>
+					<label for="portal"><?php _e( 'Choose the site that will act as the "portal" site:' ); ?> </label>
 					<select name="portal" id="portal">
 						<option selected="selected">-- Select a blog --</option>
 						<?php
@@ -32,7 +32,7 @@ switch ( $action ) {
 				</p>
 
 				<p>
-					<label for="source"><?php _e('Choose the site that will act as the "source" site:'); ?> </label>
+					<label for="source"><?php _e( 'Choose the site that will act as the "source" site:' ); ?> </label>
 					<select name="source" id="source">
 						<option selected="selected">-- Select a blog --</option>
 						<?php
@@ -43,18 +43,18 @@ switch ( $action ) {
 						?>
 					</select>
 				</p>
-				<?php submit_button( esc_html__('Save &amp; Continue') ); ?>
+				<?php submit_button( esc_html__( 'Save &amp; Continue' ) ); ?>
 			</form>
 		</div>
 		<?php
 
 		break;
 
-	case "delete":
+	case 'delete':
 
 		// Check we have valid portal and source IDs
-		if ( ! $portal_id || ! $source_id )
-			wp_die( __('Invalid site ID(s).') );
+		if ( ! $portal_id || ! $source_id ) {
+			wp_die( __( 'Invalid site ID(s).' ) ); }
 
 		// Get the job to be deleted
 		$job = new Aggregator_Job( $portal_id, $source_id );
@@ -76,18 +76,18 @@ if ( ! isset( $action ) || ( 'edit' != $action && 'add' != $action ) ) {
 	echo '<h2>' . get_admin_page_title();
 
 	// Allow network admins to add new Aggregator Jobs
-	if ( current_user_can( 'manage_sites') ) : ?>
+	if ( current_user_can( 'manage_sites' ) ) : ?>
 		<a href="<?php echo network_admin_url( 'settings.php?page=aggregator&action=add' ); ?>" class="add-new-h2"><?php echo esc_html__( 'Add New Job' ); ?></a>
 	<?php endif;
 
 	echo '</h2>';
 
 	// Print a deletion success message
-	if ( isset( $_GET['deleted'] ) )
+	if ( isset( $_GET['deleted'] ) ) {
 		printf(
 			'<div id="message" class="updated below-h2"><p>%s</p></div>',
 			sprintf( '%d jobs permanently deleted.', intval( $_GET['deleted'] ) )
-		);
+		); }
 
 	$this->list_table->prepare_items();
 	$this->list_table->display();

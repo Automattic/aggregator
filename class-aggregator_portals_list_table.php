@@ -1,6 +1,7 @@
 <?php
 
-/*  Copyright 2014 Code for the People Ltd
+/*
+  Copyright 2014 Code for the People Ltd
 
                 _____________
                /      ____   \
@@ -44,9 +45,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 */
 		public function __construct() {
 			parent::__construct( array(
-				'singular'=> 'wp_list_aggregator_site', // Singular label
+				'singular' => 'wp_list_aggregator_site', // Singular label
 				'plural' => 'wp_list_aggregator_sites', // plural label, also this well be one of the table css class
-				'ajax'   => false // We won't support Ajax for this table
+				'ajax'   => false, // We won't support Ajax for this table
 			) );
 		}
 
@@ -56,9 +57,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 * @return array $columns, the array of columns to use with the table
 		 */
 		public function get_columns() {
-			return array (
-				'col_site_domain' => __('Portals'),
-				'col_sync_sites' => __('Sources'),
+			return array(
+				'col_site_domain' => __( 'Portals' ),
+				'col_sync_sites' => __( 'Sources' ),
 			);
 		}
 
@@ -68,8 +69,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		public function prepare_items() {
 
 			// Make sure we have an array for $this->items
-			if ( ! is_array( $this->items ) )
-				$this->items = array();
+			if ( ! is_array( $this->items ) ) {
+				$this->items = array(); }
 
 			// Get all the blogs
 			$blogs = wp_get_sites( array( 'public' => 1 ) );
@@ -80,7 +81,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Check if we have sync jobs for those sites
 			foreach ( $blogs as $blog ) {
 
-				if ( $sync_blogs = get_site_option("aggregator_{$blog['blog_id']}_source_blogs") ) {
+				if ( $sync_blogs = get_site_option( "aggregator_{$blog['blog_id']}_source_blogs" ) ) {
 					$portals[ $blog['blog_id'] ] = $sync_blogs;
 				}
 
@@ -88,10 +89,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			}
 
-			if ( ! empty( $portals ) )
+			if ( ! empty( $portals ) ) {
 				$this->items = $portals;
-			else
-				$this->items = array();
+			} else { 				$this->items = array(); }
 
 		}
 
@@ -99,8 +99,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			// Get the sync sites to display
 			$portals = $this->items;
-			if ( empty( $portals ) )
-				$this->no_items();
+			if ( empty( $portals ) ) {
+				$this->no_items(); }
 
 			// Get the columns registered in the get_columns and get_sortable_columns methods
 			list( $columns, $hidden ) = $this->get_column_info();
@@ -116,8 +116,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 					// Style attributes for each col
 					$class = "class='$column_name column-$column_name'";
-					$style = "";
-					if ( in_array( $column_name, $hidden ) ) $style = ' style="display:none;"';
+					$style = '';
+					if ( in_array( $column_name, $hidden ) ) { $style = ' style="display:none;"'; }
 					$attributes = $class . $style;
 
 					// Display the cell
@@ -152,7 +152,6 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							break;
 					}
 				}
-
 			}
 
 		}
@@ -160,7 +159,6 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		function no_items() {
 			_e( 'No sync settings found.' );
 		}
-
 	}
 
 }

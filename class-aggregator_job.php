@@ -1,6 +1,7 @@
 <?php
 
-/*  Copyright 2014 Code for the People Ltd
+/*
+  Copyright 2014 Code for the People Ltd
 
                 _____________
                /      ____   \
@@ -41,7 +42,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * Serves details of the post types, taxonomies and terms to be synced between
  * two specified blogs in a multisite network
  */
-Class Aggregator_Job {
+class Aggregator_Job {
 
 	/**
 	 * @var int ID of the portal blog
@@ -97,8 +98,8 @@ Class Aggregator_Job {
 	public function __construct( $portal, $source ) {
 
 		// Validate portal and source IDs
-		if ( ! intval( $portal ) || ! intval( $source ) )
-			return;
+		if ( ! intval( $portal ) || ! intval( $source ) ) {
+			return; }
 
 		// Get the current blog ID ($this->current_blog)
 		$this->current_blog = get_current_blog_id();
@@ -113,7 +114,7 @@ Class Aggregator_Job {
 		$this->switch_to_blog( $source );
 
 		// Fetch the post of type 'aggregator_job' where;
-		//  * post meta 'portal' is equal to $portal
+		// * post meta 'portal' is equal to $portal
 		$jobs_query = new WP_Query( array(
 			'post_type' => 'aggregator_job',
 			'meta_key' => '_aggregator_portal',
@@ -289,8 +290,8 @@ Class Aggregator_Job {
 	public function get_terms( $taxonomy = 'aggregator_term_count' ) {
 
 		// $this-terms is an array of Term objects
-		if ( array_key_exists( $taxonomy, $this->terms ) )
-			return $this->terms[ $taxonomy ];
+		if ( array_key_exists( $taxonomy, $this->terms ) ) {
+			return $this->terms[ $taxonomy ]; }
 
 	}
 
@@ -357,8 +358,8 @@ Class Aggregator_Job {
 	public function set_author( $author_id ) {
 
 		// Check it's an integer
-		if ( ! intval( $author_id ) )
-			return;
+		if ( ! intval( $author_id ) ) {
+			return; }
 
 		// Maybe switch to blog
 		$this->switch_to_blog( $this->get_source_blog_id() );
@@ -420,15 +421,15 @@ Class Aggregator_Job {
 
 	protected function switch_to_blog( $blog_id ) {
 
-		if ( $this->current_blog != $blog_id )
-			switch_to_blog( $blog_id );
+		if ( $this->current_blog != $blog_id ) {
+			switch_to_blog( $blog_id ); }
 
 	}
 
 	protected function restore_current_blog() {
 
-		if ( get_current_blog_id() != $this->current_blog )
-			restore_current_blog();
+		if ( get_current_blog_id() != $this->current_blog ) {
+			restore_current_blog(); }
 
 	}
 
@@ -464,30 +465,30 @@ Class Aggregator_Job {
 		switch ( $action ) {
 
 			// Remove sites
-			case "delete":
+			case 'delete':
 
 				// Delete this source, if present
 				$source_found = array_search( $source, $sources );
-				if ( $source_found !== false )
-					unset( $sources[ $source_found ] );
+				if ( $source_found !== false ) {
+					unset( $sources[ $source_found ] ); }
 
 				// Delete this portal if present
 				$portal_found = array_search( $portal, $portals );
-				if ( $portal_found !== false )
-					unset( $portals[ $portal_found ] );
+				if ( $portal_found !== false ) {
+					unset( $portals[ $portal_found ] ); }
 
 				break;
 
 			// Add sites
-			case "add":
+			case 'add':
 
 				// Add this source, if not already added
-				if ( ! in_array( $source, $sources ) )
-					$sources[] = $source;
+				if ( ! in_array( $source, $sources ) ) {
+					$sources[] = $source; }
 
 				// Add this portal if not already added
-				if ( ! in_array( $portal, $portals ) )
-					$portals[] = $portal;
+				if ( ! in_array( $portal, $portals ) ) {
+					$portals[] = $portal; }
 
 				break;
 
@@ -517,5 +518,4 @@ Class Aggregator_Job {
 		$this->update_network_options( 'delete' );
 
 	}
-
 }

@@ -12,7 +12,7 @@ require_once( 'class-plugin.php' );
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-require_once( 'class-aggregator_jobs_list_table.php' );
+require_once( 'class-aggregator-jobs-list-table.php' );
 
 /**
  * Sets up the basics for aggregator, like the admin interface

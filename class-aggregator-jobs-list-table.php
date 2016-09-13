@@ -1,43 +1,15 @@
 <?php
-
-/*
-  Copyright 2014 Code for the People Ltd
-
-                _____________
-               /      ____   \
-         _____/       \   \   \
-        /\    \        \___\   \
-       /  \    \                \
-      /   /    /          _______\
-     /   /    /          \       /
-    /   /    /            \     /
-    \   \    \ _____    ___\   /
-     \   \    /\    \  /       \
-      \   \  /  \____\/    _____\
-       \   \/        /    /    / \
-        \           /____/    /___\
-         \                        /
-          \______________________/
-
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
+/**
+ * File holds the list table class for showing jobs in the admin
+ *
+ * @package Aggregator
+ */
 
 if ( class_exists( 'WP_List_Table' ) ) {
 
+	/**
+	 * Class Aggregator_Jobs_List_Table
+	 */
 	class Aggregator_Jobs_List_Table extends WP_List_Table {
 
 		/**
@@ -47,7 +19,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			parent::__construct( array(
 				'singular' => 'wp_list_aggregator_job', // Singular label
 				'plural' => 'wp_list_aggregator_jobs', // plural label, also this well be one of the table css class
-				'ajax'   => false,// We won't support Ajax for this table
+				'ajax'   => false,// We won't support Ajax for this table.
 			) );
 
 		}
@@ -70,16 +42,18 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		}
 
 		/**
+		 * Sets up the items to display.
+		 *
 		 * @todo pagination
 		 */
 		public function prepare_items() {
 			global $aggregator;
 
-			// Make sure we have an array for $this->items
+			// Make sure we have an array for $this->items.
 			if ( ! is_array( $this->items ) ) {
 				$this->items = array(); }
 
-			// Get all the jobs for this portal
+			// Get all the jobs for this portal.
 			$jobs = $aggregator->get_jobs();
 
 			if ( ! empty( $jobs ) ) {
@@ -87,54 +61,70 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 		}
 
+		/**
+		 * Display the table rows.
+		 */
 		public function display_rows() {
 
 			if ( empty( $this->items ) ) {
 				$this->no_items(); }
 
-			// Get the columns registered in the get_columns and get_sortable_columns methods
+			// Get the columns registered in the get_columns and get_sortable_columns methods.
 			list( $columns, $hidden ) = $this->get_column_info();
 
 			foreach ( $this->items as $job ) {
 
-				echo '<tr id="record_' . $job->job_id . '">';
+				echo '<tr id="record_' . esc_attr( $job->job_id ) . '">';
+
 				foreach ( $columns as $column_name => $column_display_name ) {
 
-					// Style attributes for each col
-					$class = "class='$column_name column-$column_name'";
-					$style = '';
-					if ( in_array( $column_name, $hidden ) ) { $style = ' style="display:none;"'; }
-					$attributes = $class . $style;
+					// Set up attributes.
+					$html_attributes = array();
 
-					// Display the cell
+					// Style attributes for each col.
+					$html_attributes['class'] = esc_attr( "$column_name column-$column_name" );
+					if ( in_array( $column_name, $hidden, true ) ) {
+						$html_attributes['style'] = 'display:none';
+					}
+
+					// Display the cell.
 					switch ( $column_name ) {
 
 						case 'col_source':
 
-							// Define the action links order
+							// Define the action links order.
 							$actions = array(
 								'edit' => '',
 								'delete' => '',
 							);
 
-							// Create the links
-							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . __( 'Edit Job' ) . '</a></span>';
+							// Create the links.
+							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . esc_html__( 'Edit Job' ) . '</a></span>';
 
-							// Provide custom link for delete
+							// Provide custom link for delete.
 							$delete_url = network_admin_url( sprintf(
 								'settings.php?page=aggregator&action=delete&portal=%d&source=%d',
-								$job->portal->blog_id,
-								$job->source->blog_id
+								rawurlencode( $job->portal->blog_id ),
+								rawurlencode( $job->source->blog_id )
 							) );
-							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $delete_url ) . '">' . __( 'Delete' ) . '</a></span>';
+							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $delete_url ) . '">' . esc_html__( 'Delete' ) . '</a></span>';
 
-							echo "<td $attributes>" . $job->source->blogname . ' (' . $job->source->domain . ')' . $this->row_actions( $actions ) . '</td>';
+							echo "<td $attributes>" . esc_html( $job->source->blogname ) . ' (' . esc_html( $job->source->domain ) . ')' . $this->row_actions( $actions ) . '</td>'; // XSS ok.
+							echo '<td ';
+							foreach ( $html_attributes as $attribute_name => $attribute_value ) {
+								echo sprintf(
+									'%s="%s"',
+									esc_attr( $attribute_name ),
+									esc_attr( $attribute_value )
+								);
+							}
+							echo '>';
 
 							break;
 
 						case 'col_syncing':
 
-							echo "<td $attributes><p>";
+							echo "<td $attributes><p>"; // XSS ok.
 
 							echo sprintf(
 								'%d post types',
@@ -150,7 +140,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 							echo sprintf(
 								'%d terms',
-								$job->get_term_count()
+								absint( $job->get_term_count() )
 							);
 
 							echo '</p></td>';
@@ -159,9 +149,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 						case 'col_author':
 
-							echo "<td $attributes><p>";
+							echo "<td $attributes><p>"; // XSS ok.
 
-							echo get_user_by( 'id', $job->get_author() )->display_name;
+							echo esc_html( get_user_by( 'id', $job->get_author() )->display_name );
 
 							echo '</p></td>';
 
@@ -176,8 +166,11 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 		}
 
+		/**
+		 * Account for no jobs.
+		 */
 		public function no_items() {
-			_e( 'Sorry, no jobs were found.' );
+			esc_html_e( 'Sorry, no jobs were found.' );
 		}
 	}
 

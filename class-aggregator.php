@@ -1,7 +1,6 @@
 <?php
-
 /**
- * File houses the Aggregator class
+ * Contains the main Aggregator class
  *
  * @package Aggregator
  */
@@ -424,8 +423,12 @@ class Aggregator extends Aggregator_Plugin {
 	public function meta_box_description( $post, $args = array() ) {
 
 		// Grab the portal ID from the REQUEST vars hopefully.
-		$portal = intval( $_GET['portal'] ); // Input var okay.
-		$portal = get_blog_details( $portal );
+		if ( isset( $_GET['portal'] ) ) { // Input var okay.
+			$portal = intval( $_GET['portal'] ); // Input var okay.
+			$portal = get_blog_details( $portal );
+		} else {
+			return;
+		}
 
 		// ...and the current blog.
 		$source = get_blog_details( get_current_blog_id() );
@@ -616,7 +619,10 @@ class Aggregator extends Aggregator_Plugin {
 			wp_localize_script(
 				'aggregator_job_create',
 				'ajax_object',
-				array( 'ajax_url' => admin_url( 'admin-ajax.php' ) )
+				array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'nonce' => wp_create_nonce( 'get-new-job-url' ),
+				)
 			);
 
 		}
@@ -668,7 +674,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Get any selected post types.
 		if ( isset( $_GET['cpts'] ) ) { // Input var okay.
-			$cpts = array_map( 'esc_attr', wp_unslash( $_GET['cpts'] ) ); // Input var okay.
+			$cpts = array_map( 'sanitize_text_field', wp_unslash( $_GET['cpts'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed post types.
@@ -676,7 +682,7 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Get any selected taxonomies.
 		if ( isset( $_GET['taxos'] ) ) { // Input var okay.
-			$taxos = array_map( 'esc_attr', wp_unslash( $_GET['taxos'] ) ); // Input var okay.
+			$taxos = array_map( 'sanitize_text_field', wp_unslash( $_GET['taxos'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed taxonomies.
@@ -702,9 +708,16 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function wp_ajax_get_new_job_url() {
 
+		// Validate the request first.
+		check_ajax_referer( 'get-new-job-url', 'security' );
+
 		// Retrieve and sanitise blog IDs.
-		$portal = intval( $_POST['portal'] ); // Input var okay.
-		$source = intval( $_POST['source'] ); // Input var okay.
+		$portal = isset( $_POST['portal'] ) ? intval( $_POST['portal'] ) : false; // Input var okay.
+		$source = isset( $_POST['source'] ) ? intval( $_POST['source'] ) : false; // Input var okay.
+
+		if ( false === $portal || false === $source ) {
+			die();
+		}
 
 		// Grab the admin URL.
 		switch_to_blog( $source );
@@ -824,13 +837,20 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Find the portal ID.
 		if ( isset( $_GET['portal'] ) ) { // Input var okay.
-			$args['blog_id'] = intval( $_GET['portal'] ); } // Input var okay.
+			$args['blog_id'] = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : false; // Input var okay.
+		}
 
-		?>
-		<p><?php esc_html_e( 'Choose the user to whom posts will be attributed to on the portal site.' ); ?></p>
-		<label class="screen-reader-text" for="post_author_override"><?php esc_html_e( 'Author' ); ?></label>
-		<?php
-		wp_dropdown_users( $args );
+		if ( false !== $args['blog_id'] ) :
+			?>
+			<p><?php esc_html_e( 'Choose the user to whom posts will be attributed to on the portal site.' ); ?></p>
+			<label class="screen-reader-text" for="post_author_override"><?php esc_html_e( 'Author' ); ?></label>
+			<?php
+			wp_dropdown_users( $args );
+		else :
+			?>
+			<p><?php esch_html_e( 'Portal site isn\'t set - can\'t grab authors.' ); ?></p>
+			<?php
+		endif;
 
 	}
 

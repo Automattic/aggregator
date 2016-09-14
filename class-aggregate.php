@@ -369,7 +369,12 @@ class Aggregate extends Aggregator_Plugin {
 		global $wpdb;
 
 		// Query the DB to get the ID.
-		$attachment = $wpdb->get_col( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->prefix . 'posts' . " WHERE guid='%s';", $image_url ) );
+		$attachment = $wpdb->get_col(
+			$wpdb->prepare(
+				'SELECT ID FROM ' . $wpdb->prefix . 'posts' . " WHERE guid='%s';",
+				$image_url
+			)
+		);
 
 		// ID should be the first element of the returned array.
 		if ( is_array( $attachment ) && isset( $attachment[0] ) ) {

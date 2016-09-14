@@ -346,7 +346,7 @@ class Aggregate extends Aggregator_Plugin {
 
 			// Acquire ID and update post (or insert post and acquire ID).
 			if ( $target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id ) ) {
-				wp_delete_post( $target_post_id, true ); // DIE!
+				wp_delete_post( $target_post_id, true );
 			}
 			// Back to the current blog.
 			restore_current_blog();

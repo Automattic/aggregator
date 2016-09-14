@@ -345,9 +345,11 @@ class Aggregate extends Aggregator_Plugin {
 			switch_to_blog( $portal );
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			if ( $target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id ) ) {
+			$target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id )
+			if ( false !== $target_post_id ) {
 				wp_delete_post( $target_post_id, true );
 			}
+
 			// Back to the current blog.
 			restore_current_blog();
 
@@ -406,8 +408,11 @@ class Aggregate extends Aggregator_Plugin {
 	 */
 	protected function get_portal_blog_post_id( $orig_post_id, $orig_blog_id ) {
 
+		// Default to false.
+		$pushed_post_id = false;
+
 		// Build a query, checking for the relevant meta data.
-		// @todo consider whether we should cache this.
+		// We don't want to cache this query as it could lead to failed syncs
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',
@@ -429,10 +434,10 @@ class Aggregate extends Aggregator_Plugin {
 
 		// If there are posts, get the ID of the first one, ignoring any others.
 		if ( $query->have_posts() ) {
-			return $query->post->ID; }
+			$pushed_post_id = $query->post->ID;
+		}
 
-		// Nothing found.
-		return false;
+		return $pushed_post_id;
 	}
 
 	/**
@@ -769,7 +774,8 @@ class Aggregate extends Aggregator_Plugin {
 			switch_to_blog( $sync_destination );
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			if ( $target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id ) ) {
+			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id )
+			if ( false !== $target_post_id ) {
 				$orig_post_data['ID'] = $target_post_id;
 				wp_update_post( $orig_post_data );
 			} else {

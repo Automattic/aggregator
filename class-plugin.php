@@ -295,11 +295,6 @@ class Aggregator_Plugin {
 	 **/
 	protected function render_admin( $template_file, $vars = null ) {
 
-		// Plus our specific template vars.
-		if ( is_array( $vars ) ) {
-			extract( $vars );
-		}
-
 		// Try to render.
 		if ( file_exists( $this->dir( "templates-admin/$template_file" ) ) ) {
 			require( $this->dir( "templates-admin/$template_file" ) );

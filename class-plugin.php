@@ -1,36 +1,28 @@
 <?php
-
-// ======================================================================================
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// ======================================================================================
-// @author     Simon Wheatley
-// @version    1.33
-// @copyright  Copyright &copy; 2010 Simon Wheatley, All Rights Reserved
-// @copyright  Some parts Copyright &copy; 2007 John Godley, All Rights Reserved
-// ======================================================================================
-// 1.0     - Initial release
-// 1.01    - Added add_shortcode
-// 1.10    - Added code to allow the base class to be used in a theme
-// 1.2     - Truncate helper method, admin notices/errors, throw error if not provided
-//           with name in setup method call, default $pluginfile to __FILE__, bugfix around
-//           option key in delete_option method.
-// 1.3     - Locale stuff
-//         - Fix for get_option
-// 1.31    - Attempt to cope with Win32 directory separators
-// 1.32    - Add a remove_filter method
-// 1.33    - Add `sil_plugins_dir` and `sil_plugins_url` filters, to allow placement
-//           outside the `wp-content/plugins/` folder, for example using `require_once`
-//           to include from the theme `functions.php`.
-// ======================================================================================
-
+/**
+ * Plugin helper
+ *
+ * 1.0     - Initial release
+ * 1.01    - Added add_shortcode
+ * 1.10    - Added code to allow the base class to be used in a theme
+ * 1.2     - Truncate helper method, admin notices/errors, throw error if not provided
+ * 			 with name in setup method call, default $pluginfile to __FILE__, bugfix around
+ *     		 option key in delete_option method.
+ * 1.3     - Locale stuff
+ * 		   - Fix for get_option
+ * 1.31    - Attempt to cope with Win32 directory separators
+ * 1.32    - Add a remove_filter method
+ * 1.33    - Add `sil_plugins_dir` and `sil_plugins_url` filters, to allow placement
+ * 			 outside the `wp-content/plugins/` folder, for example using `require_once`
+ *     		 to include from the theme `functions.php`.
+ *
+ * @package Aggregator
+ * @author Simon Wheatley
+ * @version    1.33
+ * @copyright  Copyright &copy; 2010 Simon Wheatley, All Rights Reserved
+ *             Some parts Copyright &copy; 2007 John Godley, All Rights Reserved
+ * @license GPLv2+
+ */
 
 /**
  * Wraps up several useful functions for WordPress plugins and provides a method to separate
@@ -111,36 +103,36 @@ class Aggregator_Plugin {
 	/**
 	 * Initiate!
 	 *
-	 * @param string $name The plugin/theme name
-	 * @param null|string $type Either plugin or theme, to denote what we're using
+	 * @param string      $name The plugin/theme name.
+	 * @param null|string $type Either plugin or theme, to denote what we're using.
 	 *
-	 * @throws exception
+	 * @throws exception Exception.
 	 * @author Simon Wheatley
 	 */
 	public function setup( $name = '', $type = null ) {
 
-		// Requrie the name parameter so that we can set things up
+		// Requrie the name parameter so that we can set things up.
 		if ( ! $name ) {
-			throw new exception( "Please pass the name parameter into the setup method." );
+			throw new exception( 'Please pass the name parameter into the setup method.' );
 		}
 		$this->name = $name;
 
-		// Discover the plugin directory
+		// Discover the plugin directory.
 		$dir_separator = ( defined( 'DIRECTORY_SEPARATOR' ) ) ? DIRECTORY_SEPARATOR : '\\';
 		$file = str_replace( $dir_separator, '/', __FILE__ );
 		$plugins_dir = str_replace( $dir_separator, '/', WP_PLUGIN_DIR );
 
-		// Setup the dir and url for this plugin/theme
-		if ( 'theme' == $type ) {
+		// Setup the dir and url for this plugin/theme.
+		if ( 'theme' === $type ) {
 
-			// This is a theme so set up the theme directory and URL accordingly
+			// This is a theme so set up the theme directory and URL accordingly.
 			$this->type = 'theme';
 			$this->dir  = get_stylesheet_directory();
 			$this->url  = get_stylesheet_directory_uri();
 
-		} elseif ( stripos( $file, $plugins_dir ) !== false || 'plugin' == $type ) {
+		} elseif ( stripos( $file, $plugins_dir ) !== false || 'plugin' === $type ) {
 
-			// This is a plugin
+			// This is a plugin.
 			$this->folder = trim( basename( dirname( $file ) ), '/' );
 			$this->type   = 'plugin';
 
@@ -157,15 +149,15 @@ class Aggregator_Plugin {
 			$this->url   = trailingslashit( $plugins_url ) . $this->folder . '/';
 
 		} else {
-			// WTF? Something inexplicable happened
+			// WTF? Something inexplicable happened.
 			error_log( 'PLUGIN/THEME ERROR: Cannot find ' . $plugins_dir . ' or "themes" in ' . $file );
 		}
 
-		// Suffix for enqueuing scripts and styles, makes for easier debugging
+		// Suffix for enqueuing scripts and styles, makes for easier debugging.
 		$this->suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.dev' : '';
 
 		if ( is_admin() ) {
-			// Admin notices
+			// Admin notices.
 			$this->add_action( 'admin_notices', '_admin_notices' );
 		}
 
@@ -182,7 +174,7 @@ class Aggregator_Plugin {
 	 **/
 	function load_locale() {
 
-		// Here we manually fudge the plugin locale as WP doesn't allow many options
+		// Here we manually fudge the plugin locale as WP doesn't allow many options.
 		$locale = get_locale();
 		if ( empty( $locale ) ) {
 			$locale = 'en_US';
@@ -196,21 +188,21 @@ class Aggregator_Plugin {
 	/**
 	 * Register a WordPress action and map it back to the calling object
 	 *
-	 * @param string $action Name of the action
-	 * @param string $function Function name (optional)
-	 * @param int $priority WordPress priority (optional)
-	 * @param int $accepted_args Number of arguments the function accepts (optional)
+	 * @param string $action Name of the action.
+	 * @param string $function Function name (optional).
+	 * @param int    $priority WordPress priority (optional).
+	 * @param int    $accepted_args Number of arguments the function accepts (optional).
 	 *
 	 * @return void
 	 * @author © John Godley
 	 **/
 	function add_action( $action, $function = '', $priority = 10, $accepted_args = 1 ) {
 
-		if ( $priority === null ) {
+		if ( null === $priority ) {
 			$priority = 10;
 		}
 
-		add_action( $action, array( &$this, $function == '' ? $action : $function ), $priority, $accepted_args );
+		add_action( $action, array( &$this, '' === $function ? $action : $function ), $priority, $accepted_args );
 
 	}
 
@@ -218,17 +210,17 @@ class Aggregator_Plugin {
 	/**
 	 * Register a WordPress filter and map it back to the calling object
 	 *
-	 * @param string $filter Name of the hook
-	 * @param string $function Function name (optional) defaults to $filter
-	 * @param int $priority WordPress priority (optional)
-	 * @param int $accepted_args Number of arguments the function accepts (optional)
+	 * @param string $filter Name of the hook.
+	 * @param string $function Function name (optional) defaults to $filter.
+	 * @param int    $priority WordPress priority (optional).
+	 * @param int    $accepted_args Number of arguments the function accepts (optional).
 	 *
 	 * @internal param string $action
 	 * @author © John Godley
 	 */
 	function add_filter( $filter, $function = '', $priority = 10, $accepted_args = 1 ) {
 
-		add_filter( $filter, array( &$this, $function == '' ? $filter : $function ), $priority, $accepted_args );
+		add_filter( $filter, array( &$this, '' === $function ? $filter : $function ), $priority, $accepted_args );
 
 	}
 
@@ -236,17 +228,17 @@ class Aggregator_Plugin {
 	/**
 	 * De-register a WordPress filter and map it back to the calling object
 	 *
-	 * @param string $filter Name of the hook
-	 * @param string $function Function name (optional) defaults to $filter
-	 * @param int $priority WordPress priority (optional)
-	 * @param int $accepted_args Number of arguments the function accepts (optional)
+	 * @param string $filter Name of the hook.
+	 * @param string $function Function name (optional) defaults to $filter.
+	 * @param int    $priority WordPress priority (optional).
+	 * @param int    $accepted_args Number of arguments the function accepts (optional).
 	 *
 	 * @internal param string $action
 	 * @author © John Godley
 	 */
 	function remove_filter( $filter, $function = '', $priority = 10, $accepted_args = 1 ) {
 
-		remove_filter( $filter, array( &$this, $function == '' ? $filter : $function ), $priority, $accepted_args );
+		remove_filter( $filter, array( &$this, '' === $function ? $filter : $function ), $priority, $accepted_args );
 
 	}
 
@@ -254,20 +246,20 @@ class Aggregator_Plugin {
 	/**
 	 * Special activation function that takes into account the plugin directory
 	 *
-	 * @param string $pluginfile The plugin file location (i.e. __FILE__)
-	 * @param string $function Optional function name, or default to 'activate'
+	 * @param string $pluginfile The plugin file location (i.e. __FILE__).
+	 * @param string $function Optional function name, or default to 'activate'.
 	 *
 	 * @return void
 	 * @author © John Godley
 	 **/
 	function register_activation( $pluginfile = __FILE__, $function = '' ) {
 
-		if ( $this->type == 'plugin' ) {
+		if ( 'plugin' === $this->type ) {
 
 			add_action( 'activate_' . basename( dirname( $pluginfile ) ) . '/' . basename( $pluginfile ),
-				array( &$this, $function == '' ? 'activate' : $function ) );
+			array( &$this, '' === $function ? 'activate' : $function ) );
 
-		} elseif ( $this->type == 'theme' ) {
+		} elseif ( 'theme' === $this->type ) {
 
 			$this->theme_activation_function = ( $function ) ? $function : 'activate';
 			add_action( 'load-themes.php', array( & $this, 'theme_activation' ) );
@@ -279,8 +271,8 @@ class Aggregator_Plugin {
 	/**
 	 * Special deactivation function that takes into account the plugin directory
 	 *
-	 * @param string $pluginfile The plugin file location (i.e. __FILE__)
-	 * @param string $function Optional function name, or default to 'deactivate'
+	 * @param string $pluginfile The plugin file location (i.e. __FILE__).
+	 * @param string $function Optional function name, or default to 'deactivate'.
 	 *
 	 * @return void
 	 * @author © John Godley
@@ -288,7 +280,7 @@ class Aggregator_Plugin {
 	function register_deactivation( $pluginfile, $function = '' ) {
 
 		add_action( 'deactivate_' . basename( dirname( $pluginfile ) ) . '/' . basename( $pluginfile ),
-			array( &$this, $function == '' ? 'deactivate' : $function ) );
+		array( &$this, '' === $function ? 'deactivate' : $function ) );
 
 	}
 
@@ -296,21 +288,32 @@ class Aggregator_Plugin {
 	 * Renders a template, looking first for the template file in the theme directory
 	 * and afterwards in this plugin's /theme/ directory.
 	 *
+	 * @param string $template_file Template file location.
+	 * @param array  $vars Array of template variables.
+	 *
 	 * @return void
 	 * @author Simon Wheatley
 	 **/
 	protected function render( $template_file, $vars = null ) {
 
-		// Maybe override the template with our own file
+		// Maybe override the template with our own file.
 		$template_file = $this->locate_template( $template_file );
-		// Ensure we have the same vars as regular WP templates
-		global $posts, $post, $wp_did_header, $wp_did_template_redirect, $wp_query, $wp_rewrite, $wpdb, $wp_version, $wp, $id, $comment, $user_ID;
+
+		// Ensure we have the same vars as regular WP templates.
+		// @todo Is this really necessary?
+		global $posts, $post, $wp_did_header, $wp_did_template_redirect, $wp_query, $wp_rewrite, $wpdb, $wp_version, $wp, $id, $comment;
+
+		// Get current user ID.
+		$user = wp_get_current_user();
+		if ( is_a( $user, 'WP_User' ) ) {
+			$user_id = $user->ID;
+		}
 
 		if ( is_array( $wp_query->query_vars ) ) {
 			extract( $wp_query->query_vars, EXTR_SKIP );
 		}
 
-		// Plus our specific template vars
+		// Plus our specific template vars.
 		if ( is_array( $vars ) ) {
 			extract( $vars );
 		}
@@ -322,24 +325,29 @@ class Aggregator_Plugin {
 	/**
 	 * Renders an admin template from this plugin's /templates-admin/ directory.
 	 *
+	 * @param string $template_file Template file location.
+	 * @param array  $vars Array of template variables.
+	 *
 	 * @return void
 	 * @author Simon Wheatley
 	 **/
 	protected function render_admin( $template_file, $vars = null ) {
 
-		// Plus our specific template vars
+		// Plus our specific template vars.
 		if ( is_array( $vars ) ) {
 			extract( $vars );
 		}
 
-		// Try to render
+		// Try to render.
 		if ( file_exists( $this->dir( "templates-admin/$template_file" ) ) ) {
 			require( $this->dir( "templates-admin/$template_file" ) );
 		} else {
-			$msg = sprintf( __( "This plugin admin template could not be found: %s" ),
-				$this->dir( "templates-admin/$template_file" ) );
-			error_log( "Plugin template error: $msg" );
-			echo "<p style='background-color: #ffa; border: 1px solid red; color: #300; padding: 10px;'>$msg</p>";
+			$msg = sprintf( __( 'This plugin admin template could not be found: %s' ),
+			$this->dir( "templates-admin/$template_file" ) );
+			echo sprintf(
+				'<p style="background-color: #ffa; border: 1px solid red; color: #300; padding: 10px;">%s</p>',
+				esc_html( $msg )
+			);
 		}
 
 	}
@@ -373,35 +381,41 @@ class Aggregator_Plugin {
 	/**
 	 * Echoes some HTML for an admin notice.
 	 *
-	 * @param string $notice The notice
+	 * @param string $notice The notice.
 	 *
 	 * @return void
 	 * @author Simon Wheatley
 	 **/
 	protected function render_admin_notice( $notice ) {
 
-		echo "<div class='updated'><p>' . esc_html( $notice ) . '</p></div>";
+		echo sprintf(
+			'<div class="updated"><p>%s</p></div>',
+			esc_html( $notice )
+		);
 
 	}
 
 	/**
 	 * Echoes some HTML for an admin error.
 	 *
-	 * @param string $error The error
+	 * @param string $error The error.
 	 *
 	 * @return void
 	 * @author Simon Wheatley
 	 **/
 	protected function render_admin_error( $error ) {
 
-		echo "<div class='error'><p>' . esc_html( $error ) . '</p></div>";
+		echo sprintf(
+			'<div class="error"><p>%s</p></div>',
+			esc_html( $error )
+		);
 
 	}
 
 	/**
 	 * Sets a string as an admin notice.
 	 *
-	 * @param string $msg A *localised* admin notice message
+	 * @param string $msg A *localised* admin notice message.
 	 *
 	 * @return void
 	 * @author Simon Wheatley
@@ -409,7 +423,7 @@ class Aggregator_Plugin {
 	protected function set_admin_notice( $msg ) {
 
 		$notices    = (array) $this->get_option( 'admin_notices' );
-		$notices[ ] = $msg;
+		$notices[] = $msg;
 		$this->update_option( 'admin_notices', $notices );
 
 	}
@@ -417,7 +431,7 @@ class Aggregator_Plugin {
 	/**
 	 * Sets a string as an admin error.
 	 *
-	 * @param string $msg A *localised* admin error message
+	 * @param string $msg A *localised* admin error message.
 	 *
 	 * @return void
 	 * @author Simon Wheatley
@@ -425,7 +439,7 @@ class Aggregator_Plugin {
 	protected function set_admin_error( $msg ) {
 
 		$errors    = (array) $this->get_option( 'admin_errors' );
-		$errors[ ] = $msg;
+		$errors[] = $msg;
 		$this->update_option( 'admin_errors', $errors );
 
 	}
@@ -439,7 +453,7 @@ class Aggregator_Plugin {
 	 * Searches in the STYLESHEETPATH before TEMPLATEPATH to cope with themes which
 	 * inherit from a parent theme by just overloading one file.
 	 *
-	 * @param string $template_file A template filename to search for
+	 * @param string $template_file A template filename to search for.
 	 *
 	 * @return string The path to the template file to use
 	 * @author Simon Wheatley
@@ -448,49 +462,48 @@ class Aggregator_Plugin {
 
 		$located = '';
 
-		// Get the sub-dir if one is specified
+		// Get the sub-dir if one is specified.
 		$sub_dir = apply_filters( 'sw_plugin_tpl_dir', '' );
 		if ( $sub_dir ) {
 			$sub_dir = trailingslashit( $sub_dir );
 		}
 
-		// If there's a tpl in a (child theme or theme with no child)
+		// If there's a tpl in a (child theme or theme with no child).
 		if ( file_exists( get_stylesheet_directory() . "/$sub_dir" . $template_file ) ) {
 			return get_stylesheet_directory() . "/$sub_dir" . $template_file;
-		}
-
-		// If there's a tpl in the parent of the current child theme
+		} // If there's a tpl in the parent of the current child theme.
 		else if ( file_exists( get_template_directory() . "/$sub_dir" . $template_file ) ) {
 			return get_template_directory() . "/$sub_dir" . $template_file;
-		}
-
-		// Fall back on the bundled plugin template (N.B. no filtered subfolder involved)
+		} // Fall back on the bundled plugin template (N.B. no filtered subfolder involved).
 		else if ( file_exists( $this->dir( "templates/$template_file" ) ) ) {
 			return $this->dir( "templates/$template_file" );
 		}
 
 		// Oh dear. We can't find the template.
-		$msg = sprintf( __( "This plugin template could not be found, perhaps you need to hook `sil_plugins_dir` and `sil_plugins_url`: %s" ),
-			$this->dir( "templates/$template_file" ) );
+		$msg = sprintf( __( 'This plugin template could not be found, perhaps you need to hook `sil_plugins_dir` and `sil_plugins_url`: %s' ),
+		$this->dir( "templates/$template_file" ) );
 
-		// Log it, so that we can see what went wrong
+		// Log it, so that we can see what went wrong.
 		error_log( "Template error: $msg" );
 
-		// Echo the message to the user
-		echo "<p style='background-color: #ffa; border: 1px solid red; color: #300; padding: 10px;'>$msg</p>";
+		// Echo the message to the user.
+		echo sprintf(
+			'<p style="background-color: #ffa; border: 1px solid red; color: #300; padding: 10px;">%s</p>',
+			esc_html( $msg )
+		);
 
 	}
 
 	/**
 	 * Register a WordPress meta box
 	 *
-	 * @param string $id ID for the box, also used as a function name if none is given
-	 * @param string $title Title for the box
-	 * @param int $page The type of edit page on which to show the box (post, page, link).
-	 * @param string $function Function name (optional)
-	 * @param string $context e.g. 'advanced' or 'core' (optional)
-	 * @param string|int $priority Priority, rough effect on the ordering (optional)
-	 * @param mixed $args Some arguments to pass to the callback function as part of a larger object (optional)
+	 * @param string     $id ID for the box, also used as a function name if none is given.
+	 * @param string     $title Title for the box.
+	 * @param string     $function Function name (optional).
+	 * @param int        $page The type of edit page on which to show the box (post, page, link).
+	 * @param string     $context e.g. 'advanced' or 'core' (optional).
+	 * @param string|int $priority Priority, rough effect on the ordering (optional).
+	 * @param mixed      $args Some arguments to pass to the callback function as part of a larger object (optional).
 	 *
 	 * @return void
 	 * @author © John Godley
@@ -501,7 +514,7 @@ class Aggregator_Plugin {
 		add_meta_box(
 			$id,
 			$title,
-			array( &$this, $function == '' ? $id : $function ),
+			array( &$this, '' === $function ? $id : $function ),
 			$page,
 			$context,
 			$priority,
@@ -517,17 +530,17 @@ class Aggregator_Plugin {
 	 * plugin has a similar shortcode, it will override yours or yours will override
 	 * theirs depending on which order the plugins are included and/or ran.
 	 *
-	 * @param string $tag Shortcode tag to be searched in post content.
+	 * @param string        $tag Shortcode tag to be searched in post content.
 	 * @param callable|null $function Hook to run when shortcode is found.
 	 */
 	protected function add_shortcode( $tag, $function = null ) {
-		add_shortcode( $tag, array( &$this, $function == '' ? $tag : $function ) );
+		add_shortcode( $tag, array( &$this, '' === $function ? $tag : $function ) );
 	}
 
 	/**
 	 * Returns the filesystem path for a file/dir within this plugin.
 	 *
-	 * @param $path string The path within this plugin, e.g. '/js/clever-fx.js'
+	 * @param string $path The path within this plugin, e.g. '/js/clever-fx.js'.
 	 *
 	 * @return string Filesystem path
 	 * @author Simon Wheatley
@@ -539,7 +552,7 @@ class Aggregator_Plugin {
 	/**
 	 * Returns the URL for for a file/dir within this plugin.
 	 *
-	 * @param $path string The path within this plugin, e.g. '/js/clever-fx.js'
+	 * @param string $path The path within this plugin, e.g. '/js/clever-fx.js'.
 	 *
 	 * @return string URL
 	 * @author Simon Wheatley
@@ -561,6 +574,8 @@ class Aggregator_Plugin {
 	/**
 	 * Sets the value of an option named as per this plugin.
 	 *
+	 * @param mixed $value Option value.
+	 *
 	 * @return mixed Whatever
 	 * @author Simon Wheatley
 	 **/
@@ -571,7 +586,8 @@ class Aggregator_Plugin {
 	/**
 	 * Gets the value from an array index on an option named as per this plugin.
 	 *
-	 * @param string $key A string
+	 * @param string $key A string.
+	 * @param mixed  $value The value.
 	 *
 	 * @return mixed Whatever
 	 * @author Simon Wheatley
@@ -590,8 +606,8 @@ class Aggregator_Plugin {
 	/**
 	 * Sets the value on an array index on an option named as per this plugin.
 	 *
-	 * @param string $key A string
-	 * @param mixed $value Whatever
+	 * @param string $key A string.
+	 * @param mixed  $value Whatever.
 	 *
 	 * @return bool False if option was not updated and true if option was updated.
 	 * @author Simon Wheatley
@@ -608,7 +624,7 @@ class Aggregator_Plugin {
 	/**
 	 * Deletes the array index on an option named as per this plugin.
 	 *
-	 * @param string $key A string
+	 * @param string $key A string.
 	 *
 	 * @return bool False if option was not updated and true if option was updated.
 	 * @author Simon Wheatley
@@ -627,7 +643,7 @@ class Aggregator_Plugin {
 	/**
 	 * Echoes out some JSON indicating that stuff has gone wrong.
 	 *
-	 * @param string $msg The error message
+	 * @param string $msg The error message.
 	 *
 	 * @return void
 	 * @author Simon Wheatley
@@ -635,8 +651,8 @@ class Aggregator_Plugin {
 	protected function ajax_die( $msg ) {
 
 		$data = array( 'msg' => $msg, 'success' => false );
-		echo json_encode( $data );
-		// N.B. No 500 header
+		echo wp_json_encode( $data );
+		// N.B. No 500 header.
 		exit;
 
 	}
@@ -644,8 +660,8 @@ class Aggregator_Plugin {
 	/**
 	 * Truncates a string in a human friendly way.
 	 *
-	 * @param string $str The string to truncate
-	 * @param int $num_words The number of words to truncate to
+	 * @param string $str The string to truncate.
+	 * @param int    $num_words The number of words to truncate to.
 	 *
 	 * @return string The truncated string
 	 * @author Simon Wheatley
@@ -667,7 +683,4 @@ class Aggregator_Plugin {
 
 		return $excerpt;
 	}
-
-
-} // END Aggregator_Plugin class
-
+} // END Aggregator_Plugin class.

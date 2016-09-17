@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 require_once( 'class-plugin.php' );
 require_once( 'class-aggregator.php' );
-require_once( 'class-aggregator_job.php' );
+require_once( 'class-aggregator-job.php' );
 require_once( 'class-aggregate.php' );
 
 function aggregator_file() {

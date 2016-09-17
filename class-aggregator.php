@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains the main Aggregator class
+ * File contains the main Aggregator class
  *
  * @package Aggregator
  */
@@ -720,7 +720,9 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 		// Grab the admin URL.
+		// @codingStandardsIgnoreStart
 		switch_to_blog( $source );
+		// @codingStandardsIgnoreEnd
 		$url = add_query_arg( 'portal', $portal, admin_url( 'post-new.php?post_type=aggregator_job' ) );
 		restore_current_blog();
 

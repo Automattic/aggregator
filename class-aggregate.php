@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains the main worker class for Aggregator
+ * File contains the main worker class for Aggregator
  *
  * @package Aggregator
  */
@@ -342,7 +342,9 @@ class Aggregate extends Aggregator_Plugin {
 		foreach ( $portals as $portal ) {
 
 			// Switch to the portal to find the pushed post.
+			// @codingStandardsIgnoreStart (fine for VIP Go)
 			switch_to_blog( $portal );
+			// @codingStandardsIgnoreEnd
 
 			// Acquire ID and update post (or insert post and acquire ID).
 			$target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id )
@@ -375,12 +377,14 @@ class Aggregate extends Aggregator_Plugin {
 		$attachment = wp_cache_get( $cache_key, 'aggregator' );
 		if ( false === $attachment ) {
 			// Query the DB to get the attachment ID.
+			// @codingStandardsIgnoreStart
 			$attachment = $wpdb->get_col(
 				$wpdb->prepare(
 					'SELECT ID FROM ' . $wpdb->prefix . 'posts' . " WHERE guid='%s';",
 					$image_url
 				)
 			);
+			// @codingStandardsIgnoreEnd
 
 			// Store attachment ID in the cache.
 			wp_cache_set( $cache_key, $attachment, 'aggregator' )
@@ -412,7 +416,8 @@ class Aggregate extends Aggregator_Plugin {
 		$pushed_post_id = false;
 
 		// Build a query, checking for the relevant meta data.
-		// We don't want to cache this query as it could lead to failed syncs
+		// We don't want to cache this query as it could lead to failed syncs.
+		// @codingStandardsIgnoreStart
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'any',
@@ -431,6 +436,7 @@ class Aggregate extends Aggregator_Plugin {
 			),
 		);
 		$query = new WP_Query( $args );
+		// @codingStandardsIgnoreEnd
 
 		// If there are posts, get the ID of the first one, ignoring any others.
 		if ( $query->have_posts() ) {
@@ -591,7 +597,7 @@ class Aggregate extends Aggregator_Plugin {
 			$terms[ $taxonomy ] = array();
 
 			// Get the terms from this taxonomy attached to the post.
-			$tax_terms = wp_get_object_terms( $post_id, $taxonomy );
+			$tax_terms = get_the_terms( $post_id, $taxonomy );
 
 			// Add each of the attached terms to our new array.
 			foreach ( $tax_terms as & $term ) {
@@ -629,8 +635,17 @@ class Aggregate extends Aggregator_Plugin {
 			// Go through each term.
 			foreach ( $terms as $slug => $name ) {
 
-				// Get the term if it exists...
-				if ( $term = get_term_by( 'name', $name, $taxonomy ) ) {
+				// Get the term...
+				// @codingStandardsIgnoreStart
+				if ( function_exists( 'wpcom_vip_get_term_by' ) ) {
+					$term = wpcom_vip_get_term_by( 'name', $name, $taxonomy )
+				} else {
+					$term = get_term_by( 'name', $name, $taxonomy )
+				}
+				// @codingStandardsIgnoreEnd
+
+				// If the term exists, use it.
+				if ( false !== $term ) {
 					$term_id = $term->term_id;
 
 					// ...otherwise, create it.
@@ -771,7 +786,9 @@ class Aggregate extends Aggregator_Plugin {
 				continue; // See allowed_terms().
 			}
 			// Okay, fine, switch sites and do the synchronisation dance.
+			// @codingStandardsIgnoreStart
 			switch_to_blog( $sync_destination );
+			// @codingStandardsIgnoreEnd
 
 			// Acquire ID and update post (or insert post and acquire ID).
 			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id )
@@ -812,10 +829,19 @@ class Aggregate extends Aggregator_Plugin {
 			$args = apply_filters( 'aggregator_remote_get_args', $args, $portal_site_url );
 
 			// Ping the cron on the portal site to trigger term import now.
-			wp_remote_get(
-				$portal_site_url . '/wp-cron.php',
-				$args
-			);
+			if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+				vip_safe_wp_remote_get(
+					$portal_site_url . '/wp-cron.php',
+					$args
+				);
+			} else {
+				// @codingStandardsIgnoreStart
+				wp_remote_get(
+					$portal_site_url . '/wp-cron.php',
+					$args
+				);
+				// @codingStandardsIgnoreEnd
+			}
 
 			// Switch back to source blog.
 			restore_current_blog();

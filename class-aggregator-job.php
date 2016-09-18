@@ -102,12 +102,14 @@ class Aggregator_Job {
 
 		// Fetch the post of type 'aggregator_job' where;
 		// * post meta 'portal' is equal to $portal.
+		// @codingStandardsIgnoreStart
 		$jobs_query = new WP_Query( array(
 			'post_type' => 'aggregator_job',
 			'meta_key' => '_aggregator_portal',
 			'meta_value' => $this->get_portal_blog_id(),
 			'posts_per_page' => 1,
 		) );
+		// @codingStandardsIgnoreEnd
 		if ( $jobs_query->have_posts() ) {
 
 			while ( $jobs_query->have_posts() ) {
@@ -123,7 +125,10 @@ class Aggregator_Job {
 				$this->taxonomies = get_post_meta( get_the_ID(), '_aggregator_taxonomies', true );
 
 				// Store terms for later.
-				$this->terms = $this->set_terms( wp_get_object_terms( get_the_ID(), $this->taxonomies ) );
+				$terms = get_the_terms( get_the_ID(), $this->taxonomies );
+				if ( false !== $terms ) {
+					$this->terms = $this->set_terms( $terms );
+				}
 
 				// Retrieve the author ID for the portal.
 				$this->author = get_post_meta( get_the_ID(), '_aggregator_author', true );
@@ -412,7 +417,9 @@ class Aggregator_Job {
 	protected function switch_to_blog( $blog_id ) {
 
 		if ( $this->current_blog !== $blog_id ) {
+			// @codingStandardsIgnoreStart
 			switch_to_blog( $blog_id );
+			// @codingStandardsIgnoreEnd
 		}
 
 	}

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Main Aggregator plugin file
+ *
+ * @package Aggregator
+ */
 
 /*
 Plugin Name: Aggregator
@@ -32,7 +37,3 @@ require_once( 'class-plugin.php' );
 require_once( 'class-aggregator.php' );
 require_once( 'class-aggregator-job.php' );
 require_once( 'class-aggregate.php' );
-
-function aggregator_file() {
-	return __FILE__;
-}

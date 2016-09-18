@@ -285,44 +285,6 @@ class Aggregator_Plugin {
 	}
 
 	/**
-	 * Renders a template, looking first for the template file in the theme directory
-	 * and afterwards in this plugin's /theme/ directory.
-	 *
-	 * @param string $template_file Template file location.
-	 * @param array  $vars Array of template variables.
-	 *
-	 * @return void
-	 * @author Simon Wheatley
-	 **/
-	protected function render( $template_file, $vars = null ) {
-
-		// Maybe override the template with our own file.
-		$template_file = $this->locate_template( $template_file );
-
-		// Ensure we have the same vars as regular WP templates.
-		// @todo Is this really necessary?
-		global $posts, $post, $wp_did_header, $wp_did_template_redirect, $wp_query, $wp_rewrite, $wpdb, $wp_version, $wp, $id, $comment;
-
-		// Get current user ID.
-		$user = wp_get_current_user();
-		if ( is_a( $user, 'WP_User' ) ) {
-			$user_id = $user->ID;
-		}
-
-		if ( is_array( $wp_query->query_vars ) ) {
-			extract( $wp_query->query_vars, EXTR_SKIP );
-		}
-
-		// Plus our specific template vars.
-		if ( is_array( $vars ) ) {
-			extract( $vars );
-		}
-
-		require( $template_file );
-
-	}
-
-	/**
 	 * Renders an admin template from this plugin's /templates-admin/ directory.
 	 *
 	 * @param string $template_file Template file location.
@@ -332,11 +294,6 @@ class Aggregator_Plugin {
 	 * @author Simon Wheatley
 	 **/
 	protected function render_admin( $template_file, $vars = null ) {
-
-		// Plus our specific template vars.
-		if ( is_array( $vars ) ) {
-			extract( $vars );
-		}
 
 		// Try to render.
 		if ( file_exists( $this->dir( "templates-admin/$template_file" ) ) ) {

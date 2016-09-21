@@ -793,7 +793,7 @@ class Aggregate extends Aggregator_Plugin {
 			// Acquire ID and update post (or insert post and acquire ID).
 			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id )
 			if ( false !== $target_post_id ) {
-				$orig_post_data['ID'] = $target_post_id;
+				$target_post_id = $orig_post_data['ID'];
 				wp_update_post( $orig_post_data );
 			} else {
 				$target_post_id = wp_insert_post( $orig_post_data );

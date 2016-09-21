@@ -797,7 +797,6 @@ class Aggregate extends Aggregator_Plugin {
 				wp_update_post( $orig_post_data );
 			} else {
 				$target_post_id = wp_insert_post( $orig_post_data );
-				$orig_post_data['ID'] = $target_post_id;
 			}
 
 			// Push the meta data.
@@ -844,6 +843,22 @@ class Aggregate extends Aggregator_Plugin {
 				);
 				// @codingStandardsIgnoreEnd
 			}
+
+			// Finally, set the post status.
+			$new_post_data = get_post( $target_post_id );
+
+			/**
+			 * Filter the status of a syncing post.
+			 *
+			 * Allows for the status of a synced post to be overridden. Before
+			 * this filter runs, the status will be 'pending'. The value of
+			 * `$status` is the status of the original post being synced, which
+			 * will be passed to `wp_update_post()`.
+			 *
+			 * @var string $status The final status of the post.
+			 */
+			$new_post_data->post_status = apply_filters( 'aggregator_post_status', $orig_post_data['post_status'] );
+			wp_update_post( $new_post_data );
 
 			// Switch back to source blog.
 			restore_current_blog();

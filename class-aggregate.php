@@ -797,6 +797,7 @@ class Aggregate extends Aggregator_Plugin {
 				wp_update_post( $orig_post_data );
 			} else {
 				$target_post_id = wp_insert_post( $orig_post_data );
+				$orig_post_data['ID'] = $target_post_id;
 			}
 
 			// Push the meta data.

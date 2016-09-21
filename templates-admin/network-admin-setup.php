@@ -18,7 +18,20 @@ switch ( $action ) {
 
 		// Just print a dropdown which we can redirect to the edit page.
 		// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly.
-		$blogs = wp_get_sites( array( 'public' => 1 ) );
+		/**
+		 * Allow for modification of the default arguments for grabbing blogs.
+		 *
+		 * Filters the array of arguments sent to `wp_get_sites()` so that
+		 * other options, such as choosing non-public blogs, can be used.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @var array $args See `wp_get_sites()`
+		 */
+		$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
+			'public' => 1,
+		) );
+		$blogs = wp_get_sites( $blogs_args );
 		?>
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Add New Sync Job' ); ?></h2>

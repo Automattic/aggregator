@@ -804,7 +804,8 @@ class Aggregate extends Aggregator_Plugin {
 
 			// Push the featured image.
 			if ( $featured_image ) {
-				$this->push_featured_image( $target_post_id, $featured_image ); }
+				$this->push_featured_image( $target_post_id, $featured_image );
+			}
 
 			// Push taxonomies and terms.
 			$this->push_taxonomy_terms( $target_post_id, $orig_terms );

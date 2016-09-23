@@ -26,7 +26,7 @@ jQuery(function($){
 		// Grab the URL
 		var ajax_data = {
 			'action': 'get_new_job_url',
-			'security': ajax_object.nonce
+			'security': ajax_object.nonce,
 			'portal': portal,
 			'source': source
 		};

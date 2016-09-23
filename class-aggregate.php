@@ -347,7 +347,7 @@ class Aggregate extends Aggregator_Plugin {
 			// @codingStandardsIgnoreEnd
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			$target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id )
+			$target_post_id = $this->get_portal_blog_post_id( $post_id, $current_blog->blog_id );
 			if ( false !== $target_post_id ) {
 				wp_delete_post( $target_post_id, true );
 			}
@@ -387,7 +387,7 @@ class Aggregate extends Aggregator_Plugin {
 			// @codingStandardsIgnoreEnd
 
 			// Store attachment ID in the cache.
-			wp_cache_set( $cache_key, $attachment, 'aggregator' )
+			wp_cache_set( $cache_key, $attachment, 'aggregator' );
 		}
 
 		// ID should be the first element of the returned array.
@@ -638,9 +638,9 @@ class Aggregate extends Aggregator_Plugin {
 				// Get the term...
 				// @codingStandardsIgnoreStart
 				if ( function_exists( 'wpcom_vip_get_term_by' ) ) {
-					$term = wpcom_vip_get_term_by( 'name', $name, $taxonomy )
+					$term = wpcom_vip_get_term_by( 'name', $name, $taxonomy );
 				} else {
-					$term = get_term_by( 'name', $name, $taxonomy )
+					$term = get_term_by( 'name', $name, $taxonomy );
 				}
 				// @codingStandardsIgnoreEnd
 
@@ -791,7 +791,7 @@ class Aggregate extends Aggregator_Plugin {
 			// @codingStandardsIgnoreEnd
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id )
+			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );
 			if ( false !== $target_post_id ) {
 				$target_post_id = $orig_post_data['ID'];
 				wp_update_post( $orig_post_data );

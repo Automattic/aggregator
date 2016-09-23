@@ -727,7 +727,7 @@ class Aggregator extends Aggregator_Plugin {
 		restore_current_blog();
 
 		// Send back to the script.
-		echo esc_url( $url );
+		echo esc_url_raw( $url );
 		die();
 
 	}

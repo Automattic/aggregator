@@ -842,7 +842,7 @@ class Aggregator extends Aggregator_Plugin {
 			$args['blog_id'] = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : false; // Input var okay.
 		}
 
-		if ( false !== $args['blog_id'] ) :
+		if ( isset( $args['blog_id'] ) && false !== $args['blog_id'] ) :
 			?>
 			<p><?php esc_html_e( 'Choose the user to whom posts will be attributed to on the portal site.' ); ?></p>
 			<label class="screen-reader-text" for="post_author_override"><?php esc_html_e( 'Author' ); ?></label>

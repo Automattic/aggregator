@@ -850,7 +850,7 @@ class Aggregator extends Aggregator_Plugin {
 			wp_dropdown_users( $args );
 		else :
 			?>
-			<p><?php esch_html_e( 'Portal site isn\'t set - can\'t grab authors.' ); ?></p>
+			<p><?php esc_html_e( 'Portal site isn\'t set - can\'t grab authors.' ); ?></p>
 			<?php
 		endif;
 

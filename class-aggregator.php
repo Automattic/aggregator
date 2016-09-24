@@ -655,8 +655,8 @@ class Aggregator extends Aggregator_Plugin {
 	public function publish_aggregator_job( $post_id, $post ) {
 
 		// Find the portal ID.
-		if ( isset( $_GET['portal'] ) ) { // Input var okay.
-			$portal = intval( $_GET['portal'] ); // Input var okay.
+		if ( isset( $_POST['portal'] ) ) { // Input var okay.
+			$portal = intval( $_POST['portal'] ); // Input var okay.
 		} else {
 			return;
 		}

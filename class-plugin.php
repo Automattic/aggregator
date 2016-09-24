@@ -202,6 +202,10 @@ class Aggregator_Plugin {
 			$priority = 10;
 		}
 
+		if ( null === $function ) {
+			$function = $action;
+		}
+
 		add_action( $action, array( &$this, '' === $function ? $action : $function ), $priority, $accepted_args );
 
 	}

@@ -673,16 +673,16 @@ class Aggregator extends Aggregator_Plugin {
 		$taxos = $sync_job->get_taxonomies();
 
 		// Get any selected post types.
-		if ( isset( $_GET['cpts'] ) ) { // Input var okay.
-			$cpts = array_map( 'sanitize_text_field', wp_unslash( $_GET['cpts'] ) ); // Input var okay.
+		if ( isset( $_POST['cpts'] ) ) { // Input var okay.
+			$cpts = array_map( 'sanitize_text_field', wp_unslash( $_POST['cpts'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed post types.
 		$sync_job->set_post_types( $cpts );
 
 		// Get any selected taxonomies.
-		if ( isset( $_GET['taxos'] ) ) { // Input var okay.
-			$taxos = array_map( 'sanitize_text_field', wp_unslash( $_GET['taxos'] ) ); // Input var okay.
+		if ( isset( $_POST['taxos'] ) ) { // Input var okay.
+			$taxos = array_map( 'sanitize_text_field', wp_unslash( $_POST['taxos'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed taxonomies.

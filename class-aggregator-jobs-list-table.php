@@ -78,17 +78,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 				foreach ( $columns as $column_name => $column_display_name ) {
 
-					// Set up attributes.
-					$html_attributes = array();
-
 					// Set attribtues to avoid errors.
 					$attributes = '';
-
-					// Style attributes for each col.
-					$html_attributes['class'] = esc_attr( "$column_name column-$column_name" );
-					if ( in_array( $column_name, $hidden, true ) ) {
-						$html_attributes['style'] = 'display:none';
-					}
 
 					// Display the cell.
 					switch ( $column_name ) {
@@ -102,7 +93,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							);
 
 							// Create the links.
-							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $job->get_edit_post_link() ) . '">' . esc_html__( 'Edit Job' ) . '</a></span>';
+							$actions['edit'] = '<a href="' . esc_url( $job->get_edit_post_link() ) . '">' . esc_html__( 'Edit Job' ) . '</a>';
 
 							// Provide custom link for delete.
 							$delete_url = network_admin_url( sprintf(
@@ -110,18 +101,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 								rawurlencode( $job->portal->blog_id ),
 								rawurlencode( $job->source->blog_id )
 							) );
-							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $delete_url ) . '">' . esc_html__( 'Delete' ) . '</a></span>';
+							$actions['delete']	= '<a href="' . esc_url( $delete_url ) . '">' . esc_html__( 'Delete' ) . '</a>';
 
 							echo "<td $attributes>" . esc_html( $job->source->blogname ) . ' (' . esc_html( $job->source->domain ) . ')' . $this->row_actions( $actions ) . '</td>'; // XSS ok.
-							echo '<td ';
-							foreach ( $html_attributes as $attribute_name => $attribute_value ) {
-								echo sprintf(
-									'%s="%s"',
-									esc_attr( $attribute_name ),
-									esc_attr( $attribute_value )
-								);
-							}
-							echo '>';
 
 							break;
 
@@ -153,9 +135,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 						case 'col_author':
 
 							echo "<td $attributes><p>"; // XSS ok.
-
 							echo esc_html( get_user_by( 'id', $job->get_author() )->display_name );
-
 							echo '</p></td>';
 
 							break;

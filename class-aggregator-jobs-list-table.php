@@ -81,6 +81,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 					// Set up attributes.
 					$html_attributes = array();
 
+					// Set attribtues to avoid errors.
+					$attributes = '';
+
 					// Style attributes for each col.
 					$html_attributes['class'] = esc_attr( "$column_name column-$column_name" );
 					if ( in_array( $column_name, $hidden, true ) ) {

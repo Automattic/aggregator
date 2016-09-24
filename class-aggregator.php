@@ -490,7 +490,7 @@ class Aggregator extends Aggregator_Plugin {
 			echo sprintf(
 				'<label for="cpt_%1$s"><input type="checkbox" name="cpts[]" id="cpt_%1$s" value="%1$s" %2$s> %3$s</label><br/>',
 				esc_attr( $cpt->name ),
-				checked( $checked ),
+				checked( $checked, true, false ),
 				esc_attr( $cpt->labels->name )
 			);
 
@@ -533,7 +533,7 @@ class Aggregator extends Aggregator_Plugin {
 			echo sprintf(
 				'<label for="taxo_%1$s"><input type="checkbox" name="taxos[]" id="taxo_%1$s" value="%1$s"%2$s> %3$s</label><br/>',
 				esc_attr( $taxo->name ),
-				checked( $checked ),
+				checked( $checked, true, false ),
 				esc_attr( $taxo->labels->name )
 			);
 

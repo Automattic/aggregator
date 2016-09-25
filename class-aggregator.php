@@ -54,6 +54,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', null, null, 2 );
 			$this->add_action( 'add_meta_boxes_aggregator_job' );
+			$this->add_action( 'post_action_aggregator_detach' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
 			$this->add_filter( 'coauthors_supported_post_types' );
@@ -91,6 +92,12 @@ class Aggregator extends Aggregator_Plugin {
 
 		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : false; // Input var okay.
 
+		// Don't interfer if the user is detaching the post.
+		$action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : false; // Input var okay.
+		if ( 'aggregator_detach' === $action ) {
+			return;
+		}
+
 		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
 
 			$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
@@ -118,13 +125,42 @@ class Aggregator extends Aggregator_Plugin {
 	public function post_row_actions( $actions, $post ) {
 
 		if ( $orig_blog_id = get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
-			foreach ( $actions as $action_name => & $action ) {
-				if ( 'view' !== $action_name ) {
-					unset( $actions[ $action_name ] ); }
+
+			$new_actions = array();
+
+			if ( is_array( $actions ) && array_key_exists( 'view', $actions ) ) {
+				$new_actions['view'] = $actions['view'];
 			}
+
+			// Contsruct a link for detaching the post
+			$edit_post_link = get_edit_post_link( $post->ID );
+			$detach_post_link = str_replace( 'action=edit', 'action=aggregator_detach', $edit_post_link );
+
+			$new_actions['detach'] = sprintf( '<a href="%s">Detach</a>', $detach_post_link );
+
+			$actions = $new_actions;
+
 		}
 
 		return $actions;
+
+	}
+
+	/**
+	 * Detaches an aggregated post for editing on the portal.
+	 *
+	 * @param  int $post_id Post ID.
+	 * @filter post_action_aggregator_detach
+	 */
+	public function post_action_aggregator_detach( $post_id ) {
+
+		if ( false === $post_id || is_null( $post_id ) ) {
+			return;
+		}
+
+		// Delete the post meta that attaches this post to it's parent
+		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
+		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
 
 	}
 

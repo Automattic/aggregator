@@ -647,8 +647,10 @@ class Aggregator extends Aggregator_Plugin {
 		);
 
 		// Queue up only on post add/edit screen for our post type.
-		if ( 'aggregator_job' === $current_screen->post_type
-			&& ( 'post.php' === $pagenow || 'post-new.php' === $pagenow ) ) {
+		if (
+			'aggregator_job' === $current_screen->post_type
+			&& ( 'post.php' === $pagenow || 'post-new.php' === $pagenow )
+		) {
 
 			// Queue the script for inclusion.
 			wp_enqueue_script( 'aggregator_job_edit' );
@@ -809,11 +811,11 @@ class Aggregator extends Aggregator_Plugin {
 		$id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : false; // Input var okay.
 
 		// Set the column headers.
-		if ( $id ) {
+		if ( false !== $id ) {
 			$column_headers = array(
-				'col_source' => __( 'Sites' ),
-				'col_syncing' => __( 'Syncing' ),
-				'col_author' => __( 'Author' ),
+				'col_source' => __( 'Sites', 'aggregator' ),
+				'col_syncing' => __( 'Syncing', 'aggregator' ),
+				'col_author' => __( 'Author', 'aggregator' ),
 			);
 		}
 
@@ -833,7 +835,8 @@ class Aggregator extends Aggregator_Plugin {
 
 		// Only alter priority on our job post type.
 		if ( 'aggregator_job' === $current_screen->post_type ) {
-			$priority = 'default'; }
+			$priority = 'default';
+		}
 
 		return $priority;
 	}

@@ -35,6 +35,13 @@ class Aggregator_Job {
 	public $post_id;
 
 	/**
+	 * Custom title for this job
+	 *
+	 * @var string
+	 */
+	public $title;
+
+	/**
 	 * ID of the blog we're currently on
 	 *
 	 * @var int
@@ -117,6 +124,14 @@ class Aggregator_Job {
 
 				// Store the post ID for later.
 				$this->post_id = get_the_ID();
+
+				// Store the title for later, if we have one.
+				$title = get_the_title();
+				if ( 'Auto Draft' === $title || is_numeric( $title ) ) {
+					$this->title = sprintf( __( 'Job #%d', 'aggregator' ), $this->post_id );
+				} else {
+					$this->title = $title;
+				}
 
 				// Store post types for later.
 				$this->post_types = get_post_meta( get_the_ID(), '_aggregator_post_types', true );

@@ -486,32 +486,34 @@ class Aggregator extends Aggregator_Plugin {
 		// Grab the portal ID from the REQUEST vars hopefully.
 		if ( isset( $_GET['portal'] ) ) { // Input var okay.
 			$portal = intval( $_GET['portal'] ); // Input var okay.
-			$portal = get_blog_details( $portal );
 		} else {
-			return;
+			$portal = get_post_meta( $post->ID, '_aggregator_portal', true );
 		}
+		$portal = get_blog_details( $portal );
 
 		// ...and the current blog.
 		$source = get_blog_details( get_current_blog_id() );
 
-		// @todo style this to remove the border, heading and background.
-		echo '<h1>' . sprintf(
-			esc_html__( '%s to %s' ),
-			esc_html( $source->domain . $source->path ),
-			esc_html( $portal->domain . $portal->path )
-		) . '</h1>';
+		// Show the source and portal clearly.
+		echo '<p>' . esc_html__( 'Source: ', 'aggregator' );
+		echo sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( get_admin_url( $source->blog_id ) ),
+			esc_html( $source->blogname )
+		) . '<br/>';
 
-		// Get the portal ID, wherever it may be.
-		if ( isset( $_GET['portal'] ) ) { // Input var okay.
-			$portal = intval( $_GET['portal'] ); // Input var okay.
-		} else {
-			$portal = get_post_meta( $post->ID, '_aggregator_portal', true );
-		}
+		// Job portal site.
+		echo esc_html__( 'Portal: ', 'aggregator' );
+		echo sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( get_admin_url( $portal->blog_id ) ),
+			esc_html( $portal->blogname )
+		) . '</p>';
 
 		// Sneak the portal ID in here as a hidden field.
 		echo sprintf(
 			'<input type="hidden" name="portal" value="%d">',
-			esc_attr( $portal )
+			esc_attr( $portal->blog_id )
 		);
 
 	}

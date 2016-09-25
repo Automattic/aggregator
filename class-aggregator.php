@@ -317,14 +317,8 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function get_jobs() {
 
-		// Get $wpdb so that we can use the network (site) ID later on.
-		global $wpdb;
-
 		// Get a list of sites.
-		// @todo We need to consider is_large_network() at some point.
-		$blogs = wp_get_sites( array(
-			'network_id' => $wpdb->siteid,
-		) );
+		$blogs = Aggregator::get_sites();
 
 		// Should never be empty, but hey, let's play safe.
 		if ( empty( $blogs ) ) {
@@ -342,11 +336,11 @@ class Aggregator extends Aggregator_Plugin {
 			foreach ( $blogs as $source ) {
 
 				// Don't try and find any blogs syncing to themselves.
-				if ( $portal['blog_id'] === $source['blog_id'] ) {
+				if ( $portal->blog_id === $source->blog_id ) {
 					continue; }
 
 				// Get any jobs.
-				$job = new Aggregator_Job( $portal['blog_id'], $source['blog_id'] );
+				$job = new Aggregator_Job( $portal->blog_id, $source->blog_id );
 				if ( is_null( $job->post_id ) ) {
 					continue;
 				} else {
@@ -925,7 +919,7 @@ class Aggregator extends Aggregator_Plugin {
 	/**
 	 * Redirect aggregated posts to the original post
 	 */
-	function template_redirect() {
+	public function template_redirect() {
 
 		// Get the original permalink (if any).
 		$original_permalink = get_post_meta( get_the_ID(), '_aggregator_permalink', true );
@@ -948,6 +942,53 @@ class Aggregator extends Aggregator_Plugin {
 		}
 
 	}
+
+	/**
+	 * Helper function for getting a list of blogs.
+	 *
+	 * @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly.
+	 *
+	 * @return array Array of site objects
+	 */
+	static function get_sites() {
+
+		/**
+		 * Allow for modification of the default arguments for grabbing blogs.
+		 *
+		 * Filters the array of arguments sent to `wp_get_sites()` so that
+		 * other options, such as choosing non-public blogs, can be used.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @var array $args See `wp_get_sites()`
+		 */
+		$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
+			'public' => 1,
+		) );
+
+		// Use `get_sites()` in 4.6 and above because `wp_get_sites()` is deprecated.
+		global $wp_version;
+		if ( -1 === version_compare( $wp_version, '4.6' ) ) {
+			$blogs = wp_get_sites( $blogs_args );
+			$new_blogs = array();
+		} else {
+			$blogs = get_sites( $blogs_args );
+		}
+
+		// Convert array output into objects to make our lives easier.
+		if ( isset( $new_blogs ) ) {
+			for ( $i=0; $i < count( $blogs ); $i++ ) {
+				$new_blogs[ $i ] = (object) $blogs[ $i ];
+			}
+
+			$blogs = $new_blogs;
+		}
+
+		return $blogs;
+
+	}
+
+
 } // END Aggregator class
 
 $aggregator = new Aggregator();

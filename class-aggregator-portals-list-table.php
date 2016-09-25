@@ -44,10 +44,11 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			// Make sure we have an array for $this->items.
 			if ( ! is_array( $this->items ) ) {
-				$this->items = array(); }
+				$this->items = array();
+			}
 
 			// Get all the blogs.
-			$blogs = wp_get_sites( array( 'public' => 1 ) );
+			$blogs = Aggregator::get_sites();
 
 			// Our array of portals.
 			$portals = array();
@@ -55,8 +56,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Check if we have sync jobs for those sites.
 			foreach ( $blogs as $blog ) {
 
-				if ( $sync_blogs = get_site_option( "aggregator_{$blog['blog_id']}_source_blogs" ) ) {
-					$portals[ $blog['blog_id'] ] = $sync_blogs;
+				if ( $sync_blogs = get_site_option( "aggregator_{$blog->blog_id}_source_blogs" ) ) {
+					$portals[ $blog->blog_id ] = $sync_blogs;
 				}
 
 				unset( $sync_blogs );
@@ -65,7 +66,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			if ( ! empty( $portals ) ) {
 				$this->items = $portals;
-			} else { 				$this->items = array(); }
+			} else {
+				$this->items = array();
+			}
 
 		}
 

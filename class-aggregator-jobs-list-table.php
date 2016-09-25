@@ -19,7 +19,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			parent::__construct( array(
 				'singular' => 'wp_list_aggregator_job', // Singular label
 				'plural' => 'wp_list_aggregator_jobs', // plural label, also this well be one of the table css class
-				'ajax'   => false,// We won't support Ajax for this table.
+				'ajax' => false, // We won't support Ajax for this table.
 			) );
 
 		}
@@ -103,7 +103,31 @@ if ( class_exists( 'WP_List_Table' ) ) {
 							) );
 							$actions['delete']	= '<a href="' . esc_url( $delete_url ) . '">' . esc_html__( 'Delete' ) . '</a>';
 
-							echo "<td $attributes>" . esc_html( $job->source->blogname ) . ' (' . esc_html( $job->source->domain ) . ')' . $this->row_actions( $actions ) . '</td>'; // XSS ok.
+							echo "<td $attributes>";
+
+							// Job title.
+							echo '<strong>' . esc_html( $job->title ) . '</strong><br/>';
+
+							// Job source site.
+							echo esc_html__( 'Source: ', 'aggregator' );
+							echo sprintf(
+								'<a href="%s">%s</a>',
+								esc_url( get_admin_url( $job->source->blog_id ) ),
+								esc_html( $job->source->blogname )
+							) . '<br/>';
+
+							// Job portal site.
+							echo esc_html__( 'Portal: ', 'aggregator' );
+							echo sprintf(
+								'<a href="%s">%s</a>',
+								esc_url( get_admin_url( $job->portal->blog_id ) ),
+								esc_html( $job->portal->blogname )
+							);
+
+							// Admin actions.
+							echo $this->row_actions( $actions ); // XSS ok.
+
+							echo '</td>';
 
 							break;
 

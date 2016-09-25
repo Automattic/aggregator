@@ -381,7 +381,7 @@ class Aggregator extends Aggregator_Plugin {
 			'public' => false, // Only access through our network admin UI.
 			'show_ui' => true, // Otherwise we can't use post edit screens.
 			'show_in_menu' => false, // Otherwise uses show_ui value.
-			'supports' => array( 'author' ),
+			'supports' => array( 'title', 'author' ),
 			'register_meta_box_cb' => array( $this, 'meta_boxes' ),
 			'taxonomies' => $this->get_taxonomies_for_sync_settings(),
 			'query_var' => false,

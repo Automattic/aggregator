@@ -74,7 +74,7 @@ class Aggregator_Job {
 	 *
 	 * @var int
 	 */
-	protected $author = 1;
+	public $author = 1;
 
 	/**
 	 * An ID constructed as {$source_id}_{$post_id}

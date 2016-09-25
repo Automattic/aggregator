@@ -610,6 +610,30 @@ class Aggregate extends Aggregator_Plugin {
 	}
 
 	/**
+	 * Get the child site author ID for a post.
+	 *
+	 * Checks if the original author is a user on destination site. Otherwise,
+	 * falls back to the author chosen in the Job settings.
+	 *
+	 * @param  int $author_id           The original author ID.
+	 * @param  int $destination_blog_id Blog ID of the destination.
+	 * @return int                      Correct author ID
+	 */
+	protected function prepare_author_id( $author_id, $destination_blog_id ) {
+
+		// If the user exists on the portal, use that author.
+		if ( is_user_member_of_blog( $author_id, $destination_blog_id ) ) {
+			return $author_id;
+		// Otherwise, use the defaul (from the job settings).
+		} else if ( is_user_member_of_blog( $this->job->author, $destination_blog_id ) ) {
+			return $this->job->author;
+		} else {
+			return false; // Shrug.
+		}
+
+	}
+
+	/**
 	 * Import the terms from the source post to the portal post.
 	 *
 	 * Runs on a schedule after posts are pushed, because we can push terms at the same time as saving the post.
@@ -789,6 +813,9 @@ class Aggregate extends Aggregator_Plugin {
 			// @codingStandardsIgnoreStart
 			switch_to_blog( $sync_destination );
 			// @codingStandardsIgnoreEnd
+
+			// Make we use the right author.
+			$orig_post_data['author'] = $this->prepare_author_id( $orig_post_data['author'], $sync_destination );
 
 			// Acquire ID and update post (or insert post and acquire ID).
 			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );

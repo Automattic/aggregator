@@ -621,12 +621,14 @@ class Aggregate extends Aggregator_Plugin {
 	 */
 	protected function prepare_author_id( $author_id, $destination_blog_id ) {
 
+		// If the user exists on the portal, use that author.
 		if ( is_user_member_of_blog( $author_id, $destination_blog_id ) ) {
 			return $author_id;
+		// Otherwise, use the defaul (from the job settings).
 		} else if ( is_user_member_of_blog( $this->job->author, $destination_blog_id ) ) {
 			return $this->job->author;
 		} else {
-			return false;
+			return false; // Shrug.
 		}
 
 	}

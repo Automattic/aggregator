@@ -48,16 +48,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			}
 
 			// Get all the blogs.
-			/** This filter is documented in templates-admin/network-admin-setup.php */
-			$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
-				'public' => 1,
-			) );
-			global $wp_version;
-			if ( -1 === version_compare( $wp_version, '4.6' ) ) {
-				$blogs = wp_get_sites( $blogs_args );
-			} else {
-				$blogs = get_sites( $blogs_args );
-			}
+			$blogs = Aggregator::get_sites();
 
 			// Our array of portals.
 			$portals = array();
@@ -65,8 +56,8 @@ if ( class_exists( 'WP_List_Table' ) ) {
 			// Check if we have sync jobs for those sites.
 			foreach ( $blogs as $blog ) {
 
-				if ( $sync_blogs = get_site_option( "aggregator_{$blog['blog_id']}_source_blogs" ) ) {
-					$portals[ $blog['blog_id'] ] = $sync_blogs;
+				if ( $sync_blogs = get_site_option( "aggregator_{$blog->blog_id}_source_blogs" ) ) {
+					$portals[ $blog->blog_id ] = $sync_blogs;
 				}
 
 				unset( $sync_blogs );
@@ -75,7 +66,9 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			if ( ! empty( $portals ) ) {
 				$this->items = $portals;
-			} else { 				$this->items = array(); }
+			} else {
+				$this->items = array();
+			}
 
 		}
 

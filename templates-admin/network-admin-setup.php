@@ -17,26 +17,7 @@ switch ( $action ) {
 	case 'add':
 
 		// Just print a dropdown which we can redirect to the edit page.
-		// @todo Take account of wp_is_large_network() and AJAX paginate/search accordingly.
-		/**
-		 * Allow for modification of the default arguments for grabbing blogs.
-		 *
-		 * Filters the array of arguments sent to `wp_get_sites()` so that
-		 * other options, such as choosing non-public blogs, can be used.
-		 *
-		 * @since 1.2.0
-		 *
-		 * @var array $args See `wp_get_sites()`
-		 */
-		$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
-			'public' => 1,
-		) );
-		global $wp_version;
-		if ( -1 === version_compare( $wp_version, '4.6' ) ) {
-			$blogs = wp_get_sites( $blogs_args );
-		} else {
-			$blogs = get_sites( $blogs_args );
-		}
+		$blogs = Aggregator::get_sites();
 		?>
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Add New Sync Job' ); ?></h2>
@@ -48,7 +29,7 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo esc_attr( $blog['blog_id'] ); ?>"><?php echo esc_html( ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path'] ); ?></option><?php
+							<option value="<?php echo esc_attr( $blog->blog_id ); ?>"><?php echo esc_html( ( SUBDOMAIN_INSTALL ) ? $blog->domain : $blog->path ); ?></option><?php
 						}
 						?>
 					</select>
@@ -61,7 +42,7 @@ switch ( $action ) {
 						<?php
 						foreach ( $blogs as $blog ) {
 							?>
-							<option value="<?php echo esc_attr( $blog['blog_id'] ); ?>"><?php echo esc_html( ( SUBDOMAIN_INSTALL ) ? $blog['domain'] : $blog['path'] ); ?></option><?php
+							<option value="<?php echo esc_attr( $blog->blog_id ); ?>"><?php echo esc_html( ( SUBDOMAIN_INSTALL ) ? $blog->domain : $blog->path ); ?></option><?php
 						}
 						?>
 					</select>

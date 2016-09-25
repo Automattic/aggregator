@@ -54,9 +54,11 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_action( 'wp_ajax_get_new_job_url' );
 			$this->add_action( 'publish_aggregator_job', null, null, 2 );
 			$this->add_action( 'add_meta_boxes_aggregator_job' );
+			$this->add_action( 'post_action_aggregator_detach' );
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
 			$this->add_filter( 'coauthors_supported_post_types' );
+			$this->add_filter( 'display_post_states', null, 10, 2 );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -90,6 +92,12 @@ class Aggregator extends Aggregator_Plugin {
 
 		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : false; // Input var okay.
 
+		// Don't interfer if the user is detaching the post.
+		$action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : false; // Input var okay.
+		if ( 'aggregator_detach' === $action ) {
+			return;
+		}
+
 		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
 
 			$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
@@ -117,13 +125,42 @@ class Aggregator extends Aggregator_Plugin {
 	public function post_row_actions( $actions, $post ) {
 
 		if ( $orig_blog_id = get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
-			foreach ( $actions as $action_name => & $action ) {
-				if ( 'view' !== $action_name ) {
-					unset( $actions[ $action_name ] ); }
+
+			$new_actions = array();
+
+			if ( is_array( $actions ) && array_key_exists( 'view', $actions ) ) {
+				$new_actions['view'] = $actions['view'];
 			}
+
+			// Contsruct a link for detaching the post
+			$edit_post_link = get_edit_post_link( $post->ID );
+			$detach_post_link = str_replace( 'action=edit', 'action=aggregator_detach', $edit_post_link );
+
+			$new_actions['detach'] = sprintf( '<a href="%s">Detach</a>', $detach_post_link );
+
+			$actions = $new_actions;
+
 		}
 
 		return $actions;
+
+	}
+
+	/**
+	 * Detaches an aggregated post for editing on the portal.
+	 *
+	 * @param  int $post_id Post ID.
+	 * @filter post_action_aggregator_detach
+	 */
+	public function post_action_aggregator_detach( $post_id ) {
+
+		if ( false === $post_id || is_null( $post_id ) ) {
+			return;
+		}
+
+		// Delete the post meta that attaches this post to it's parent
+		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
+		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
 
 	}
 
@@ -143,6 +180,30 @@ class Aggregator extends Aggregator_Plugin {
 			return $original_permalink; }
 
 		return $permalink;
+	}
+
+	/**
+	 * Indicate in the post list that a post is a synced post
+	 *
+	 * @param array $post_states Array of post states.
+	 * @param mixed $post The post.
+	 *
+	 * @return array Array of post states.
+	 * @filter display_post_states
+	 */
+	public function display_post_states( $post_states, $post = null ) {
+
+		if ( is_null( $post ) ) {
+			$post = get_post();
+		}
+
+		// Operate only on synced posts.
+		if ( get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
+			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
+		}
+
+		return $post_states;
+
 	}
 
 	// UTILITIES.
@@ -490,7 +551,7 @@ class Aggregator extends Aggregator_Plugin {
 			echo sprintf(
 				'<label for="cpt_%1$s"><input type="checkbox" name="cpts[]" id="cpt_%1$s" value="%1$s" %2$s> %3$s</label><br/>',
 				esc_attr( $cpt->name ),
-				checked( $checked ),
+				checked( $checked, true, false ),
 				esc_attr( $cpt->labels->name )
 			);
 
@@ -533,7 +594,7 @@ class Aggregator extends Aggregator_Plugin {
 			echo sprintf(
 				'<label for="taxo_%1$s"><input type="checkbox" name="taxos[]" id="taxo_%1$s" value="%1$s"%2$s> %3$s</label><br/>',
 				esc_attr( $taxo->name ),
-				checked( $checked ),
+				checked( $checked, true, false ),
 				esc_attr( $taxo->labels->name )
 			);
 
@@ -655,8 +716,8 @@ class Aggregator extends Aggregator_Plugin {
 	public function publish_aggregator_job( $post_id, $post ) {
 
 		// Find the portal ID.
-		if ( isset( $_GET['portal'] ) ) { // Input var okay.
-			$portal = intval( $_GET['portal'] ); // Input var okay.
+		if ( isset( $_POST['portal'] ) ) { // Input var okay.
+			$portal = intval( $_POST['portal'] ); // Input var okay.
 		} else {
 			return;
 		}
@@ -673,16 +734,16 @@ class Aggregator extends Aggregator_Plugin {
 		$taxos = $sync_job->get_taxonomies();
 
 		// Get any selected post types.
-		if ( isset( $_GET['cpts'] ) ) { // Input var okay.
-			$cpts = array_map( 'sanitize_text_field', wp_unslash( $_GET['cpts'] ) ); // Input var okay.
+		if ( isset( $_POST['cpts'] ) ) { // Input var okay.
+			$cpts = array_map( 'sanitize_text_field', wp_unslash( $_POST['cpts'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed post types.
 		$sync_job->set_post_types( $cpts );
 
 		// Get any selected taxonomies.
-		if ( isset( $_GET['taxos'] ) ) { // Input var okay.
-			$taxos = array_map( 'sanitize_text_field', wp_unslash( $_GET['taxos'] ) ); // Input var okay.
+		if ( isset( $_POST['taxos'] ) ) { // Input var okay.
+			$taxos = array_map( 'sanitize_text_field', wp_unslash( $_POST['taxos'] ) ); // Input var okay.
 		}
 
 		// Save the new/changed taxonomies.
@@ -727,7 +788,7 @@ class Aggregator extends Aggregator_Plugin {
 		restore_current_blog();
 
 		// Send back to the script.
-		echo esc_url( $url );
+		echo esc_url_raw( $url );
 		die();
 
 	}
@@ -842,7 +903,7 @@ class Aggregator extends Aggregator_Plugin {
 			$args['blog_id'] = isset( $_GET['portal'] ) ? intval( $_GET['portal'] ) : false; // Input var okay.
 		}
 
-		if ( false !== $args['blog_id'] ) :
+		if ( isset( $args['blog_id'] ) && false !== $args['blog_id'] ) :
 			?>
 			<p><?php esc_html_e( 'Choose the user to whom posts will be attributed to on the portal site.' ); ?></p>
 			<label class="screen-reader-text" for="post_author_override"><?php esc_html_e( 'Author' ); ?></label>
@@ -850,7 +911,7 @@ class Aggregator extends Aggregator_Plugin {
 			wp_dropdown_users( $args );
 		else :
 			?>
-			<p><?php esch_html_e( 'Portal site isn\'t set - can\'t grab authors.' ); ?></p>
+			<p><?php esc_html_e( 'Portal site isn\'t set - can\'t grab authors.' ); ?></p>
 			<?php
 		endif;
 

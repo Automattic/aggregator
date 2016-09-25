@@ -10,7 +10,7 @@ Plugin Name: Aggregator
 Plugin URI: https://github.com/automattic/aggregator/
 Description: Synchronise posts between blogs in a multisite network
 Network: true
-Version: 1.1.1
+Version: 1.2
 Author: WordPress.com VIP / Philip John
 Author URI: http://vip.wordpress.com
 License: GPLv2

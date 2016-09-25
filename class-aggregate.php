@@ -903,7 +903,8 @@ class Aggregate extends Aggregator_Plugin {
 
 		// Are we syncing anything from this site? If not, stop.
 		if ( ! $this->aggregator->get_portals( $current_blog->blog_id ) ) {
-			return; }
+			return;
+		}
 
 		// Only push published posts.
 		if ( 'publish' === $orig_post->post_status ) {

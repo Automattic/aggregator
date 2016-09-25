@@ -57,6 +57,7 @@ class Aggregator extends Aggregator_Plugin {
 			$this->add_filter( 'manage_settings_page_aggregator-network_columns', 'aggregator_edit_columns' );
 			$this->add_filter( 'coauthors_meta_box_priority' );
 			$this->add_filter( 'coauthors_supported_post_types' );
+			$this->add_filter( 'display_post_states', null, 10, 2 );
 		}
 
 		$this->add_action( 'template_redirect' );
@@ -143,6 +144,30 @@ class Aggregator extends Aggregator_Plugin {
 			return $original_permalink; }
 
 		return $permalink;
+	}
+
+	/**
+	 * Indicate in the post list that a post is a synced post
+	 *
+	 * @param array $post_states Array of post states.
+	 * @param mixed $post The post.
+	 *
+	 * @return array Array of post states.
+	 * @filter display_post_states
+	 */
+	public function display_post_states( $post_states, $post = null ) {
+
+		if ( is_null( $post ) ) {
+			$post = get_post();
+		}
+
+		// Operate only on synced posts.
+		if ( get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
+			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
+		}
+
+		return $post_states;
+
 	}
 
 	// UTILITIES.

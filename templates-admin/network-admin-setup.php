@@ -31,7 +31,12 @@ switch ( $action ) {
 		$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
 			'public' => 1,
 		) );
-		$blogs = wp_get_sites( $blogs_args );
+		global $wp_version;
+		if ( -1 === version_compare( $wp_version, '4.6' ) ) {
+			$blogs = wp_get_sites( $blogs_args );
+		} else {
+			$blogs = get_sites( $blogs_args );
+		}
 		?>
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Add New Sync Job' ); ?></h2>

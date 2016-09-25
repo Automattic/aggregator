@@ -44,10 +44,20 @@ if ( class_exists( 'WP_List_Table' ) ) {
 
 			// Make sure we have an array for $this->items.
 			if ( ! is_array( $this->items ) ) {
-				$this->items = array(); }
+				$this->items = array();
+			}
 
 			// Get all the blogs.
-			$blogs = wp_get_sites( array( 'public' => 1 ) );
+			/** This filter is documented in templates-admin/network-admin-setup.php */
+			$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
+				'public' => 1,
+			) );
+			global $wp_version;
+			if ( -1 === version_compare( $wp_version, '4.6' ) ) {
+				$blogs = wp_get_sites( $blogs_args );
+			} else {
+				$blogs = get_sites( $blogs_args );
+			}
 
 			// Our array of portals.
 			$portals = array();

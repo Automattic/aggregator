@@ -317,14 +317,18 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	public function get_jobs() {
 
-		// Get $wpdb so that we can use the network (site) ID later on.
-		global $wpdb;
-
 		// Get a list of sites.
 		// @todo We need to consider is_large_network() at some point.
-		$blogs = wp_get_sites( array(
-			'network_id' => $wpdb->siteid,
+		/** This filter is documented in templates-admin/network-admin-setup.php */
+		$blogs_args = apply_filters( 'aggregator_get_sites_arguments', array(
+			'public' => 1,
 		) );
+		global $wp_version;
+		if ( -1 === version_compare( $wp_version, '4.6' ) ) {
+			$blogs = wp_get_sites( $blogs_args );
+		} else {
+			$blogs = get_sites( $blogs_args );
+		}
 
 		// Should never be empty, but hey, let's play safe.
 		if ( empty( $blogs ) ) {

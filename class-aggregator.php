@@ -147,7 +147,7 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * Detaches an aggregated post for editing on the portal.
+	 * `Detach`es an aggregated post for editing on the portal.
 	 *
 	 * @param  int $post_id Post ID.
 	 * @filter post_action_aggregator_detach
@@ -161,6 +161,7 @@ class Aggregator extends Aggregator_Plugin {
 		// Delete the post meta that attaches this post to it's parent
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
+		delete_post_meta( $post_id, '_aggregator_permalink' );
 
 	}
 

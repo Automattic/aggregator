@@ -147,7 +147,7 @@ class Aggregator extends Aggregator_Plugin {
 	}
 
 	/**
-	 * `Detach`es an aggregated post for editing on the portal.
+	 * Detaches an aggregated post for editing on the portal.
 	 *
 	 * @param  int $post_id Post ID.
 	 * @filter post_action_aggregator_detach

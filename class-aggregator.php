@@ -161,6 +161,7 @@ class Aggregator extends Aggregator_Plugin {
 		// Delete the post meta that attaches this post to it's parent
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
+		delete_post_meta( $post_id, '_aggregator_permalink' );
 
 	}
 

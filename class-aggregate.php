@@ -661,11 +661,7 @@ class Aggregate extends Aggregator_Plugin {
 
 				// Get the term...
 				// @codingStandardsIgnoreStart
-				if ( function_exists( 'wpcom_vip_get_term_by' ) ) {
-					$term = wpcom_vip_get_term_by( 'name', $name, $taxonomy );
-				} else {
-					$term = get_term_by( 'name', $name, $taxonomy );
-				}
+				$term = get_term_by( 'name', $name, $taxonomy );
 				// @codingStandardsIgnoreEnd
 
 				// If the term exists, use it.
@@ -809,6 +805,7 @@ class Aggregate extends Aggregator_Plugin {
 			if ( is_wp_error( $orig_terms ) ) {
 				continue; // See allowed_terms().
 			}
+
 			// Okay, fine, switch sites and do the synchronisation dance.
 			// @codingStandardsIgnoreStart
 			switch_to_blog( $sync_destination );

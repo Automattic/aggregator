@@ -198,9 +198,21 @@ class Aggregator extends Aggregator_Plugin {
 			$post = get_post();
 		}
 
+		/**
+		 * Choose a label for Aggregated post states.
+		 *
+		 * Based on the post data, keep the default 'Aggregated' label or relabel with your own.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string Default label of 'Aggregated'.
+		 * @param string $post WP_Post Post object
+		 */
+		$label = apply_filters( 'aggregator_aggregated_label', __( 'Aggregated', 'aggregator' ), $post );
+
 		// Operate only on synced posts.
 		if ( get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
-			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
+			$post_states[] = esc_html( $label );
 		}
 
 		return $post_states;

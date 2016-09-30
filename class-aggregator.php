@@ -158,6 +158,11 @@ class Aggregator extends Aggregator_Plugin {
 			return;
 		}
 
+		// Save original blog ID to post meta as flag that post has been aggregated and detached.
+		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
+			update_post_meta( $post_id, '_aggregator_detached_blog_id', $orig_blog_id );
+		}
+
 		// Delete the post meta that attaches this post to it's parent
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );

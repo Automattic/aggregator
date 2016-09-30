@@ -208,6 +208,23 @@ class Aggregator extends Aggregator_Plugin {
 			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
 		}
 
+		/**
+		 * Choose a label for Detached post states.
+		 *
+		 * Based on the post data, keep the default 'Detached' label or relabel with your own.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string Default label of 'Detached'.
+		 * @param WP_Post $post Post object
+		 */
+		$label = apply_filters( 'aggregator_detached_label', __( 'Detached', 'aggregator' ), $post );
+
+		// Operate only on detached posts.
+		if ( get_post_meta( $post->ID, '_aggregator_detached_blog_id', true ) ) {
+			$post_states[] = esc_html( $label );
+		}
+
 		return $post_states;
 
 	}

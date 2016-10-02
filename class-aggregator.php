@@ -148,7 +148,7 @@ class Aggregator extends Aggregator_Plugin {
 			 */
 			$label = apply_filters( 'aggregator_detach_label', __( 'Detach', 'aggregator' ), $post );
 
-			$new_actions['detach'] = sprintf( '<a href="%s">%s</a>', $detach_post_link, $label );
+			$new_actions['detach'] = sprintf( '<a href="%s">%s</a>', $detach_post_link, esc_html( $label ) );
 
 			$actions = $new_actions;
 

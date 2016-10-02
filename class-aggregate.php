@@ -884,6 +884,17 @@ class Aggregate extends Aggregator_Plugin {
 			$new_post_data->post_status = apply_filters( 'aggregator_post_status', $orig_post_data['post_status'] );
 			wp_update_post( $new_post_data );
 
+
+			/**
+			 * Do an action after the post has been successfully created on the destination site.
+			 *
+			 * @param WP_Post $new_post_data
+			 * @param WP_Post $orig_post_data
+			 * @param int     $sync_destination
+			 * @param int     $current_blog
+			 */
+			do_action( 'aggregator_after_push_new_post', $new_post_data, $orig_post_data, $sync_destination, $current_blog->blog_id );
+
 			// Switch back to source blog.
 			restore_current_blog();
 

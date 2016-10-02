@@ -162,6 +162,7 @@ class Aggregator extends Aggregator_Plugin {
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
 		delete_post_meta( $post_id, '_aggregator_permalink' );
+		delete_post_meta( $post_id, '_orig_terms' );
 
 	}
 

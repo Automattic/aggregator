@@ -352,6 +352,16 @@ class Aggregate extends Aggregator_Plugin {
 				wp_delete_post( $target_post_id, true );
 			}
 
+			/**
+			 * Do an action after the post has been successfully deleted on a portal site.
+			 *
+			 * @param int $target_post_id Portal site deleted post ID
+			 * @param int $post_id Original post ID
+			 * @param int $portal Portal site ID
+			 * @param int $current_blog Original site ID
+			 */
+			do_action( 'aggregator_after_delete_post', $target_post_id, $post_id, $portal, $current_blog->blog_id );
+
 			// Back to the current blog.
 			restore_current_blog();
 
@@ -883,7 +893,7 @@ class Aggregate extends Aggregator_Plugin {
 			 */
 			$new_post_data->post_status = apply_filters( 'aggregator_post_status', $orig_post_data['post_status'] );
 			wp_update_post( $new_post_data );
-			
+
 			// Get boolean on if post is updated or brand new.
 			$updated = ( false !== $target_post_id );
 

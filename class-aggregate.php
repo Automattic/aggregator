@@ -798,11 +798,11 @@ class Aggregate extends Aggregator_Plugin {
 				return; }
 
 			// Take the list of associated taxonomy terms and remove any taxonomies not allowed.
-			$orig_terms = $this->allowed_taxonomies( $orig_terms );
+			$destination_terms = $this->allowed_taxonomies( $orig_terms );
 
 			// Take the list of associated taxonomy terms and remove any terms not allowed.
-			$orig_terms = $this->allowed_terms( $orig_terms );
-			if ( is_wp_error( $orig_terms ) ) {
+			$destination_terms = $this->allowed_terms( $destination_terms );
+			if ( is_wp_error( $destination_terms ) ) {
 				continue; // See allowed_terms().
 			}
 
@@ -832,7 +832,7 @@ class Aggregate extends Aggregator_Plugin {
 			}
 
 			// Push taxonomies and terms.
-			$this->push_taxonomy_terms( $target_post_id, $orig_terms );
+			$this->push_taxonomy_terms( $target_post_id, $destination_terms );
 
 			$portal_site_url = get_home_url( $sync_destination );
 			// Filter url of portal_site_url.

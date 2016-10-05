@@ -221,6 +221,8 @@ class Aggregator extends Aggregator_Plugin {
 		 * turn off the admin UI for aggregation jobs and exclusively control them
 		 * through the code.
 		 *
+		 * @since 1.2.0
+		 *
 		 * @param bool $display Whether or not to display the network UI.
 		 */
 		if ( ! apply_filters( 'aggregator_display_ui', true ) ) {

@@ -214,6 +214,19 @@ class Aggregator extends Aggregator_Plugin {
 	 * @return void
 	 */
 	public function network_admin_menu() {
+
+		/**
+		 * Allow a user to turn the admin UI off.
+		 *
+		 * Passing false back through this filter will allow a theme or plugin to
+		 * turn off the admin UI for aggregation jobs.
+		 *
+		 * @param bool Whether or not to display the network UI.
+		 */
+		if ( ! apply_filters( 'aggregator_display_ui', true ) ) {
+			return;
+		}
+
 		add_submenu_page(
 			'settings.php',
 			__( 'Aggregator Setup' ),

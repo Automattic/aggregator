@@ -132,11 +132,23 @@ class Aggregator extends Aggregator_Plugin {
 				$new_actions['view'] = $actions['view'];
 			}
 
-			// Contsruct a link for detaching the post
+			// Construct a link for detaching the post
 			$edit_post_link = get_edit_post_link( $post->ID );
 			$detach_post_link = str_replace( 'action=edit', 'action=aggregator_detach', $edit_post_link );
 
-			$new_actions['detach'] = sprintf( '<a href="%s">Detach</a>', $detach_post_link );
+			/**
+			 * Choose a label for Detach action link.
+			 *
+			 * Based on the post data, keep the default 'Detach' label or relabel with your own.
+			 *
+			 * @since 1.2.0
+			 *
+			 * @param string Default label of 'Detach'.
+			 * @param WP_Post $post Post object
+			 */
+			$label = apply_filters( 'aggregator_detach_label', __( 'Detach', 'aggregator' ), $post );
+
+			$new_actions['detach'] = sprintf( '<a href="%s">%s</a>', $detach_post_link, esc_html( $label ) );
 
 			$actions = $new_actions;
 
@@ -203,9 +215,21 @@ class Aggregator extends Aggregator_Plugin {
 			$post = get_post();
 		}
 
+		/**
+		 * Choose a label for Aggregated post states.
+		 *
+		 * Based on the post data, keep the default 'Aggregated' label or relabel with your own.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string Default label of 'Aggregated'.
+		 * @param WP_Post $post Post object
+		 */
+		$label = apply_filters( 'aggregator_aggregated_label', __( 'Aggregated', 'aggregator' ), $post );
+
 		// Operate only on synced posts.
 		if ( get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
-			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
+			$post_states[] = esc_html( $label );
 		}
 
 		/**

@@ -158,6 +158,11 @@ class Aggregator extends Aggregator_Plugin {
 			return;
 		}
 
+		// Save original blog ID to post meta as flag that post has been aggregated and detached.
+		if ( $orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true ) ) {
+			update_post_meta( $post_id, '_aggregator_detached_blog_id', $orig_blog_id );
+		}
+
 		// Delete the post meta that attaches this post to it's parent
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
@@ -201,6 +206,23 @@ class Aggregator extends Aggregator_Plugin {
 		// Operate only on synced posts.
 		if ( get_post_meta( $post->ID, '_aggregator_orig_blog_id', true ) ) {
 			$post_states[] = esc_html__( 'Aggregated', 'aggregator' );
+		}
+
+		/**
+		 * Choose a label for Detached post states.
+		 *
+		 * Based on the post data, keep the default 'Detached' label or relabel with your own.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string Default label of 'Detached'.
+		 * @param WP_Post $post Post object
+		 */
+		$label = apply_filters( 'aggregator_detached_label', __( 'Detached', 'aggregator' ), $post );
+
+		// Operate only on detached posts.
+		if ( get_post_meta( $post->ID, '_aggregator_detached_blog_id', true ) ) {
+			$post_states[] = esc_html( $label );
 		}
 
 		return $post_states;

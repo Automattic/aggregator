@@ -825,8 +825,8 @@ class Aggregate extends Aggregator_Plugin {
 			$orig_post_data['author'] = $this->prepare_author_id( $orig_post_data['author'], $sync_destination );
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );
-			if ( false !== $target_post_id ) {
+			$portal_target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );
+			if ( false !== $portal_target_post_id ) {
 				$target_post_id = $orig_post_data['ID'];
 				wp_update_post( $orig_post_data );
 			} else {
@@ -895,18 +895,19 @@ class Aggregate extends Aggregator_Plugin {
 			wp_update_post( $new_post_data );
 
 			// Get boolean on if post is updated or brand new.
-			$updated = ( false !== $target_post_id );
+			$updating     = ( false !== $target_post_id );
+			$new_post_id = ( $updating ) ? $portal_target_post_id : $new_post_data->ID;
 
 			/**
 			 * Do an action after the post has been successfully created on the destination site.
 			 *
-			 * @param int  $new_post_data Fresh post ID
+			 * @param int  $new_post_id Fresh post ID
 			 * @param int  $orig_post_id Original post ID
 			 * @param int  $sync_destination Destination site ID
 			 * @param int  $current_blog Original site ID
-			 * @param bool $updated Whether site is updated or not
+			 * @param bool $updating Whether post is updating (true) or a new post
 			 */
-			do_action( 'aggregator_after_push_post_data', $new_post_data->ID, $orig_post_id, $sync_destination, $current_blog->blog_id, $updated );
+			do_action( 'aggregator_after_push_post_data', $new_post_id, $orig_post_id, $sync_destination, $current_blog->blog_id, $updating );
 
 			// Switch back to source blog.
 			restore_current_blog();

@@ -225,7 +225,7 @@ class Aggregator extends Aggregator_Plugin {
 		 *
 		 * @param bool $display Whether or not to display the network UI.
 		 */
-		if ( ! apply_filters( 'aggregator_display_ui', true ) ) {
+		if ( ! apply_filters( 'aggregator_display_network_ui', true ) ) {
 			return;
 		}
 

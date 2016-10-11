@@ -659,7 +659,20 @@ class Aggregate extends Aggregator_Plugin {
 
 		// Get the original terms for this post.
 		if ( ! $orig_terms = get_post_meta( $post_id, '_orig_terms', true ) ) {
-			return; }
+			return;
+		}
+
+		/**
+		 * Before taxonomy terms are imported into a child post.
+		 *
+		 * Triggers within the cron event set up by aggregator when a post is
+		 * initially synced to a portal site.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param int $post_id ID of the portal post terms will be imported to.
+		 */
+		do_action( 'aggregator_before_process_import_terms', $post_id );
 
 		// Check each term for stuff.
 		foreach ( $orig_terms as $taxonomy => & $terms ) {
@@ -698,10 +711,30 @@ class Aggregate extends Aggregator_Plugin {
 			}
 
 			// Import the terms for this taxonomy.
-			wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+			$set_terms = wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+
+			// Check that terms were successfully imported.
+			if ( is_array( $set_terms ) ) {
+
+				// Clear out the _orig_terms meta
+				delete_post_meta( $post_id, '_orig_terms' );
+
+			}
 
 			// The post *should* be in pending status, so publish it now we have the term data.
 			wp_publish_post( $post_id );
+
+			/**
+			 * After taxonomy terms are imported into a child post.
+			 *
+			 * Triggers within the cron event set up by aggregator when a post is
+			 * initially synced to a portal site.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param int $post_id ID of the portal post terms were imported to.
+			 */
+			do_action( 'aggregator_after_process_import_terms', $post_id );
 
 		}
 

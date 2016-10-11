@@ -74,7 +74,10 @@ class Aggregator extends Aggregator_Plugin {
 	 */
 	function admin_init() {
 
-		$this->list_table = new Aggregator_Jobs_List_Table();
+		// Don't load the Jobs table during AJAX requests.
+		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+			$this->list_table = new Aggregator_Jobs_List_Table();
+		}
 
 		$this->set_cpt_cache();
 

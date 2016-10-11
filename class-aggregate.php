@@ -672,7 +672,7 @@ class Aggregate extends Aggregator_Plugin {
 		 *
 		 * @param int $post_id ID of the portal post terms will be imported to.
 		 */
-		do_action( 'aggreagtor_before_process_import_terms', $post_id );
+		do_action( 'aggregator_before_process_import_terms', $post_id );
 
 		// Check each term for stuff.
 		foreach ( $orig_terms as $taxonomy => & $terms ) {
@@ -734,7 +734,7 @@ class Aggregate extends Aggregator_Plugin {
 			 *
 			 * @param int $post_id ID of the portal post terms will be imported to.
 			 */
-			do_action( 'aggreagtor_after_process_import_terms', $post_id );
+			do_action( 'aggregator_after_process_import_terms', $post_id );
 
 		}
 

@@ -711,7 +711,15 @@ class Aggregate extends Aggregator_Plugin {
 			}
 
 			// Import the terms for this taxonomy.
-			wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+			$set_terms = wp_set_object_terms( $post_id, $target_terms, $taxonomy );
+
+			// Check that terms were successfully imported.
+			if ( is_array( $set_terms ) ) {
+
+				// Clear out the _orig_terms meta
+				delete_post_meta( $post_id, '_orig_terms' );
+
+			}
 
 			// The post *should* be in pending status, so publish it now we have the term data.
 			wp_publish_post( $post_id );

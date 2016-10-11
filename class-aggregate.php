@@ -609,6 +609,11 @@ class Aggregate extends Aggregator_Plugin {
 			// Get the terms from this taxonomy attached to the post.
 			$tax_terms = get_the_terms( $post_id, $taxonomy );
 
+			// If we have no terms to pass through or got an error, skip to the next taxonomy.
+			if ( ! $tax_terms || is_wp_error( $tax_terms ) ) {
+				continue;
+			}
+
 			// Add each of the attached terms to our new array.
 			foreach ( $tax_terms as & $term ) {
 				$terms[ $taxonomy ][ $term->slug ] = $term->name; }

@@ -175,10 +175,24 @@ class Aggregator extends Aggregator_Plugin {
 			update_post_meta( $post_id, '_aggregator_detached_blog_id', $orig_blog_id );
 		}
 
+		// Get the original post and blog data for 'aggregator_after_detach_post' action.
+		$orig_post_id = get_post_meta( $post_id, '_aggregator_orig_post_id', true );
+		$orig_blog_id = get_post_meta( $post_id, '_aggregator_orig_blog_id', true );
+
 		// Delete the post meta that attaches this post to it's parent
 		delete_post_meta( $post_id, '_aggregator_orig_post_id' );
 		delete_post_meta( $post_id, '_aggregator_orig_blog_id' );
 		delete_post_meta( $post_id, '_aggregator_permalink' );
+
+		/**
+		 * Do an action after a post has been detached on a portal site.
+		 *
+		 * @param int $post_id Portal site post ID
+		 * @param int $orig_post_id Original post ID
+		 * @param int $portal Portal site ID
+		 * @param int $orig_blog_id Original site ID
+		 */
+		do_action( 'aggregator_after_detach_post', $post_id, $orig_post_id, get_current_blog_id(), $orig_blog_id );
 
 	}
 

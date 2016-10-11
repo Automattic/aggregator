@@ -732,7 +732,7 @@ class Aggregate extends Aggregator_Plugin {
 			 *
 			 * @since 1.3.0
 			 *
-			 * @param int $post_id ID of the portal post terms will be imported to.
+			 * @param int $post_id ID of the portal post terms were imported to.
 			 */
 			do_action( 'aggregator_after_process_import_terms', $post_id );
 

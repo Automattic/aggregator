@@ -863,10 +863,10 @@ class Aggregate extends Aggregator_Plugin {
 			$orig_post_data['author'] = $this->prepare_author_id( $orig_post_data['author'], $sync_destination );
 
 			// Acquire ID and update post (or insert post and acquire ID).
-			$portal_target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );
-			if ( false !== $portal_target_post_id ) {
-				$target_post_id = $orig_post_data['ID'];
-				wp_update_post( $orig_post_data );
+			$target_post_id = $this->get_portal_blog_post_id( $orig_post_id, $current_blog->blog_id );
+			if ( false !== $target_post_id ) {
+				$orig_post_data['ID'] = $target_post_id;
+				wp_update_post( $target_post_id );
 			} else {
 				$target_post_id = wp_insert_post( $orig_post_data );
 			}

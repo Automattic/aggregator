@@ -37,8 +37,7 @@ class Aggregate extends Aggregator_Plugin {
 		$this->setup( 'aggregator' );
 
 		// Get the aggregator object for some functions.
-		global $aggregator;
-		$this->aggregator = $aggregator;
+		$this->aggregator = Aggregator::get_instance();
 
 		if ( is_admin() ) {
 			$this->add_action( 'save_post', null, 11, 2 );

@@ -28,6 +28,16 @@ class Aggregator extends Aggregator_Plugin {
 	public $version;
 
 	/**
+	 * instance
+	 * Hold our class instance for single instantiation.
+	 *
+	 * @var Aggregator
+	 * @access private
+	 */
+	private static $instance = null;
+
+
+	/**
 	 * Stores the list table instance.
 	 *
 	 * Holds an object of type Aggregator_Jobs_List_Table for later use
@@ -67,6 +77,18 @@ class Aggregator extends Aggregator_Plugin {
 		$this->add_filter( 'post_row_actions', null, 9999, 2 );
 		$this->add_filter( 'page_row_actions', 'post_row_actions', 9999, 2 );
 
+	}
+
+	/**
+	 * Set and get an instance of this class.
+	 *
+	 * @return Aggregator
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
 	}
 
 	/**
@@ -1067,4 +1089,4 @@ class Aggregator extends Aggregator_Plugin {
 
 } // END Aggregator class
 
-$aggregator = new Aggregator();
+$aggregator = Aggregator::get_instance();

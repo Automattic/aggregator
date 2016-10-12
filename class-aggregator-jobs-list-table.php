@@ -47,7 +47,7 @@ if ( class_exists( 'WP_List_Table' ) ) {
 		 * @todo pagination
 		 */
 		public function prepare_items() {
-			global $aggregator;
+			$aggregator = Aggregator::get_instance();
 
 			// Make sure we have an array for $this->items.
 			if ( ! is_array( $this->items ) ) {

@@ -933,8 +933,8 @@ class Aggregate extends Aggregator_Plugin {
 			wp_update_post( $new_post_data );
 
 			// Get boolean on if post is updated or brand new.
-			$updating     = ( false !== $portal_target_post_id );
-			$new_post_id = ( $updating ) ? $portal_target_post_id : $new_post_data->ID;
+			$updating     = ( false !== $target_post_id );
+			$new_post_id = ( $updating ) ? $target_post_id : $new_post_data->ID;
 
 			/**
 			 * Do an action after the post has been successfully created on the destination site.
